@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { accountListsApi, type AccountList, type Account } from '@/lib/api';
+import { accountListsApi } from '@/features/accountLists/accountLists.api';
+import type { AccountList, Account } from '@/features/accountLists/types';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';

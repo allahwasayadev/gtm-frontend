@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { HealthStatus } from '@/lib/api';
-import { fetchHealth } from '@/lib/api';
+import type { HealthStatus } from '@/lib/health/types';
+import { fetchHealth } from '@/lib/health/health.api';
 
 export function BackendStatus() {
   const [health, setHealth] = useState<HealthStatus | null>(null);

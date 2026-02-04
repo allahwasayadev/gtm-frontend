@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { connectionsApi, matchingApi, type Connection, type Match } from '@/lib/api';
+import { connectionsApi } from '@/features/connections/connections.api';
+import { matchingApi } from '@/features/matching/matching.api';
+import type { Connection } from '@/features/connections/types';
+import type { Match } from '@/features/matching/types';
 import { Button, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';

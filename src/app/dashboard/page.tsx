@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { accountListsApi, connectionsApi, type AccountList, type Connection } from '@/lib/api';
+import { accountListsApi } from '@/features/accountLists/accountLists.api';
+import { connectionsApi } from '@/features/connections/connections.api';
+import type { AccountList } from '@/features/accountLists/types';
+import type { Connection } from '@/features/connections/types';
 import { Button, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import Link from 'next/link';
 

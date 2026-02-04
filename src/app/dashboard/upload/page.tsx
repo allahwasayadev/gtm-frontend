@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { accountListsApi } from '@/lib/api';
+import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
