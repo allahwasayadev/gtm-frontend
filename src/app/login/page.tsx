@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button, Input } from '@/components/ui';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -35,78 +36,81 @@ export default function LoginPage() {
 
   if (loading || user) {
     return (
-      <div className="min-h-screen flex items-center justify-center gradient-bg">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-sky-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md animate-fade-in">
+        {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg hover:scale-105 transition-transform">
+          <Link href="/" className="inline-block group">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 transition-colors group-hover:text-indigo-600">
               GTM Account Mapper
             </h1>
           </Link>
-          <p className="text-white/80 drop-shadow">Welcome back! Log in to continue.</p>
+          <p className="text-gray-600">Welcome back! Sign in to continue.</p>
         </div>
 
-        <div className="glass rounded-2xl p-8 shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
+        {/* Login Form Card */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Email Address"
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
-                placeholder="••••••••"
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+            />
 
-            <button
+            <Button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-white text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+              variant="primary"
+              size="lg"
+              isLoading={isSubmitting}
+              className="w-full"
             >
-              {isSubmitting ? 'Logging in...' : 'Log In'}
-            </button>
+              Sign In
+            </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-white/80">
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-600">
               Don't have an account?{' '}
               <Link
                 href="/signup"
-                className="text-white font-semibold hover:underline"
+                className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
               >
-                Sign up
+                Create account
               </Link>
             </p>
           </div>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-500 mt-8">
+          By signing in, you agree to our Terms of Service and Privacy Policy
+        </p>
       </div>
     </div>
   );
 }
+

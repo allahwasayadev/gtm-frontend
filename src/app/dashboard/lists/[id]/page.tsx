@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { accountListsApi, type AccountList, type Account } from '@/lib/api';
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -98,7 +99,10 @@ export default function ListDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <p className="text-gray-600">Loading account list...</p>
+        </div>
       </div>
     );
   }
@@ -110,37 +114,49 @@ export default function ListDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
+              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
                 ← Back
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{list.name}</h1>
-                <p className="text-sm text-gray-500">
-                  {accounts.length} accounts • Status: {list.status}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-sm text-gray-500">
+                    {accounts.length} account{accounts.length !== 1 ? 's' : ''}
+                  </p>
+                  <span className="text-gray-400">•</span>
+                  <span className={`text-sm font-medium ${
+                    list.status === 'active' ? 'text-emerald-600' : 'text-gray-600'
+                  }`}>
+                    {list.status === 'active' ? 'Published' : 'Draft'}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex gap-2">
               {list.status === 'draft' && !editing && (
-                <button
+                <Button
                   onClick={handlePublish}
                   disabled={publishing}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  variant="success"
+                  size="md"
+                  isLoading={publishing}
                 >
-                  {publishing ? 'Publishing...' : 'Publish'}
-                </button>
+                  Publish
+                </Button>
               )}
-              <button
+              <Button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                variant="danger"
+                size="md"
+                isLoading={deleting}
               >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
+                Delete
+              </Button>
             </div>
           </div>
         </div>
@@ -148,33 +164,44 @@ export default function ListDetailPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <Card>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold">Accounts</h2>
+            <CardHeader className="p-0">
+              <CardTitle>Accounts</CardTitle>
+              <CardDescription>
+                {editing ? 'Edit your account list' : 'View and manage your accounts'}
+              </CardDescription>
+            </CardHeader>
             {!editing ? (
-              <button
+              <Button
                 onClick={() => setEditing(true)}
-                className="px-4 py-2 text-purple-600 border border-purple-600 rounded-lg hover:bg-purple-50 transition-colors"
+                variant="outline"
+                size="md"
               >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
                 Edit List
-              </button>
+              </Button>
             ) : (
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={() => {
                     setEditing(false);
                     loadList(); // Reset changes
                   }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  variant="outline"
+                  size="md"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSaveEdits}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  variant="primary"
+                  size="md"
                 >
                   Save Changes
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -182,49 +209,71 @@ export default function ListDetailPage() {
           {editing ? (
             <div className="space-y-3">
               {accounts.map((account, index) => (
-                <div key={account.id} className="flex gap-3">
-                  <input
+                <div key={account.id} className="flex gap-3 items-start">
+                  <Input
                     type="text"
                     value={account.accountName}
                     onChange={(e) => handleAccountChange(index, 'accountName', e.target.value)}
                     placeholder="Account name"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="flex-1"
                   />
-                  <input
+                  <Input
                     type="text"
                     value={account.type || ''}
                     onChange={(e) => handleAccountChange(index, 'type', e.target.value)}
                     placeholder="Type (optional)"
-                    className="w-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-48"
                   />
-                  <button
+                  <Button
                     onClick={() => handleRemoveAccount(index)}
-                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    variant="ghost"
+                    size="md"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
-                    Remove
-                  </button>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </Button>
                 </div>
               ))}
               <button
                 onClick={handleAddAccount}
-                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-400 hover:text-purple-600 transition-colors"
+                className="w-full px-4 py-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all font-medium"
               >
-                + Add Account
+                <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Account
               </button>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {accounts.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">No accounts yet</p>
+                <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500">No accounts yet</p>
+                  <p className="text-sm text-gray-400 mt-2">Click "Edit List" to add accounts</p>
+                </div>
               ) : (
                 accounts.map((account) => (
                   <div
                     key={account.id}
-                    className="flex justify-between items-center p-3 border border-gray-200 rounded-lg"
+                    className="flex justify-between items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-sm transition-all"
                   >
-                    <span className="font-medium text-gray-900">{account.accountName}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      </div>
+                      <span className="font-medium text-gray-900">{account.accountName}</span>
+                    </div>
                     {account.type && (
-                      <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                      <span className="text-sm font-medium text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
                         {account.type}
                       </span>
                     )}
@@ -233,7 +282,7 @@ export default function ListDetailPage() {
               )}
             </div>
           )}
-        </div>
+        </Card>
       </main>
     </div>
   );

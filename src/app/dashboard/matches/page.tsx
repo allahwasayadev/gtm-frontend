@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { connectionsApi, matchingApi, type Connection, type Match } from '@/lib/api';
+import { Button, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -68,15 +69,16 @@ export default function MatchesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
+            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
               ← Back
             </Link>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Account Matches
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Account Matches</h1>
+              <p className="text-sm text-gray-600 mt-1">Find account overlaps with your connections</p>
+            </div>
           </div>
         </div>
       </header>
@@ -84,32 +86,39 @@ export default function MatchesPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading...</div>
+          <div className="flex flex-col items-center gap-4 py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <p className="text-gray-600">Loading connections...</p>
+          </div>
         ) : connections.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <div className="text-4xl mb-4">🤝</div>
+          <Card className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">No Active Connections</h2>
             <p className="text-gray-500 mb-6">
               You need to have active connections to see account matches.
             </p>
-            <Link
-              href="/dashboard/connections"
-              className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Manage Connections
+            <Link href="/dashboard/connections">
+              <Button variant="primary" size="lg">
+                Manage Connections
+              </Button>
             </Link>
-          </div>
+          </Card>
         ) : (
           <>
             {/* Connection Selector */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Select Connection
-              </label>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Select Connection</CardTitle>
+                <CardDescription>Choose a connection to view matching accounts</CardDescription>
+              </CardHeader>
               <select
                 value={selectedConnectionId}
                 onChange={(e) => setSelectedConnectionId(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="mt-4 w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white"
               >
                 <option value="">-- Select a connection --</option>
                 {connections.map((connection) => (
@@ -118,43 +127,59 @@ export default function MatchesPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </Card>
 
             {/* Matches Display */}
             {selectedConnectionId && (
-              <div className="bg-white rounded-xl shadow-sm p-6">
+              <Card>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-semibold">
-                    Matches with {selectedConnection?.otherUser.name}
-                  </h2>
-                  <button
+                  <CardHeader className="p-0">
+                    <CardTitle>Matches with {selectedConnection?.otherUser.name}</CardTitle>
+                    <CardDescription>Account overlaps between your lists</CardDescription>
+                  </CardHeader>
+                  <Button
                     onClick={loadMatches}
-                    className="text-purple-600 hover:text-purple-700 font-medium"
+                    variant="outline"
+                    size="sm"
                   >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                     Refresh
-                  </button>
+                  </Button>
                 </div>
 
                 {loadingMatches ? (
-                  <div className="text-center py-12 text-gray-500">Finding matches...</div>
+                  <div className="flex flex-col items-center gap-4 py-12">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+                    <p className="text-gray-500">Finding matches...</p>
+                  </div>
                 ) : matches.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="text-4xl mb-4">🔍</div>
-                    <p className="text-gray-500 mb-2">No matching accounts found</p>
-                    <p className="text-sm text-gray-400">
+                  <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">No matching accounts found</h3>
+                    <p className="text-sm text-gray-500">
                       Make sure both you and {selectedConnection?.otherUser.name} have published account lists.
                     </p>
                   </div>
                 ) : (
                   <>
-                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">🎯</span>
+                    <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
                         <div>
-                          <div className="font-semibold text-green-900">
+                          <div className="font-semibold text-emerald-900">
                             Found {matches.length} matching account{matches.length !== 1 ? 's' : ''}!
                           </div>
-                          <div className="text-sm text-green-700">
+                          <div className="text-sm text-emerald-700 mt-1">
                             These accounts appear in both of your lists
                           </div>
                         </div>
@@ -165,23 +190,30 @@ export default function MatchesPage() {
                       {matches.map((match, index) => (
                         <div
                           key={index}
-                          className="p-4 border-2 border-purple-200 bg-purple-50 rounded-lg"
+                          className="p-5 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all bg-white"
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {match.accountName}
-                            </h3>
+                          <div className="flex items-start gap-3 mb-4">
+                            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                              </svg>
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {match.accountName}
+                              </h3>
+                            </div>
                           </div>
                           <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <div className="text-gray-500 mb-1">Your classification:</div>
-                              <div className="font-medium text-purple-700">
+                            <div className="p-3 bg-sky-50 rounded-lg">
+                              <div className="text-sky-700 font-medium mb-1">Your classification</div>
+                              <div className="font-semibold text-sky-900">
                                 {match.type || 'Not specified'}
                               </div>
                             </div>
-                            <div>
-                              <div className="text-gray-500 mb-1">Their classification:</div>
-                              <div className="font-medium text-purple-700">
+                            <div className="p-3 bg-purple-50 rounded-lg">
+                              <div className="text-purple-700 font-medium mb-1">Their classification</div>
+                              <div className="font-semibold text-purple-900">
                                 {match.theirType || 'Not specified'}
                               </div>
                             </div>
@@ -191,7 +223,7 @@ export default function MatchesPage() {
                     </div>
                   </>
                 )}
-              </div>
+              </Card>
             )}
           </>
         )}

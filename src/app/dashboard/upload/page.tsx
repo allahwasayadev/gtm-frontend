@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/lib/api';
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -91,18 +92,19 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
-              className="text-gray-600 hover:text-gray-900"
+              className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
               ← Back
             </Link>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Upload Account List
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Upload Account List</h1>
+              <p className="text-sm text-gray-600 mt-1">Import your accounts from CSV or Excel</p>
+            </div>
           </div>
         </div>
       </header>
@@ -111,23 +113,21 @@ export default function UploadPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* List Name */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <label htmlFor="listName" className="block text-sm font-medium text-gray-700 mb-2">
-              List Name
-            </label>
-            <input
+          <Card>
+            <Input
               id="listName"
+              label="List Name"
               type="text"
               required
               value={listName}
               onChange={(e) => setListName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="e.g., Q1 2024 Target Accounts"
+              helperText="Choose a descriptive name for your account list"
             />
-          </div>
+          </Card>
 
           {/* File Upload */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <Card>
             <label className="block text-sm font-medium text-gray-700 mb-4">
               Upload File (CSV or Excel)
             </label>
@@ -139,35 +139,44 @@ export default function UploadPage() {
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
                 dragActive
-                  ? 'border-purple-500 bg-purple-50'
-                  : 'border-gray-300 hover:border-purple-400'
+                  ? 'border-indigo-500 bg-indigo-50'
+                  : 'border-gray-300 hover:border-indigo-400'
               }`}
             >
               {file ? (
                 <div>
-                  <div className="text-5xl mb-4">✅</div>
+                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
                   <p className="text-lg font-semibold text-gray-900 mb-2">
                     {file.name}
                   </p>
                   <p className="text-sm text-gray-500 mb-4">
                     {(file.size / 1024).toFixed(2)} KB
                   </p>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setFile(null)}
-                    className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                    variant="ghost"
+                    size="sm"
                   >
                     Remove file
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div>
-                  <div className="text-5xl mb-4">📤</div>
+                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
                   <p className="text-lg font-semibold text-gray-900 mb-2">
                     Drag and drop your file here
                   </p>
                   <p className="text-sm text-gray-500 mb-4">or</p>
-                  <label className="cursor-pointer inline-block px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+                  <label className="cursor-pointer inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                     Browse Files
                     <input
                       type="file"
@@ -182,32 +191,44 @@ export default function UploadPage() {
                 </div>
               )}
             </div>
-          </div>
+          </Card>
 
           {/* Instructions */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-            <h3 className="font-semibold text-blue-900 mb-2">📋 File Format</h3>
-            <p className="text-sm text-blue-700 mb-2">
-              Your file should contain account names in the first column. For example:
-            </p>
-            <div className="bg-white rounded-lg p-3 text-sm font-mono text-gray-700 border border-blue-200">
-              <div>Acme Corporation</div>
-              <div>TechStart Inc</div>
-              <div>Global Solutions LLC</div>
+          <Card className="bg-sky-50 border-sky-200">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sky-900 mb-2">File Format Requirements</h3>
+                <p className="text-sm text-sky-700 mb-3">
+                  Your file should contain account names in the first column. For example:
+                </p>
+                <div className="bg-white rounded-lg p-3 text-sm font-mono text-gray-700 border border-sky-200 space-y-1">
+                  <div>Acme Corporation</div>
+                  <div>TechStart Inc</div>
+                  <div>Global Solutions LLC</div>
+                </div>
+                <p className="text-xs text-sky-600 mt-3">
+                  Headers are optional. Only the first column will be imported.
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-blue-600 mt-2">
-              Headers are optional. Only the first column will be imported.
-            </p>
-          </div>
+          </Card>
 
           {/* Submit Button */}
-          <button
+          <Button
             type="submit"
             disabled={uploading || !file || !listName.trim()}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+            variant="primary"
+            size="lg"
+            isLoading={uploading}
+            className="w-full"
           >
-            {uploading ? 'Uploading...' : 'Upload Account List'}
-          </button>
+            Upload Account List
+          </Button>
         </form>
       </main>
     </div>
