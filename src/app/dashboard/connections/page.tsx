@@ -79,38 +79,40 @@ export default function ConnectionsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
-                ← Back
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex justify-between items-start sm:items-center gap-2">
+            <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0">
+              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium flex-shrink-0 mt-1 sm:mt-0">
+                ←
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Connections</h1>
-                <p className="text-sm text-gray-600 mt-1">Manage your network and collaboration partners</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Connections</h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-0.5 hidden sm:block">Manage your network and collaboration partners</p>
               </div>
             </div>
             <Button
               onClick={() => setShowNewConnectionForm(!showNewConnectionForm)}
               variant="primary"
-              size="md"
+              size="sm"
+              className="flex-shrink-0"
             >
-              + New Connection
+              <span className="sm:hidden">+ New</span>
+              <span className="hidden sm:inline">+ New Connection</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* New Connection Form */}
         {showNewConnectionForm && (
-          <Card className="mb-6 animate-fade-in">
+          <Card className="mb-4 sm:mb-6 animate-fade-in">
             <CardHeader>
-              <CardTitle>Send Connection Request</CardTitle>
-              <CardDescription>Enter your colleague's email to send a connection request</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Send Connection Request</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Enter your colleague's email</CardDescription>
             </CardHeader>
-            <form onSubmit={handleCreateConnection} className="flex gap-3 mt-4">
+            <form onSubmit={handleCreateConnection} className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
               <Input
                 type="email"
                 required
@@ -119,23 +121,27 @@ export default function ConnectionsPage() {
                 placeholder="colleague@company.com"
                 className="flex-1"
               />
-              <Button
-                type="submit"
-                disabled={creating}
-                variant="primary"
-                size="md"
-                isLoading={creating}
-              >
-                Send Request
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setShowNewConnectionForm(false)}
-                variant="outline"
-                size="md"
-              >
-                Cancel
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  disabled={creating}
+                  variant="primary"
+                  size="sm"
+                  isLoading={creating}
+                  className="flex-1 sm:flex-none"
+                >
+                  Send
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowNewConnectionForm(false)}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                >
+                  Cancel
+                </Button>
+              </div>
             </form>
           </Card>
         )}
@@ -224,19 +230,19 @@ export default function ConnectionsPage() {
               {accepted.map((connection) => (
                 <div
                   key={connection.id}
-                  className="flex justify-between items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all group"
+                  className="p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-start sm:items-center gap-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{connection.otherUser.name}</div>
-                      <div className="text-sm text-gray-500">{connection.otherUser.email}</div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        Connected on {new Date(connection.createdAt).toLocaleDateString('en-US', {
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
+                      <div className="text-xs sm:text-sm text-gray-500 truncate">{connection.otherUser.email}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {new Date(connection.createdAt).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric'
@@ -244,16 +250,17 @@ export default function ConnectionsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Link href={`/dashboard/matches?connection=${connection.id}`}>
-                      <Button variant="primary" size="sm">
-                        View Matches
+                  <div className="flex gap-2 mt-3 sm:mt-0 sm:absolute sm:right-4 sm:top-1/2 sm:-translate-y-1/2">
+                    <Link href={`/dashboard/matches?connection=${connection.id}`} className="flex-1 sm:flex-none">
+                      <Button variant="primary" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                        Matches
                       </Button>
                     </Link>
                     <Button
                       onClick={() => handleDeleteConnection(connection.id)}
-                      variant="danger"
+                      variant="outline"
                       size="sm"
+                      className="flex-1 sm:flex-none text-xs sm:text-sm text-red-600 hover:bg-red-50 hover:border-red-200"
                     >
                       Remove
                     </Button>

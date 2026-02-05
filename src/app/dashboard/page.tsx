@@ -63,21 +63,24 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">GTM Account Mapper</h1>
-              <p className="text-sm text-gray-600 mt-1">Welcome back, {user.name}!</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">GTM Account Mapper</h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Welcome, {user.name}!</p>
             </div>
-            <Button onClick={handleLogout} variant="outline" size="md">
-              Log Out
+            <Button onClick={handleLogout} variant="outline" size="sm" className="flex-shrink-0">
+              <span className="hidden sm:inline">Log Out</span>
+              <svg className="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card hover>
@@ -172,13 +175,13 @@ export default function DashboardPage() {
 
         {/* Recent Account Lists */}
         <Card>
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
             <CardHeader className="p-0">
-              <CardTitle>Your Account Lists</CardTitle>
-              <CardDescription>View and manage your uploaded account lists</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Your Account Lists</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">View and manage your uploaded account lists</CardDescription>
             </CardHeader>
-            <Link href="/dashboard/upload">
-              <Button variant="primary" size="sm">
+            <Link href="/dashboard/upload" className="sm:flex-shrink-0">
+              <Button variant="primary" size="sm" className="w-full sm:w-auto">
                 + Upload New
               </Button>
             </Link>
