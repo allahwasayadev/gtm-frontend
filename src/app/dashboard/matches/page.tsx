@@ -73,21 +73,21 @@ export default function MatchesPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-start sm:items-center gap-2 sm:gap-4">
+            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium flex-shrink-0 mt-1 sm:mt-0">
               ← Back
             </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Account Matches</h1>
-              <p className="text-sm text-gray-600 mt-1">Find account overlaps with your connections</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Account Matches</h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-0.5 hidden sm:block">Find account overlaps with your connections</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {loading ? (
           <div className="flex flex-col items-center gap-4 py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -118,32 +118,40 @@ export default function MatchesPage() {
                 <CardTitle>Select Connection</CardTitle>
                 <CardDescription>Choose a connection to view matching accounts</CardDescription>
               </CardHeader>
-              <select
-                value={selectedConnectionId}
-                onChange={(e) => setSelectedConnectionId(e.target.value)}
-                className="mt-4 w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white"
-              >
-                <option value="">-- Select a connection --</option>
-                {connections.map((connection) => (
-                  <option key={connection.id} value={connection.id}>
-                    {connection.otherUser.name} ({connection.otherUser.email})
-                  </option>
-                ))}
-              </select>
+              <div className="relative mt-4">
+                <select
+                  value={selectedConnectionId}
+                  onChange={(e) => setSelectedConnectionId(e.target.value)}
+                  className="w-full px-4 py-3 pr-10 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white appearance-none cursor-pointer"
+                >
+                  <option value="">-- Select a connection --</option>
+                  {connections.map((connection) => (
+                    <option key={connection.id} value={connection.id}>
+                      {connection.otherUser.name} ({connection.otherUser.email})
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
             </Card>
 
             {/* Matches Display */}
             {selectedConnectionId && (
               <Card>
-                <div className="flex justify-between items-center mb-6">
-                  <CardHeader className="p-0">
-                    <CardTitle>Matches with {selectedConnection?.otherUser.name}</CardTitle>
-                    <CardDescription>Account overlaps between your lists</CardDescription>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+                  <CardHeader className="p-0 border-b-0 sm:border-b sm:border-gray-200 pb-0 sm:pb-4 mb-0 sm:mb-0">
+                    <CardTitle className="text-base sm:text-lg">Matches with {selectedConnection?.otherUser.name}</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">Account overlaps between your lists</CardDescription>
                   </CardHeader>
                   <Button
                     onClick={loadMatches}
                     variant="outline"
                     size="sm"
+                    className="self-end sm:self-auto flex-shrink-0"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -193,7 +201,7 @@ export default function MatchesPage() {
                       {matches.map((match, index) => (
                         <div
                           key={index}
-                          className="p-5 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all bg-white"
+                          className="p-3 sm:p-5 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all bg-white"
                         >
                           <div className="flex items-start gap-3 mb-4">
                             <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -207,7 +215,7 @@ export default function MatchesPage() {
                               </h3>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                             <div className="p-3 bg-sky-50 rounded-lg">
                               <div className="text-sky-700 font-medium mb-1">Your classification</div>
                               <div className="font-semibold text-sky-900">

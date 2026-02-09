@@ -230,15 +230,15 @@ export default function ConnectionsPage() {
               {accepted.map((connection) => (
                 <div
                   key={connection.id}
-                  className="p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all"
                 >
-                  <div className="flex items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0">
                       <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
                       <div className="text-xs sm:text-sm text-gray-500 truncate">{connection.otherUser.email}</div>
                       <div className="text-xs text-gray-400 mt-0.5">
@@ -250,7 +250,7 @@ export default function ConnectionsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-3 sm:mt-0 sm:absolute sm:right-4 sm:top-1/2 sm:-translate-y-1/2">
+                  <div className="flex gap-2 flex-shrink-0 sm:ml-auto">
                     <Link href={`/dashboard/matches?connection=${connection.id}`} className="flex-1 sm:flex-none">
                       <Button variant="primary" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
                         Matches
