@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, LoadingScreen } from '@/components/ui';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function SignupPage() {
@@ -68,19 +69,17 @@ export default function SignupPage() {
   };
 
   if (loading || user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Checking authentication..." />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md animate-fade-in">
+      <motion.div
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+      >
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block group">
@@ -179,7 +178,7 @@ export default function SignupPage() {
         <p className="text-center text-xs text-gray-500 mt-8">
           By creating an account, you agree to our Terms of Service and Privacy Policy
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

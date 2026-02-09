@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
-import { Button, Input, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, PageTransition, FadeIn } from '@/components/ui';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -111,6 +112,7 @@ export default function UploadPage() {
 
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PageTransition>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* List Name */}
           <Card>
@@ -144,12 +146,21 @@ export default function UploadPage() {
               }`}
             >
               {file ? (
-                <div>
-                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                >
+                  <motion.div
+                    className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
+                  >
                     <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                  </div>
+                  </motion.div>
                   <p className="text-lg font-semibold text-gray-900 mb-2">
                     {file.name}
                   </p>
@@ -164,7 +175,7 @@ export default function UploadPage() {
                   >
                     Remove file
                   </Button>
-                </div>
+                </motion.div>
               ) : (
                 <div>
                   <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -230,6 +241,7 @@ export default function UploadPage() {
             Upload Account List
           </Button>
         </form>
+        </PageTransition>
       </main>
     </div>
   );

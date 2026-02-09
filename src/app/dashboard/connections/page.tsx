@@ -4,7 +4,20 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { connectionsApi } from '@/features/connections/connections.api';
 import type { Connection } from '@/features/connections/types';
-import { Button, Input, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import {
+  Button,
+  Input,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  SkeletonListItem,
+  PageTransition,
+  StaggerList,
+  StaggerItem,
+  FadeIn,
+  LoadingScreen,
+} from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -105,96 +118,101 @@ export default function ConnectionsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <PageTransition>
         {/* New Connection Form */}
         {showNewConnectionForm && (
-          <Card className="mb-4 sm:mb-6 animate-fade-in">
-            <CardHeader>
-              <CardTitle className="text-base sm:text-lg">Send Connection Request</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Enter your colleague's email</CardDescription>
-            </CardHeader>
-            <form onSubmit={handleCreateConnection} className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
-              <Input
-                type="email"
-                required
-                value={newConnectionEmail}
-                onChange={(e) => setNewConnectionEmail(e.target.value)}
-                placeholder="colleague@company.com"
-                className="flex-1"
-              />
-              <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  disabled={creating}
-                  variant="primary"
-                  size="sm"
-                  isLoading={creating}
-                  className="flex-1 sm:flex-none"
-                >
-                  Send
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setShowNewConnectionForm(false)}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </Card>
+          <FadeIn>
+            <Card className="mb-4 sm:mb-6">
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">Send Connection Request</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Enter your colleague's email</CardDescription>
+              </CardHeader>
+              <form onSubmit={handleCreateConnection} className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
+                <Input
+                  type="email"
+                  required
+                  value={newConnectionEmail}
+                  onChange={(e) => setNewConnectionEmail(e.target.value)}
+                  placeholder="colleague@company.com"
+                  className="flex-1"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    type="submit"
+                    disabled={creating}
+                    variant="primary"
+                    size="sm"
+                    isLoading={creating}
+                    className="flex-1 sm:flex-none"
+                  >
+                    Send
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setShowNewConnectionForm(false)}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 sm:flex-none"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </FadeIn>
         )}
 
         {/* Pending Requests (Received) */}
         {pendingReceived.length > 0 && (
-          <Card className="mb-6 border-amber-200 bg-amber-50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <span className="text-amber-600 font-bold">{pendingReceived.length}</span>
-              </div>
-              <div>
-                <CardTitle>Pending Requests</CardTitle>
-                <CardDescription>Connection requests waiting for your response</CardDescription>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {pendingReceived.map((connection) => (
-                <div
-                  key={connection.id}
-                  className="flex justify-between items-center p-4 bg-white border border-amber-200 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{connection.otherUser.name}</div>
-                      <div className="text-sm text-gray-500">{connection.otherUser.email}</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleAcceptConnection(connection.id)}
-                      variant="success"
-                      size="sm"
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      onClick={() => handleDeleteConnection(connection.id)}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Decline
-                    </Button>
-                  </div>
+          <FadeIn>
+            <Card className="mb-6 border-amber-200 bg-amber-50">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <span className="text-amber-600 font-bold">{pendingReceived.length}</span>
                 </div>
-              ))}
-            </div>
-          </Card>
+                <div>
+                  <CardTitle>Pending Requests</CardTitle>
+                  <CardDescription>Connection requests waiting for your response</CardDescription>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {pendingReceived.map((connection) => (
+                  <div
+                    key={connection.id}
+                    className="flex justify-between items-center p-4 bg-white border border-amber-200 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900">{connection.otherUser.name}</div>
+                        <div className="text-sm text-gray-500">{connection.otherUser.email}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleAcceptConnection(connection.id)}
+                        variant="success"
+                        size="sm"
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteConnection(connection.id)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Decline
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </FadeIn>
         )}
 
         {/* Active Connections */}
@@ -204,9 +222,10 @@ export default function ConnectionsPage() {
             <CardDescription>Your accepted connections and collaboration partners</CardDescription>
           </CardHeader>
           {loading ? (
-            <div className="flex flex-col items-center gap-4 py-12 mt-4">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-              <p className="text-gray-500">Loading connections...</p>
+            <div className="space-y-3 mt-4">
+              <SkeletonListItem />
+              <SkeletonListItem />
+              <SkeletonListItem />
             </div>
           ) : accepted.length === 0 ? (
             <div className="text-center py-12 mt-4 border-2 border-dashed border-gray-200 rounded-lg">
@@ -226,48 +245,49 @@ export default function ConnectionsPage() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-3 mt-4">
+            <StaggerList className="space-y-3 mt-4">
               {accepted.map((connection) => (
-                <div
-                  key={connection.id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
-                      <div className="text-xs sm:text-sm text-gray-500 truncate">{connection.otherUser.email}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {new Date(connection.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
+                <StaggerItem key={connection.id}>
+                  <div
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
+                        <div className="text-xs sm:text-sm text-gray-500 truncate">{connection.otherUser.email}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {new Date(connection.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0 sm:ml-auto">
-                    <Link href={`/dashboard/matches?connection=${connection.id}`} className="flex-1 sm:flex-none">
-                      <Button variant="primary" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-                        Matches
+                    <div className="flex gap-2 flex-shrink-0 sm:ml-auto">
+                      <Link href={`/dashboard/matches?connection=${connection.id}`} className="flex-1 sm:flex-none">
+                        <Button variant="primary" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                          Matches
+                        </Button>
+                      </Link>
+                      <Button
+                        onClick={() => handleDeleteConnection(connection.id)}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 sm:flex-none text-xs sm:text-sm text-red-600 hover:bg-red-50 hover:border-red-200"
+                      >
+                        Remove
                       </Button>
-                    </Link>
-                    <Button
-                      onClick={() => handleDeleteConnection(connection.id)}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 sm:flex-none text-xs sm:text-sm text-red-600 hover:bg-red-50 hover:border-red-200"
-                    >
-                      Remove
-                    </Button>
+                    </div>
                   </div>
-                </div>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           )}
         </Card>
 
@@ -308,6 +328,7 @@ export default function ConnectionsPage() {
             </div>
           </Card>
         )}
+        </PageTransition>
       </main>
     </div>
   );

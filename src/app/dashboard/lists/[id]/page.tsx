@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import type { AccountList, Account } from '@/features/accountLists/types';
-import { Button, Input, Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, SkeletonTable, Skeleton, PageTransition, FadeIn, LoadingScreen } from '@/components/ui';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -99,11 +99,36 @@ export default function ListDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-          <p className="text-gray-600">Loading account list...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+            <div className="flex justify-between items-center gap-2">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <Skeleton className="h-4 w-12" />
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Skeleton variant="rect" className="h-8 w-20" />
+                <Skeleton variant="rect" className="h-8 w-20" />
+              </div>
+            </div>
+          </div>
+        </header>
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+              <Skeleton variant="rect" className="h-8 w-16" />
+            </div>
+            <SkeletonTable rows={6} />
+          </div>
+        </main>
       </div>
     );
   }
@@ -165,6 +190,7 @@ export default function ListDetailPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <PageTransition>
         <Card>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <CardHeader className="p-0">
@@ -333,6 +359,7 @@ export default function ListDetailPage() {
             </div>
           )}
         </Card>
+        </PageTransition>
       </main>
     </div>
   );
