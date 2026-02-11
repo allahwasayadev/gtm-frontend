@@ -5,3 +5,7 @@ export interface Match {
   type: string | null;
   theirType: string | null;
 }
+
+export interface AccountMatchesMap {
+  [accountId: string]: Array<{ partnerName: string }>;
+}

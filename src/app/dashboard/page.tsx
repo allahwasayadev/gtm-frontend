@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { connectionsApi } from '@/features/connections/connections.api';
-import type { AccountList } from '@/features/accountLists/types';
+import { matchingApi } from '@/features/matching/matching.api';
+import type { AccountList, Account } from '@/features/accountLists/types';
 import type { Connection } from '@/features/connections/types';
+import type { AccountMatchesMap } from '@/features/matching/types';
 import {
   Button, Card, CardHeader, CardTitle, CardDescription,
-  SkeletonCard, SkeletonDashboardLists,
+  SkeletonCard, SkeletonTable, SkeletonDashboardLists,
   PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen,
+  AccountMatchTooltip,
 } from '@/components/ui';
 import Link from 'next/link';
 
@@ -19,6 +22,9 @@ export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const [accountLists, setAccountLists] = useState<AccountList[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
+  const [activeList, setActiveList] = useState<AccountList | null>(null);
+  const [matchesMap, setMatchesMap] = useState<AccountMatchesMap>({});
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -37,6 +43,24 @@ export default function DashboardPage() {
       ]);
       setAccountLists(listsRes.data);
       setConnections(connectionsRes.data);
+
+      // Find the first active list and load its accounts
+      const active = listsRes.data.find((l) => l.status === 'active');
+      const listToShow = active || listsRes.data[0];
+
+      if (listToShow) {
+        const listDetail = await accountListsApi.getOne(listToShow.id);
+        setActiveList(listDetail.data);
+        setActiveAccounts(listDetail.data.accounts || []);
+      }
+
+      // Load all matches map (only works if user has active list + connections)
+      try {
+        const matchesRes = await matchingApi.getAllMatches();
+        setMatchesMap(matchesRes.data);
+      } catch {
+        // Silently ignore - matches may not be available yet
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -187,30 +211,51 @@ export default function DashboardPage() {
             </Card>
           </FadeIn>
 
-          {/* Recent Account Lists */}
-          <FadeIn delay={0.25}>
-            <Card>
+          {/* PRIMARY: Account List Table */}
+          <FadeIn delay={0.2}>
+            <Card className="mb-8">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
                 <CardHeader className="p-0">
-                  <CardTitle className="text-base sm:text-lg">Your Account Lists</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">View and manage your uploaded account lists</CardDescription>
+                  <CardTitle className="text-base sm:text-lg">
+                    {activeList ? activeList.name : 'Your Accounts'}
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    {activeList
+                      ? `${activeAccounts.length} account${activeAccounts.length !== 1 ? 's' : ''} • ${activeList.status === 'active' ? 'Published' : 'Draft'}`
+                      : 'Upload an account list to get started'}
+                    {Object.keys(matchesMap).length > 0 && (
+                      <span className="ml-2 text-indigo-600">
+                        • Hover company names to see matches
+                      </span>
+                    )}
+                  </CardDescription>
                 </CardHeader>
-                <Link href="/dashboard/upload" className="sm:flex-shrink-0">
-                  <Button variant="primary" size="sm" className="w-full sm:w-auto">
-                    + Upload New
-                  </Button>
-                </Link>
+                <div className="flex gap-2 sm:flex-shrink-0">
+                  {activeList && (
+                    <Link href={`/dashboard/lists/${activeList.id}`}>
+                      <Button variant="outline" size="sm">
+                        Edit List
+                      </Button>
+                    </Link>
+                  )}
+                  <Link href="/dashboard/upload">
+                    <Button variant="primary" size="sm">
+                      + Upload New
+                    </Button>
+                  </Link>
+                </div>
               </div>
+
               {loadingData ? (
-                <SkeletonDashboardLists count={3} />
-              ) : accountLists.length === 0 ? (
+                <SkeletonTable rows={6} />
+              ) : !activeList || activeAccounts.length === 0 ? (
                 <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">No account lists yet</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">No accounts yet</h3>
                   <p className="text-gray-500 mb-6">Get started by uploading your first account list</p>
                   <Link href="/dashboard/upload">
                     <Button variant="primary" size="lg">
@@ -219,6 +264,104 @@ export default function DashboardPage() {
                   </Link>
                 </div>
               ) : (
+                <div className="overflow-x-auto rounded-lg border border-slate-200">
+                  <table className="w-full min-w-0">
+                    <thead>
+                      <tr className="bg-slate-800">
+                        <th scope="col" className="hidden sm:table-cell px-4 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider w-14">
+                          #
+                        </th>
+                        <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider">
+                          Account Name
+                        </th>
+                        <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider w-20 sm:w-40">
+                          Type
+                        </th>
+                        <th scope="col" className="hidden md:table-cell px-4 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider" style={{ width: '180px' }}>
+                          Matched Partners
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {activeAccounts.map((account, index) => {
+                        const partners = matchesMap[account.id] || [];
+                        return (
+                          <tr
+                            key={account.id}
+                            className={`
+                              transition-colors duration-150
+                              ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}
+                              hover:bg-slate-100/70
+                            `}
+                          >
+                            <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap">
+                              <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-100 text-slate-600 text-sm font-medium">
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td className="px-3 sm:px-6 py-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <div className="hidden sm:flex w-8 h-8 rounded-md bg-slate-700 items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                  {account.accountName.charAt(0).toUpperCase()}
+                                </div>
+                                <AccountMatchTooltip partners={partners}>
+                                  <span className="font-medium text-slate-800 text-sm sm:text-base">
+                                    {account.accountName}
+                                  </span>
+                                </AccountMatchTooltip>
+                              </div>
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 whitespace-nowrap">
+                              {account.type ? (
+                                <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                  {account.type}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-sm">—</span>
+                              )}
+                            </td>
+                            <td className="hidden md:table-cell px-4 py-3">
+                              {partners.length > 0 ? (
+                                <div className="flex items-center gap-1 max-w-[160px]">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                                  <span className="text-xs font-medium text-slate-700 truncate">
+                                    {partners.map(p => p.partnerName).join(', ')}
+                                  </span>
+                                  {partners.length > 1 && (
+                                    <span className="flex-shrink-0 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1">
+                                      {partners.length}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-slate-400 text-xs">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <div className="bg-slate-50 px-3 sm:px-6 py-2.5 border-t border-slate-200">
+                    <p className="text-xs sm:text-sm text-slate-500">
+                      <span className="font-medium text-slate-700">{activeAccounts.length}</span> account{activeAccounts.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </Card>
+          </FadeIn>
+
+          {/* Other Account Lists */}
+          {accountLists.length > 1 && (
+            <FadeIn delay={0.3}>
+              <Card>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
+                  <CardHeader className="p-0">
+                    <CardTitle className="text-base sm:text-lg">All Account Lists</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">View and manage your uploaded account lists</CardDescription>
+                  </CardHeader>
+                </div>
                 <StaggerList className="space-y-3">
                   {accountLists.map((list) => (
                     <StaggerItem key={list.id}>
@@ -234,7 +377,12 @@ export default function DashboardPage() {
                               </svg>
                             </div>
                             <div>
-                              <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{list.name}</h3>
+                              <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                {list.name}
+                                {activeList && list.id === activeList.id && (
+                                  <span className="ml-2 text-xs text-indigo-600 font-normal">(shown above)</span>
+                                )}
+                              </h3>
                               <p className="text-sm text-gray-500 mt-1">
                                 {list._count?.accounts || 0} accounts
                                 <span className="mx-2">&bull;</span>
@@ -261,9 +409,9 @@ export default function DashboardPage() {
                     </StaggerItem>
                   ))}
                 </StaggerList>
-              )}
-            </Card>
-          </FadeIn>
+              </Card>
+            </FadeIn>
+          )}
         </PageTransition>
       </main>
     </div>
