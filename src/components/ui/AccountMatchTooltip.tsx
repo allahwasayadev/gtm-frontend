@@ -12,14 +12,18 @@ export function AccountMatchTooltip({
   partners,
 }: AccountMatchTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [showBelow, setShowBelow] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; below: boolean }>({ top: 0, left: 0, below: false });
   const containerRef = useRef<HTMLDivElement>(null);
 
   const updatePosition = useCallback(() => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    // If there's less than 80px above, show tooltip below instead
-    setShowBelow(rect.top < 80);
+    const below = rect.top < 120;
+    setTooltipPos({
+      top: below ? rect.bottom + 8 : rect.top - 8,
+      left: rect.left,
+      below,
+    });
   }, []);
 
   // Close tooltip when tapping outside (mobile)
@@ -65,9 +69,12 @@ export function AccountMatchTooltip({
       </div>
       {isVisible && (
         <div
-          className={`absolute z-50 left-0 ${
-            showBelow ? 'top-full mt-2' : 'bottom-full mb-2'
-          }`}
+          className="fixed z-50"
+          style={{
+            top: tooltipPos.below ? tooltipPos.top : undefined,
+            bottom: tooltipPos.below ? undefined : `calc(100vh - ${tooltipPos.top}px)`,
+            left: tooltipPos.left,
+          }}
         >
           <div className="bg-gray-900 text-white rounded-lg shadow-xl px-3 py-2.5 text-sm max-w-[280px] sm:max-w-none sm:whitespace-nowrap">
             <div className="text-xs text-gray-400 font-medium mb-1.5">
@@ -88,7 +95,7 @@ export function AccountMatchTooltip({
           {/* Arrow */}
           <div
             className={`absolute left-4 ${
-              showBelow ? 'bottom-full -mb-1' : 'top-full -mt-1'
+              tooltipPos.below ? 'bottom-full -mb-1' : 'top-full -mt-1'
             }`}
           >
             <div className="w-2 h-2 bg-gray-900 transform rotate-45" />

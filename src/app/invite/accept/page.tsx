@@ -37,7 +37,6 @@ export default function InviteAcceptPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  // Auto-accept if user is logged in and invite is valid
   const handleAccept = async () => {
     if (!token) return;
     setAccepting(true);
@@ -51,6 +50,13 @@ export default function InviteAcceptPage() {
       setAccepting(false);
     }
   };
+
+  // Auto-accept when logged-in user lands on valid invite (e.g. after signup/login redirect)
+  useEffect(() => {
+    if (user && validation?.valid && !accepting) {
+      handleAccept();
+    }
+  }, [user, validation]);
 
   if (loading || authLoading) {
     return <LoadingScreen message="Validating invite..." />;
