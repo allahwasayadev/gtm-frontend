@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, LoadingScreen } from '@/components/ui';
 import { motion } from 'framer-motion';
@@ -9,6 +9,8 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const { login, user, loading } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -18,16 +20,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard');
+      router.push(redirectTo || '/dashboard');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, redirectTo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await login(formData.email, formData.password);
-      router.push('/dashboard');
+      router.push(redirectTo || '/dashboard');
     } catch (error) {
       // Error is handled by AuthContext with toast
     } finally {
@@ -50,7 +52,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block group">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 transition-colors group-hover:text-indigo-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 transition-colors group-hover:text-indigo-600">
               GTM Account Mapper
             </h1>
           </Link>
@@ -58,7 +60,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-5 py-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Email Address"

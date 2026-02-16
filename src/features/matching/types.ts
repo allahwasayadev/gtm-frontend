@@ -4,8 +4,9 @@ export interface Match {
   theirAccountId: string;
   type: string | null;
   theirType: string | null;
+  matchConfidence: number;
 }
 
 export interface AccountMatchesMap {
-  [accountId: string]: Array<{ partnerName: string }>;
+  [accountId: string]: Array<{ partnerName: string; partnerCompany: string | null }>;
 }

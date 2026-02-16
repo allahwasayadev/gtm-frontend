@@ -139,7 +139,7 @@ export default function UploadPage() {
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
+              className={`border-2 border-dashed rounded-xl p-6 sm:p-12 text-center transition-all ${
                 dragActive
                   ? 'border-indigo-500 bg-indigo-50'
                   : 'border-gray-300 hover:border-indigo-400'

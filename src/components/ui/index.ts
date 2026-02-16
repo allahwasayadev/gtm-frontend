@@ -4,3 +4,4 @@ export { Card, CardHeader, CardTitle, CardDescription } from './Card';
 export { Skeleton, SkeletonCard, SkeletonListItem, SkeletonTable, SkeletonMatchCard, SkeletonDashboardLists } from './Skeleton';
 export { PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen } from './PageTransition';
 export { AccountMatchTooltip } from './AccountMatchTooltip';
+export { InviteModal } from './InviteModal';

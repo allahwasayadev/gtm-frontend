@@ -10,8 +10,9 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, company?: string) => Promise<void>;
   logout: () => void;
+  updateUser: (updatedUser: User, newToken?: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,16 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
 
       toast.success('Welcome back!');
-      router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Login failed');
       throw error;
     }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
+  const signup = async (name: string, email: string, password: string, company?: string) => {
     try {
-      const response = await authApi.signup({ name, email, password });
+      const response = await authApi.signup({ name, email, password, ...(company && { company }) });
       const { user, token } = response.data;
 
       localStorage.setItem('token', token);
@@ -58,10 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
 
       toast.success('Account created successfully!');
-      router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Signup failed');
       throw error;
+    }
+  };
+
+  const updateUser = (updatedUser: User, newToken?: string) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    if (newToken) {
+      localStorage.setItem('token', newToken);
     }
   };
 
@@ -74,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

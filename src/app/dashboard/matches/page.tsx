@@ -230,6 +230,11 @@ export default function MatchesPage() {
                                     <h3 className="text-lg font-semibold text-gray-900">
                                       {match.accountName}
                                     </h3>
+                                    {match.matchConfidence < 1.0 && (
+                                      <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                        ~{Math.round(match.matchConfidence * 100)}% similarity
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">

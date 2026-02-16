@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { connectionsApi } from '@/features/connections/connections.api';
+import { invitesApi } from '@/features/invites/invites.api';
 import type { Connection } from '@/features/connections/types';
+import type { Invite } from '@/features/invites/types';
 import {
   Button,
   Input,
@@ -11,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  InviteModal,
   SkeletonListItem,
   PageTransition,
   StaggerList,
@@ -24,19 +27,25 @@ import Link from 'next/link';
 export default function ConnectionsPage() {
   const router = useRouter();
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewConnectionForm, setShowNewConnectionForm] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [newConnectionEmail, setNewConnectionEmail] = useState('');
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    loadConnections();
+    loadData();
   }, []);
 
-  const loadConnections = async () => {
+  const loadData = async () => {
     try {
-      const response = await connectionsApi.getAll();
-      setConnections(response.data);
+      const [connectionsRes, invitesRes] = await Promise.all([
+        connectionsApi.getAll(),
+        invitesApi.getAll(),
+      ]);
+      setConnections(connectionsRes.data);
+      setInvites(invitesRes.data);
     } catch (error) {
       toast.error('Failed to load connections');
     } finally {
@@ -52,7 +61,7 @@ export default function ConnectionsPage() {
       toast.success('Connection request sent!');
       setNewConnectionEmail('');
       setShowNewConnectionForm(false);
-      loadConnections();
+      loadData();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to send connection request');
     } finally {
@@ -64,7 +73,7 @@ export default function ConnectionsPage() {
     try {
       await connectionsApi.accept(id);
       toast.success('Connection accepted!');
-      loadConnections();
+      loadData();
     } catch (error) {
       toast.error('Failed to accept connection');
     }
@@ -78,7 +87,7 @@ export default function ConnectionsPage() {
     try {
       await connectionsApi.delete(id);
       toast.success('Connection removed');
-      loadConnections();
+      loadData();
     } catch (error) {
       toast.error('Failed to remove connection');
     }
@@ -103,15 +112,24 @@ export default function ConnectionsPage() {
                 <p className="text-xs sm:text-sm text-gray-600 mt-0.5 hidden sm:block">Manage your network and collaboration partners</p>
               </div>
             </div>
-            <Button
-              onClick={() => setShowNewConnectionForm(!showNewConnectionForm)}
-              variant="primary"
-              size="sm"
-              className="flex-shrink-0"
-            >
-              <span className="sm:hidden">+ New</span>
-              <span className="hidden sm:inline">+ New Connection</span>
-            </Button>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                onClick={() => setShowInviteModal(true)}
+                variant="primary"
+                size="sm"
+              >
+                <span className="sm:hidden">Invite</span>
+                <span className="hidden sm:inline">Invite Partner</span>
+              </Button>
+              <Button
+                onClick={() => setShowNewConnectionForm(!showNewConnectionForm)}
+                variant="outline"
+                size="sm"
+              >
+                <span className="sm:hidden">+ Connect</span>
+                <span className="hidden sm:inline">+ Connect by Email</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -328,8 +346,88 @@ export default function ConnectionsPage() {
             </div>
           </Card>
         )}
+        {/* Sent Invites */}
+        {invites.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Sent Invites</CardTitle>
+              <CardDescription>Email invites you&apos;ve sent to partners</CardDescription>
+            </CardHeader>
+            <div className="space-y-3 mt-4">
+              {invites.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0 sm:justify-between p-3 sm:p-4 border border-gray-200 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      invite.status === 'pending' ? 'bg-sky-100' :
+                      invite.status === 'accepted' ? 'bg-emerald-100' :
+                      'bg-gray-100'
+                    }`}>
+                      <svg className={`w-5 h-5 ${
+                        invite.status === 'pending' ? 'text-sky-600' :
+                        invite.status === 'accepted' ? 'text-emerald-600' :
+                        'text-gray-400'
+                      }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm sm:text-base">
+                        {invite.invitedName || invite.invitedEmail}
+                      </div>
+                      {invite.invitedName && (
+                        <div className="text-xs sm:text-sm text-gray-500">{invite.invitedEmail}</div>
+                      )}
+                      <div className="text-xs mt-0.5">
+                        <span className={`font-medium ${
+                          invite.status === 'pending' ? 'text-sky-600' :
+                          invite.status === 'accepted' ? 'text-emerald-600' :
+                          'text-gray-400'
+                        }`}>
+                          {invite.status.charAt(0).toUpperCase() + invite.status.slice(1)}
+                        </span>
+                        <span className="text-gray-400 ml-2">
+                          {new Date(invite.createdAt).toLocaleDateString('en-US', {
+                            month: 'short', day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {invite.status === 'pending' && (
+                    <Button
+                      onClick={async () => {
+                        try {
+                          await invitesApi.revoke(invite.id);
+                          toast.success('Invite revoked');
+                          loadData();
+                        } catch {
+                          toast.error('Failed to revoke invite');
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs sm:text-sm self-end sm:self-auto"
+                    >
+                      Revoke
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
         </PageTransition>
       </main>
+
+      {/* Invite Modal */}
+      <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onSuccess={loadData}
+      />
     </div>
   );
 }

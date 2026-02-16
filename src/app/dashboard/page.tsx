@@ -11,7 +11,7 @@ import type { Connection } from '@/features/connections/types';
 import type { AccountMatchesMap } from '@/features/matching/types';
 import {
   Button, Card, CardHeader, CardTitle, CardDescription,
-  SkeletonCard, SkeletonTable, SkeletonDashboardLists,
+  SkeletonCard, SkeletonTable,
   PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen,
   AccountMatchTooltip,
 } from '@/components/ui';
@@ -20,7 +20,6 @@ import Link from 'next/link';
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
-  const [accountLists, setAccountLists] = useState<AccountList[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
   const [activeList, setActiveList] = useState<AccountList | null>(null);
@@ -41,7 +40,6 @@ export default function DashboardPage() {
         accountListsApi.getAll(),
         connectionsApi.getAll(),
       ]);
-      setAccountLists(listsRes.data);
       setConnections(connectionsRes.data);
 
       // Find the first active list and load its accounts
@@ -88,7 +86,9 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center">
             <div className="min-w-0">
               <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">GTM Account Mapper</h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Welcome, {user.name}!</p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                Welcome, <Link href="/dashboard/profile" className="text-indigo-600 hover:text-indigo-700 font-medium">{user.name}</Link>!
+              </p>
             </div>
             <Button onClick={handleLogout} variant="outline" size="sm" className="flex-shrink-0">
               <span className="hidden sm:inline">Log Out</span>
@@ -116,8 +116,8 @@ export default function DashboardPage() {
                 <Card hover>
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-2">Account Lists</p>
-                      <p className="text-3xl font-bold text-gray-900">{accountLists.length}</p>
+                      <p className="text-sm font-medium text-gray-600 mb-2">Account List</p>
+                      <p className="text-3xl font-bold text-gray-900">{activeList ? 1 : 0}</p>
                     </div>
                     <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
                       <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,8 +277,8 @@ export default function DashboardPage() {
                         <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider w-20 sm:w-40">
                           Type
                         </th>
-                        <th scope="col" className="hidden md:table-cell px-4 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider" style={{ width: '180px' }}>
-                          Matched Partners
+                        <th scope="col" className="hidden md:table-cell px-4 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider" style={{ width: '220px' }}>
+                          Matched Reps
                         </th>
                       </tr>
                     </thead>
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                                 <div className="flex items-center gap-1 max-w-[160px]">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                                   <span className="text-xs font-medium text-slate-700 truncate">
-                                    {partners.map(p => p.partnerName).join(', ')}
+                                    {partners.map(p => p.partnerCompany ? `${p.partnerName} – ${p.partnerCompany}` : p.partnerName).join(', ')}
                                   </span>
                                   {partners.length > 1 && (
                                     <span className="flex-shrink-0 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1">
@@ -352,66 +352,6 @@ export default function DashboardPage() {
             </Card>
           </FadeIn>
 
-          {/* Other Account Lists */}
-          {accountLists.length > 1 && (
-            <FadeIn delay={0.3}>
-              <Card>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
-                  <CardHeader className="p-0">
-                    <CardTitle className="text-base sm:text-lg">All Account Lists</CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">View and manage your uploaded account lists</CardDescription>
-                  </CardHeader>
-                </div>
-                <StaggerList className="space-y-3">
-                  {accountLists.map((list) => (
-                    <StaggerItem key={list.id}>
-                      <Link
-                        href={`/dashboard/lists/${list.id}`}
-                        className="block p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all group"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-100 transition-colors">
-                              <svg className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                {list.name}
-                                {activeList && list.id === activeList.id && (
-                                  <span className="ml-2 text-xs text-indigo-600 font-normal">(shown above)</span>
-                                )}
-                              </h3>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {list._count?.accounts || 0} accounts
-                                <span className="mx-2">&bull;</span>
-                                <span className={list.status === 'active' ? 'text-emerald-600 font-medium' : 'text-gray-600'}>
-                                  {list.status}
-                                </span>
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs text-gray-400">
-                              {new Date(list.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
-                            <div className="text-xs text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                              View details &rarr;
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    </StaggerItem>
-                  ))}
-                </StaggerList>
-              </Card>
-            </FadeIn>
-          )}
         </PageTransition>
       </main>
     </div>
