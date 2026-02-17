@@ -44,7 +44,6 @@ function LoginContent() {
     setIsSubmitting(true);
     try {
       await login(formData.email, formData.password);
-      router.push(redirectTo || '/dashboard');
     } catch (error) {
       // Error is handled by AuthContext with toast
     } finally {
