@@ -12,7 +12,7 @@ export const accountListsApi = {
   },
   getAll: () => api.get<AccountList[]>('/account-lists'),
   getOne: (id: string) => api.get<AccountList>(`/account-lists/${id}`),
-  updateAccounts: (id: string, accounts: Array<{ accountName: string; type?: string }>) =>
+  updateAccounts: (id: string, accounts: Array<{ accountName: string }>) =>
     api.put<AccountList>(`/account-lists/${id}/accounts`, { accounts }),
   publish: (id: string) => api.post(`/account-lists/${id}/publish`),
   delete: (id: string) => api.delete(`/account-lists/${id}`),

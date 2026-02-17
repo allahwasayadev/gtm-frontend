@@ -1,12 +1,17 @@
 export interface Match {
   accountName: string;
+  yourAccountName: string;
+  theirAccountName: string;
   yourAccountId: string;
   theirAccountId: string;
-  type: string | null;
-  theirType: string | null;
   matchConfidence: number;
 }
 
 export interface AccountMatchesMap {
-  [accountId: string]: Array<{ partnerName: string; partnerCompany: string | null }>;
+  [accountId: string]: Array<{
+    partnerName: string;
+    partnerCompany: string | null;
+    matchConfidence: number;
+    theirAccountName: string;
+  }>;
 }

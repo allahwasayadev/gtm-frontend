@@ -1,30 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { connectionsApi } from '@/features/connections/connections.api';
 import { matchingApi } from '@/features/matching/matching.api';
 import type { Connection } from '@/features/connections/types';
 import type { Match } from '@/features/matching/types';
 import {
-  Button,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  SkeletonListItem,
-  SkeletonMatchCard,
+  Button, Card, Badge, Select, EmptyState, DashboardHeader,
   Skeleton,
-  PageTransition,
-  StaggerList,
-  StaggerItem,
-  FadeIn,
-  LoadingScreen,
+  PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen,
 } from '@/components/ui';
+import { Users, Search, RefreshCw, Building2, CheckCircle2, ArrowLeftRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
 export default function MatchesPage() {
+  return (
+    <Suspense fallback={<LoadingScreen message="Loading matches..." />}>
+      <MatchesContent />
+    </Suspense>
+  );
+}
+
+function MatchesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedConnectionId = searchParams.get('connection');
@@ -51,7 +50,6 @@ export default function MatchesPage() {
       const activeConnections = response.data.filter(c => c.status === 'accepted');
       setConnections(activeConnections);
 
-      // Auto-select first connection if preselected not found
       if (preselectedConnectionId && !activeConnections.find(c => c.id === preselectedConnectionId)) {
         if (activeConnections.length > 0) {
           setSelectedConnectionId(activeConnections[0].id);
@@ -83,187 +81,242 @@ export default function MatchesPage() {
 
   const selectedConnection = connections.find(c => c.id === selectedConnectionId);
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-start sm:items-center gap-2 sm:gap-4">
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium flex-shrink-0 mt-1 sm:mt-0">
-              ← Back
-            </Link>
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Account Matches</h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-0.5 hidden sm:block">Find account overlaps with your connections</p>
-            </div>
-          </div>
-        </div>
-      </header>
+  const connectionOptions = connections.map(c => ({
+    value: c.id,
+    label: `${c.otherUser.name} (${c.otherUser.email})`,
+  }));
 
-      {/* Main Content */}
+  return (
+    <>
+      <DashboardHeader
+        title="Account Matches"
+        description="Find account overlaps with your connections"
+        backHref="/dashboard"
+      />
+
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {loading ? (
           <LoadingScreen message="Loading connections..." />
         ) : (
           <PageTransition>
             {connections.length === 0 ? (
-              <Card className="text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">No Active Connections</h2>
-                <p className="text-gray-500 mb-6">
-                  You need to have active connections to see account matches.
-                </p>
-                <Link href="/dashboard/connections">
-                  <Button variant="primary" size="lg">
-                    Manage Connections
-                  </Button>
-                </Link>
+              <Card>
+                <EmptyState
+                  icon={Users}
+                  title="No Active Connections"
+                  description="You need to have active connections to see account matches."
+                  action={
+                    <Link href="/dashboard/connections">
+                      <Button variant="primary" size="lg">
+                        Manage Connections
+                      </Button>
+                    </Link>
+                  }
+                />
               </Card>
             ) : (
               <>
-                {/* Connection Selector */}
-                <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle>Select Connection</CardTitle>
-                    <CardDescription>Choose a connection to view matching accounts</CardDescription>
-                  </CardHeader>
-                  <div className="relative mt-4">
-                    <select
-                      value={selectedConnectionId}
-                      onChange={(e) => setSelectedConnectionId(e.target.value)}
-                      className="w-full px-4 py-3 pr-10 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white appearance-none cursor-pointer"
-                    >
-                      <option value="">-- Select a connection --</option>
-                      {connections.map((connection) => (
-                        <option key={connection.id} value={connection.id}>
-                          {connection.otherUser.name} ({connection.otherUser.email})
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                      </svg>
+                {/* Connection Selector + Matches — Single Card */}
+                <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card overflow-hidden">
+                  {/* Gradient Header */}
+                  <div className="bg-linear-to-br from-indigo-600 via-indigo-500 to-violet-500 px-5 sm:px-6 py-5 relative overflow-hidden">
+                    {/* Decorative elements */}
+                    <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full" />
+                    <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-white/5 rounded-full" />
+
+                    <div className="relative">
+                      {/* Top row: icon, title, refresh */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
+                            <ArrowLeftRight className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-base sm:text-lg font-bold text-white">Account Matches</h2>
+                            <p className="text-indigo-200 text-xs sm:text-sm">Compare accounts with a partner</p>
+                          </div>
+                        </div>
+                        {selectedConnectionId && (
+                          <Button
+                            onClick={loadMatches}
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0 bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 hover:text-white backdrop-blur-sm"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5 sm:mr-1.5" />
+                            <span className="hidden sm:inline">Refresh</span>
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Connection Selector */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        <span className="text-indigo-200 text-sm font-medium shrink-0">Partner:</span>
+                        <Select
+                          value={selectedConnectionId}
+                          onChange={(e) => setSelectedConnectionId(e.target.value)}
+                          options={connectionOptions}
+                          placeholder="-- Select a connection --"
+                          className="bg-white/15! border-white/20! text-white! rounded-xl! focus:ring-white/30! focus:border-white/40! [&>option]:text-slate-900"
+                        />
+                      </div>
                     </div>
                   </div>
-                </Card>
 
-                {/* Matches Display */}
-                {selectedConnectionId && (
-                  <Card>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
-                      <CardHeader className="p-0 border-b-0 sm:border-b sm:border-gray-200 pb-0 sm:pb-4 mb-0 sm:mb-0">
-                        <CardTitle className="text-base sm:text-lg">Matches with {selectedConnection?.otherUser.name}</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">Account overlaps between your lists</CardDescription>
-                      </CardHeader>
-                      <Button
-                        onClick={loadMatches}
-                        variant="outline"
-                        size="sm"
-                        className="self-end sm:self-auto flex-shrink-0"
-                      >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Refresh
-                      </Button>
-                    </div>
-
-                    {loadingMatches ? (
-                      <div className="space-y-3">
-                        <Skeleton variant="rect" className="h-16 w-full rounded-lg" />
-                        <SkeletonMatchCard />
-                        <SkeletonMatchCard />
-                        <SkeletonMatchCard />
+                  {/* Matches Body */}
+                  <div className="px-5 sm:px-6 py-5">
+                    {!selectedConnectionId ? (
+                      <div className="text-center py-8">
+                        <p className="text-sm text-slate-400">Select a partner above to view matches</p>
+                      </div>
+                    ) : loadingMatches ? (
+                      <div className="space-y-0 divide-y divide-slate-100">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div key={i} className="flex items-center gap-4 py-4 px-1">
+                            <Skeleton variant="rect" className="w-7 h-7 rounded-lg shrink-0" />
+                            <Skeleton variant="rect" className="w-8 h-8 rounded-lg shrink-0" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-4 w-40" />
+                            </div>
+                            <Skeleton variant="rect" className="h-6 w-16 rounded-full shrink-0" />
+                          </div>
+                        ))}
                       </div>
                     ) : matches.length === 0 ? (
-                      <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-2">No matching accounts found</h3>
-                        <p className="text-sm text-gray-500">
-                          Make sure both you and {selectedConnection?.otherUser.name} have published account lists.
-                        </p>
+                      <div className="border-2 border-dashed border-slate-200 rounded-xl">
+                        <EmptyState
+                          icon={Search}
+                          title="No matching accounts found"
+                          description={`Make sure both you and ${selectedConnection?.otherUser.name} have published account lists.`}
+                        />
                       </div>
                     ) : (
                       <>
+                        {/* Summary Banner */}
                         <FadeIn>
-                          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                            <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                          <div className="mb-4 p-4 bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-linear-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                                <CheckCircle2 className="w-5 h-5 text-white" />
                               </div>
-                              <div>
+                              <div className="flex-1">
                                 <div className="font-semibold text-emerald-900">
-                                  Found {matches.length} matching account{matches.length !== 1 ? 's' : ''}!
+                                  Found {matches.length} matching account{matches.length !== 1 ? 's' : ''}
                                 </div>
-                                <div className="text-sm text-emerald-700 mt-1">
+                                <div className="text-sm text-emerald-700/80 mt-0.5">
                                   These accounts appear in both of your lists
                                 </div>
+                              </div>
+                              <div className="hidden sm:flex items-center">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold ring-1 ring-emerald-200/60">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  {matches.length}
+                                </span>
                               </div>
                             </div>
                           </div>
                         </FadeIn>
 
-                        <StaggerList className="space-y-3">
+                        {/* Column Headers (desktop) */}
+                        <div className="hidden sm:flex items-center gap-4 px-1 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">
+                          <div className="w-8 text-center">#</div>
+                          <div className="flex-1">Account</div>
+                          <div className="w-20 text-center">Match</div>
+                        </div>
+
+                        {/* Match Rows */}
+                        <StaggerList className="divide-y divide-slate-100">
                           {matches.map((match, index) => (
                             <StaggerItem key={index}>
-                              <div
-                                className="p-3 sm:p-5 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all bg-white"
-                              >
-                                <div className="flex items-start gap-3 mb-4">
-                                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
+                              {/* Desktop Row */}
+                              <div className="hidden sm:flex items-center gap-4 py-3.5 px-1 group hover:bg-indigo-50/40 rounded-lg transition-colors duration-150 -mx-1 sm:px-2">
+                                {/* Rank */}
+                                <div className="w-8 text-center">
+                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-xs font-semibold text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
+                                    {index + 1}
+                                  </span>
+                                </div>
+
+                                {/* Account Name */}
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <div className="w-8 h-8 bg-linear-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/15">
+                                    <Building2 className="w-4 h-4 text-white" />
                                   </div>
-                                  <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">
+                                  <div className="min-w-0">
+                                    <span className="font-medium text-slate-900 truncate block">
                                       {match.accountName}
-                                    </h3>
-                                    {match.matchConfidence < 1.0 && (
-                                      <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                                        ~{Math.round(match.matchConfidence * 100)}% similarity
-                                      </span>
+                                    </span>
+                                    {match.matchConfidence < 1.0 && match.yourAccountName && match.theirAccountName && (
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 text-[11px] font-medium ring-1 ring-sky-200/50">
+                                          You: {match.yourAccountName}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 text-[11px] font-medium ring-1 ring-violet-200/50">
+                                          Them: {match.theirAccountName}
+                                        </span>
+                                      </div>
                                     )}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
-                                  <div className="p-3 bg-sky-50 rounded-lg">
-                                    <div className="text-sky-700 font-medium mb-1">Your classification</div>
-                                    <div className="font-semibold text-sky-900">
-                                      {match.type || 'Not specified'}
-                                    </div>
-                                  </div>
-                                  <div className="p-3 bg-purple-50 rounded-lg">
-                                    <div className="text-purple-700 font-medium mb-1">Their classification</div>
-                                    <div className="font-semibold text-purple-900">
-                                      {match.theirType || 'Not specified'}
-                                    </div>
-                                  </div>
+
+                                {/* Confidence */}
+                                <div className="w-20 text-center shrink-0">
+                                  {match.matchConfidence >= 1.0 ? (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold ring-1 ring-emerald-200/60">
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      Exact
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-medium ring-1 ring-amber-200/60">
+                                      ~{Math.round(match.matchConfidence * 100)}%
+                                    </span>
+                                  )}
                                 </div>
+                              </div>
+
+                              {/* Mobile Card */}
+                              <div className="sm:hidden py-4 px-1">
+                                <div className="flex items-center gap-3">
+                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-slate-100 text-[10px] font-bold text-slate-500">
+                                    {index + 1}
+                                  </span>
+                                  <div className="w-8 h-8 bg-linear-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/15">
+                                    <Building2 className="w-4 h-4 text-white" />
+                                  </div>
+                                  <span className="font-medium text-slate-900 text-sm truncate flex-1">
+                                    {match.accountName}
+                                  </span>
+                                  {match.matchConfidence >= 1.0 ? (
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                  ) : (
+                                    <Badge variant="warning" size="sm">
+                                      ~{Math.round(match.matchConfidence * 100)}%
+                                    </Badge>
+                                  )}
+                                </div>
+                                {match.matchConfidence < 1.0 && match.yourAccountName && match.theirAccountName && (
+                                  <div className="flex flex-wrap gap-1.5 mt-2 ml-9">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 text-[11px] font-medium ring-1 ring-sky-200/50">
+                                      You: {match.yourAccountName}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 text-[11px] font-medium ring-1 ring-violet-200/50">
+                                      Them: {match.theirAccountName}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </StaggerItem>
                           ))}
                         </StaggerList>
                       </>
                     )}
-                  </Card>
-                )}
+                  </div>
+                </div>
               </>
             )}
           </PageTransition>
         )}
       </main>
-    </div>
+    </>
   );
 }

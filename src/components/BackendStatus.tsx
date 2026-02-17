@@ -29,10 +29,10 @@ export function BackendStatus() {
   if (!health) {
     return (
       <div
-        className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50"
+        className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50"
         data-testid="backend-status-loading"
       >
-        <p className="text-zinc-600 dark:text-zinc-400">Checking backend…</p>
+        <p className="text-slate-600 dark:text-slate-400">Checking backend…</p>
       </div>
     );
   }

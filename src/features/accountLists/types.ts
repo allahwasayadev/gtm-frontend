@@ -1,7 +1,6 @@
 export interface Account {
   id: string;
   accountName: string;
-  type: string | null;
 }
 
 export interface AccountList {
@@ -15,5 +14,5 @@ export interface AccountList {
 }
 
 export interface UpdateAccountsDto {
-  accounts: Array<{ accountName: string; type?: string }>;
+  accounts: Array<{ accountName: string }>;
 }

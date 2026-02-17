@@ -116,7 +116,7 @@ export function FadeIn({ children, className = '', delay = 0, direction = 'up' }
 
 export function LoadingScreen({ message = 'Loading...' }: { message?: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -142,7 +142,7 @@ export function LoadingScreen({ message = 'Loading...' }: { message?: string }) 
             />
           ))}
         </div>
-        <p className="text-sm text-gray-500 font-medium">{message}</p>
+        <p className="text-sm text-slate-500 font-medium">{message}</p>
       </motion.div>
     </div>
   );

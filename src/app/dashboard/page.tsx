@@ -10,11 +10,12 @@ import type { AccountList, Account } from '@/features/accountLists/types';
 import type { Connection } from '@/features/connections/types';
 import type { AccountMatchesMap } from '@/features/matching/types';
 import {
-  Button, Card, CardHeader, CardTitle, CardDescription,
-  SkeletonCard, SkeletonTable,
+  Button, Card, Badge,
+  SkeletonCard, SkeletonTable, EmptyState,
   PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen,
   AccountMatchTooltip, InviteModal,
 } from '@/components/ui';
+import { FileText, Users, Clock, CloudUpload, Mail, ClipboardCheck, LogOut, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -43,7 +44,6 @@ export default function DashboardPage() {
       ]);
       setConnections(connectionsRes.data);
 
-      // Find the first active list and load its accounts
       const active = listsRes.data.find((l) => l.status === 'active');
       const listToShow = active || listsRes.data[0];
 
@@ -53,7 +53,6 @@ export default function DashboardPage() {
         setActiveAccounts(listDetail.data.accounts || []);
       }
 
-      // Load all matches map (only works if user has active list + connections)
       try {
         const matchesRes = await matchingApi.getAllMatches();
         setMatchesMap(matchesRes.data);
@@ -80,22 +79,25 @@ export default function DashboardPage() {
   const activeConnections = connections.filter(c => c.status === 'accepted');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+    <>
+      {/* Dark Header */}
+      <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center">
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">GTM Account Mapper</h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
-                Welcome, <Link href="/dashboard/profile" className="text-indigo-600 hover:text-indigo-700 font-medium">{user.name}</Link>!
+              <h1 className="text-lg sm:text-2xl font-bold text-white truncate">GTM Account Mapper</h1>
+              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                Welcome, <Link href="/dashboard/profile" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">{user.name}</Link>!
               </p>
             </div>
-            <Button onClick={handleLogout} variant="outline" size="sm" className="flex-shrink-0">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="sm"
+              className="shrink-0 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-600"
+            >
+              <LogOut className="w-4 h-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Log Out</span>
-              <svg className="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
             </Button>
           </div>
         </div>
@@ -104,56 +106,53 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <PageTransition>
-          {/* Quick Stats */}
+          {/* Gradient Stat Cards */}
           {loadingData ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
               <SkeletonCard />
               <SkeletonCard />
               <SkeletonCard />
             </div>
           ) : (
-            <StaggerList className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <StaggerList className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
               <StaggerItem>
-                <Card hover>
+                <Card hover className="border-l-4 border-l-indigo-500">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-2">Account List</p>
-                      <p className="text-3xl font-bold text-gray-900">{activeList ? 1 : 0}</p>
+                      <p className="text-sm font-medium text-slate-500 mb-1">Account List</p>
+                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">{activeList ? 1 : 0}</p>
+                      <p className="text-xs text-slate-400 mt-1">{activeList?.status === 'active' ? 'Published' : activeList ? 'Draft' : 'No list yet'}</p>
                     </div>
-                    <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+                    <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                      <FileText className="w-6 h-6 text-white" />
                     </div>
                   </div>
                 </Card>
               </StaggerItem>
               <StaggerItem>
-                <Card hover>
+                <Card hover className="border-l-4 border-l-emerald-500">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-2">Active Connections</p>
-                      <p className="text-3xl font-bold text-gray-900">{activeConnections.length}</p>
+                      <p className="text-sm font-medium text-slate-500 mb-1">Active Connections</p>
+                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">{activeConnections.length}</p>
+                      <p className="text-xs text-slate-400 mt-1">{activeConnections.length === 0 ? 'Send your first invite' : 'Collaboration partners'}</p>
                     </div>
-                    <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
+                    <div className="w-12 h-12 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                      <Users className="w-6 h-6 text-white" />
                     </div>
                   </div>
                 </Card>
               </StaggerItem>
               <StaggerItem>
-                <Card hover>
+                <Card hover className="border-l-4 border-l-amber-500">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-2">Pending Requests</p>
-                      <p className="text-3xl font-bold text-gray-900">{pendingConnections.length}</p>
+                      <p className="text-sm font-medium text-slate-500 mb-1">Pending Requests</p>
+                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">{pendingConnections.length}</p>
+                      <p className="text-xs text-slate-400 mt-1">{pendingConnections.length === 0 ? 'All caught up' : 'Awaiting response'}</p>
                     </div>
-                    <div className="w-12 h-12 bg-sky-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                    <div className="w-12 h-12 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                      <Clock className="w-6 h-6 text-white" />
                     </div>
                   </div>
                 </Card>
@@ -161,88 +160,93 @@ export default function DashboardPage() {
             </StaggerList>
           )}
 
-          {/* Quick Actions */}
+          {/* Quick Actions — Hover Cards */}
           <FadeIn delay={0.15}>
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Manage your account lists and connections</CardDescription>
-              </CardHeader>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <Link href="/dashboard/upload">
-                  <Button variant="outline" size="lg" className="w-full justify-start gap-3 h-auto py-4">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-semibold text-gray-900">Upload List</div>
-                      <div className="text-sm text-gray-500 font-normal">Add a new account list</div>
-                    </div>
-                  </Button>
-                </Link>
-                <Button variant="outline" size="lg" className="w-full justify-start gap-3 h-auto py-4" onClick={() => setShowInviteModal(true)}>
-                  <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <Link href="/dashboard/upload" className="group">
+                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <CloudUpload className="w-5 h-5 text-indigo-600" />
                   </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-gray-900">Invite Partner</div>
-                    <div className="text-sm text-gray-500 font-normal">Send an email invite</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-sm">Upload List</div>
+                    <div className="text-xs text-slate-500">Add account list</div>
                   </div>
-                </Button>
-                <Link href="/dashboard/connections">
-                  <Button variant="outline" size="lg" className="w-full justify-start gap-3 h-auto py-4">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-semibold text-gray-900">Connections</div>
-                      <div className="text-sm text-gray-500 font-normal">Manage your connections</div>
-                    </div>
-                  </Button>
-                </Link>
-                <Link href="/dashboard/matches">
-                  <Button variant="outline" size="lg" className="w-full justify-start gap-3 h-auto py-4">
-                    <div className="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                      </svg>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-semibold text-gray-900">View Matches</div>
-                      <div className="text-sm text-gray-500 font-normal">See account overlaps</div>
-                    </div>
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                </div>
+              </Link>
+              <button onClick={() => setShowInviteModal(true)} className="group text-left">
+                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-violet-200 transition-all duration-200">
+                  <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <Mail className="w-5 h-5 text-violet-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-sm">Invite Partner</div>
+                    <div className="text-xs text-slate-500">Send email invite</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                </div>
+              </button>
+              <Link href="/dashboard/connections" className="group">
+                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-emerald-200 transition-all duration-200">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <Users className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-sm">Connections</div>
+                    <div className="text-xs text-slate-500">Manage partners</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                </div>
+              </Link>
+              <Link href="/dashboard/matches" className="group">
+                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-sky-200 transition-all duration-200">
+                  <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <ClipboardCheck className="w-5 h-5 text-sky-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-sm">View Matches</div>
+                    <div className="text-xs text-slate-500">Account overlaps</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                </div>
+              </Link>
+            </div>
           </FadeIn>
 
-          {/* PRIMARY: Account List Table */}
+          {/* Account List Table */}
           <FadeIn delay={0.2}>
             <Card className="mb-8">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
-                <CardHeader className="p-0">
-                  <CardTitle className="text-base sm:text-lg">
-                    {activeList ? activeList.name : 'Your Accounts'}
-                  </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
-                    {activeList
-                      ? `${activeAccounts.length} account${activeAccounts.length !== 1 ? 's' : ''} • ${activeList.status === 'active' ? 'Published' : 'Draft'}`
-                      : 'Upload an account list to get started'}
-                    {Object.keys(matchesMap).length > 0 && (
-                      <span className="ml-2 text-indigo-600">
-                        • Hover company names to see matches
-                      </span>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <div className="flex gap-2 sm:flex-shrink-0">
+              {/* Premium Header */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 sm:gap-0 mb-6 pb-6 border-b border-slate-100">
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 bg-linear-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="text-base sm:text-lg font-semibold text-slate-900">
+                        {activeList ? activeList.name : 'Your Accounts'}
+                      </h3>
+                      {activeList && (
+                        activeList.status === 'active'
+                          ? <Badge variant="success" size="sm">Published</Badge>
+                          : <Badge variant="outline" size="sm">Draft</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                      {activeList
+                        ? `${activeAccounts.length} account${activeAccounts.length !== 1 ? 's' : ''}`
+                        : 'Upload an account list to get started'}
+                      {Object.keys(matchesMap).length > 0 && (
+                        <span className="ml-1.5 text-indigo-500">
+                          {'\u2022'} Hover names to see matches
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
                   {activeList && (
                     <Link href={`/dashboard/lists/${activeList.id}`}>
                       <Button variant="outline" size="sm">
@@ -261,92 +265,92 @@ export default function DashboardPage() {
               {loadingData ? (
                 <SkeletonTable rows={6} />
               ) : !activeList || activeAccounts.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">No accounts yet</h3>
-                  <p className="text-gray-500 mb-6">Get started by uploading your first account list</p>
-                  <Link href="/dashboard/upload">
-                    <Button variant="primary" size="lg">
-                      Upload Your First List
-                    </Button>
-                  </Link>
+                <div className="border-2 border-dashed border-slate-200 rounded-xl">
+                  <EmptyState
+                    icon={FileText}
+                    title="No accounts yet"
+                    description="Get started by uploading your first account list"
+                    action={
+                      <Link href="/dashboard/upload">
+                        <Button variant="primary" size="lg">
+                          Upload Your First List
+                        </Button>
+                      </Link>
+                    }
+                  />
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-lg border border-slate-200">
+                <div className="overflow-hidden rounded-xl border border-slate-200/60">
                   <table className="w-full min-w-0">
                     <thead>
-                      <tr className="bg-slate-800">
-                        <th scope="col" className="hidden sm:table-cell px-4 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider w-14">
+                      <tr className="bg-slate-50/60 border-b border-slate-100">
+                        <th scope="col" className="hidden sm:table-cell px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-14">
                           #
                         </th>
-                        <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider">
-                          Account Name
+                        <th scope="col" className="px-3 sm:px-5 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                          Account
                         </th>
-                        <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider w-20 sm:w-40">
-                          Type
-                        </th>
-                        <th scope="col" className="hidden md:table-cell px-4 py-3 text-left text-xs font-semibold text-slate-200 uppercase tracking-wider" style={{ width: '220px' }}>
-                          Matched Reps
+                        <th scope="col" className="hidden md:table-cell px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-60">
+                          Matched Partners
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-50">
                       {activeAccounts.map((account, index) => {
                         const partners = matchesMap[account.id] || [];
+                        const avatarColors = [
+                          'from-indigo-500 to-violet-500 shadow-indigo-500/15',
+                          'from-sky-500 to-blue-500 shadow-sky-500/15',
+                          'from-emerald-500 to-teal-500 shadow-emerald-500/15',
+                          'from-amber-500 to-orange-500 shadow-amber-500/15',
+                          'from-rose-500 to-pink-500 shadow-rose-500/15',
+                          'from-violet-500 to-purple-500 shadow-violet-500/15',
+                        ];
+                        const colorClass = avatarColors[index % avatarColors.length];
                         return (
                           <tr
                             key={account.id}
-                            className={`
-                              transition-colors duration-150
-                              ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}
-                              hover:bg-slate-100/70
-                            `}
+                            className="group bg-white hover:bg-slate-50/80 transition-colors duration-150"
                           >
                             <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap">
-                              <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-100 text-slate-600 text-sm font-medium">
+                              <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-400 text-xs font-semibold group-hover:bg-slate-200/80 group-hover:text-slate-500 transition-colors">
                                 {index + 1}
                               </span>
                             </td>
-                            <td className="px-3 sm:px-6 py-3">
+                            <td className="px-3 sm:px-5 py-3">
                               <div className="flex items-center gap-2 sm:gap-3">
-                                <div className="hidden sm:flex w-8 h-8 rounded-md bg-slate-700 items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                <div className={`hidden sm:flex w-8 h-8 rounded-lg bg-linear-to-br ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-md`}>
                                   {account.accountName.charAt(0).toUpperCase()}
                                 </div>
-                                <AccountMatchTooltip partners={partners}>
-                                  <span className="font-medium text-slate-800 text-sm sm:text-base">
-                                    {account.accountName}
-                                  </span>
-                                </AccountMatchTooltip>
+                                <div className="min-w-0">
+                                  <AccountMatchTooltip partners={partners}>
+                                    <span className="font-medium text-sm sm:text-base text-slate-800">
+                                      {account.accountName}
+                                    </span>
+                                  </AccountMatchTooltip>
+                                </div>
                               </div>
-                            </td>
-                            <td className="px-3 sm:px-6 py-3 whitespace-nowrap">
-                              {account.type ? (
-                                <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                                  {account.type}
-                                </span>
-                              ) : (
-                                <span className="text-slate-400 text-sm">—</span>
-                              )}
                             </td>
                             <td className="hidden md:table-cell px-4 py-3">
                               {partners.length > 0 ? (
-                                <div className="flex items-center gap-1 max-w-[160px]">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                                  <span className="text-xs font-medium text-slate-700 truncate">
-                                    {partners.map(p => p.partnerCompany ? `${p.partnerName} – ${p.partnerCompany}` : p.partnerName).join(', ')}
-                                  </span>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 ring-1 ring-emerald-200/60">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span className="text-xs font-medium text-emerald-700 truncate max-w-44">
+                                      {partners[0].partnerName}
+                                      {partners[0].partnerCompany && (
+                                        <span className="text-emerald-500"> – {partners[0].partnerCompany}</span>
+                                      )}
+                                    </span>
+                                  </div>
                                   {partners.length > 1 && (
-                                    <span className="flex-shrink-0 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1">
-                                      {partners.length}
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                      +{partners.length - 1}
                                     </span>
                                   )}
                                 </div>
                               ) : (
-                                <span className="text-slate-400 text-xs">—</span>
+                                <span className="text-slate-300 text-xs">&mdash;</span>
                               )}
                             </td>
                           </tr>
@@ -354,10 +358,19 @@ export default function DashboardPage() {
                       })}
                     </tbody>
                   </table>
-                  <div className="bg-slate-50 px-3 sm:px-6 py-2.5 border-t border-slate-200">
-                    <p className="text-xs sm:text-sm text-slate-500">
-                      <span className="font-medium text-slate-700">{activeAccounts.length}</span> account{activeAccounts.length !== 1 ? 's' : ''}
-                    </p>
+                  {/* Footer */}
+                  <div className="bg-slate-50/60 px-3 sm:px-5 py-2.5 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs sm:text-sm text-slate-500">
+                        <span className="font-semibold text-slate-700">{activeAccounts.length}</span> account{activeAccounts.length !== 1 ? 's' : ''}
+                        {Object.keys(matchesMap).length > 0 && (
+                          <span className="ml-3 text-emerald-600">
+                            <span className="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 align-middle" />
+                            {Object.values(matchesMap).filter(v => v.length > 0).length} matched
+                          </span>
+                        )}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -371,6 +384,6 @@ export default function DashboardPage() {
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
       />
-    </div>
+    </>
   );
 }

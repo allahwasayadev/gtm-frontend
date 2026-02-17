@@ -14,13 +14,13 @@ export function Card({ hover = false, padding = 'md', className = '', children, 
   };
 
   const hoverStyles = hover
-    ? 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer'
+    ? 'hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer'
     : '';
 
   return (
     <div
       className={`
-        bg-white rounded-xl border border-gray-200 shadow-sm
+        bg-white rounded-2xl border border-slate-200/60 shadow-card
         transition-all duration-200
         ${paddingStyles[padding]}
         ${hoverStyles}
@@ -35,7 +35,7 @@ export function Card({ hover = false, padding = 'md', className = '', children, 
 
 export function CardHeader({ className = '', children }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`border-b border-gray-200 pb-4 mb-4 ${className}`}>
+    <div className={`border-b border-slate-100 pb-4 mb-4 ${className}`}>
       {children}
     </div>
   );
@@ -43,7 +43,7 @@ export function CardHeader({ className = '', children }: HTMLAttributes<HTMLDivE
 
 export function CardTitle({ className = '', children }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>
+    <h3 className={`text-lg font-semibold text-slate-900 ${className}`}>
       {children}
     </h3>
   );
@@ -51,7 +51,7 @@ export function CardTitle({ className = '', children }: HTMLAttributes<HTMLHeadi
 
 export function CardDescription({ className = '', children }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={`text-sm text-gray-600 mt-1 ${className}`}>
+    <p className={`text-sm text-slate-500 mt-1 ${className}`}>
       {children}
     </p>
   );

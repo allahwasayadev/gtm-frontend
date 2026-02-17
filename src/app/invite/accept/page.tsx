@@ -1,16 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { invitesApi } from '@/features/invites/invites.api';
 import type { InviteValidation } from '@/features/invites/types';
 import { Button, LoadingScreen } from '@/components/ui';
 import { motion } from 'framer-motion';
+import { X, Users, Handshake } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
 export default function InviteAcceptPage() {
+  return (
+    <Suspense fallback={<LoadingScreen message="Loading..." />}>
+      <InviteAcceptContent />
+    </Suspense>
+  );
+}
+
+function InviteAcceptContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
@@ -65,7 +74,7 @@ export default function InviteAcceptPage() {
   const redirectPath = `/invite/accept?token=${token}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-sky-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-sky-50 flex items-center justify-center p-4">
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 24 }}
@@ -75,25 +84,28 @@ export default function InviteAcceptPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block group">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 transition-colors group-hover:text-indigo-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 transition-colors group-hover:text-indigo-600">
               GTM Account Mapper
             </h1>
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-5 py-6 sm:p-8">
+        <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
           {!validation?.valid ? (
             /* Invalid / Expired State */
             <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
+              <motion.div
+                className="w-16 h-16 bg-linear-to-br from-red-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-500/20"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+              >
+                <X className="w-8 h-8 text-white" />
+              </motion.div>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">
                 {validation?.status === 'expired' ? 'Invite Expired' : 'Invalid Invite'}
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-slate-500 mb-6">
                 {validation?.message || 'This invite link is not valid.'}
               </p>
               <Link href="/login">
@@ -105,21 +117,24 @@ export default function InviteAcceptPage() {
           ) : (
             /* Valid Invite */
             <div className="text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
+              <motion.div
+                className="w-16 h-16 bg-linear-to-br from-indigo-500 to-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/20"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+              >
+                <Handshake className="w-8 h-8 text-white" />
+              </motion.div>
 
-              <h2 className="text-xl font-bold text-gray-900 mb-1">
+              <h2 className="text-xl font-bold text-slate-900 mb-1">
                 You&apos;re Invited!
               </h2>
-              <p className="text-gray-600 mb-6">
-                <span className="font-semibold text-gray-900">
+              <p className="text-slate-500 mb-6">
+                <span className="font-semibold text-slate-900">
                   {validation.inviterName}
                 </span>
                 {validation.inviterCompany && (
-                  <span className="text-gray-500"> from {validation.inviterCompany}</span>
+                  <span className="text-slate-400"> from {validation.inviterCompany}</span>
                 )}{' '}
                 wants to connect with you on GTM Account Mapper.
               </p>
@@ -156,7 +171,7 @@ export default function InviteAcceptPage() {
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-500 mt-8">
+        <p className="text-center text-xs text-slate-400 mt-8">
           Compare account lists and find overlaps with your partners
         </p>
       </motion.div>
