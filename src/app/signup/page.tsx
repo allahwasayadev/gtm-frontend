@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, LoadingScreen } from '@/components/ui';
 import { motion } from 'framer-motion';
-import { User, Building2, Mail, Lock, ArrowRight, ArrowLeftRight, UserPlus, Check } from 'lucide-react';
+import { User, Building2, Mail, Lock, ArrowRight, ArrowLeftRight, UserPlus, Check, Factory, Store } from 'lucide-react';
 import Link from 'next/link';
 
 const features = [
@@ -34,6 +34,7 @@ function SignupContent() {
     email: prefillEmail || '',
     password: '',
     confirmPassword: '',
+    isOemSeller: null as boolean | null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -65,6 +66,10 @@ function SignupContent() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
+    if (formData.isOemSeller === null) {
+      newErrors.isOemSeller = 'Please select your role';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -78,9 +83,10 @@ function SignupContent() {
 
     setIsSubmitting(true);
     try {
-      await signup(formData.name, formData.email, formData.password, formData.company || undefined);
-      router.push(redirectTo || '/dashboard');
-    } catch (error) {
+      await signup(formData.name, formData.email, formData.password, formData.isOemSeller as boolean, formData.company || undefined);
+      // Redirect to verify-email page with the email
+      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+    } catch {
       // Error is handled by AuthContext with toast
     } finally {
       setIsSubmitting(false);
@@ -190,6 +196,78 @@ function SignupContent() {
                 helperText="Used for grouping and context"
                 autoComplete="organization"
               />
+
+              <fieldset>
+                <legend className="block text-sm font-medium text-slate-700 mb-2">
+                  Role
+                </legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <label
+                    className={`group relative rounded-xl border p-3 cursor-pointer transition-colors ${
+                      formData.isOemSeller === true
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      className="sr-only"
+                      checked={formData.isOemSeller === true}
+                      onChange={() => {
+                        setFormData({ ...formData, isOemSeller: true });
+                        setErrors({ ...errors, isOemSeller: '' });
+                      }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <Factory
+                        className={`w-4 h-4 ${
+                          formData.isOemSeller === true
+                            ? 'text-indigo-600'
+                            : 'text-slate-600'
+                        }`}
+                      />
+                      <span className="text-sm font-medium text-slate-800">
+                        OEM Seller
+                      </span>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`group relative rounded-xl border p-3 cursor-pointer transition-colors ${
+                      formData.isOemSeller === false
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      className="sr-only"
+                      checked={formData.isOemSeller === false}
+                      onChange={() => {
+                        setFormData({ ...formData, isOemSeller: false });
+                        setErrors({ ...errors, isOemSeller: '' });
+                      }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <Store
+                        className={`w-4 h-4 ${
+                          formData.isOemSeller === false
+                            ? 'text-indigo-600'
+                            : 'text-slate-600'
+                        }`}
+                      />
+                      <span className="text-sm font-medium text-slate-800">
+                        Reseller
+                      </span>
+                    </div>
+                  </label>
+                </div>
+                {errors.isOemSeller && (
+                  <p className="mt-1.5 text-sm text-red-600">{errors.isOemSeller}</p>
+                )}
+              </fieldset>
 
               <Input
                 label="Email Address"

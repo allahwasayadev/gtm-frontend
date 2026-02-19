@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
@@ -8,25 +8,36 @@ import { connectionsApi } from '@/features/connections/connections.api';
 import { matchingApi } from '@/features/matching/matching.api';
 import type { AccountList, Account } from '@/features/accountLists/types';
 import type { Connection } from '@/features/connections/types';
-import type { AccountMatchesMap } from '@/features/matching/types';
+import type { AccountMatchesMap, PartnerRelationshipType } from '@/features/matching/types';
 import {
-  Button, Card, Badge,
+  Button, Card, Badge, Dropdown,
   SkeletonCard, SkeletonTable, EmptyState,
   PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen,
-  AccountMatchTooltip, InviteModal,
+  AccountMatchTooltip, InviteModal, OnboardingTour, useOnboardingTour,
 } from '@/components/ui';
-import { FileText, Users, Clock, CloudUpload, Mail, ClipboardCheck, LogOut, ArrowRight } from 'lucide-react';
+import { FileText, Users, Clock, CloudUpload, Mail, ClipboardCheck, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { avatarColors } from '@/lib/avatar-colors';
+
+type MatchViewFilter = 'ALL' | PartnerRelationshipType;
+
+const matchViewOptions = [
+  { value: 'ALL', label: 'Show All Matches' },
+  { value: 'OEM', label: 'Show OEM Only' },
+  { value: 'RESELLER', label: 'Show Reseller Only' },
+];
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
   const [activeList, setActiveList] = useState<AccountList | null>(null);
   const [matchesMap, setMatchesMap] = useState<AccountMatchesMap>({});
   const [loadingData, setLoadingData] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [matchViewFilter, setMatchViewFilter] = useState<MatchViewFilter>('ALL');
+  const { showTour, closeTour } = useOnboardingTour({ ready: !loadingData });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -57,56 +68,65 @@ export default function DashboardPage() {
         const matchesRes = await matchingApi.getAllMatches();
         setMatchesMap(matchesRes.data);
       } catch {
-        // Silently ignore - matches may not be available yet
       }
-    } catch (error) {
-      console.error('Failed to load data:', error);
+    } catch {
     } finally {
       setLoadingData(false);
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
+  const pendingConnections = connections.filter(c => c.status === 'pending');
+  const activeConnections = connections.filter(c => c.status === 'accepted');
+  const filteredMatchesMap = useMemo<AccountMatchesMap>(() => {
+    return Object.fromEntries(
+      Object.entries(matchesMap).map(([accountId, partners]) => [
+        accountId,
+        partners.filter((partner) => {
+          if (partner.matchType === 'suggested') return false;
+          if (matchViewFilter !== 'ALL' && partner.partnerRelationshipType !== matchViewFilter) {
+            return false;
+          }
+          return true;
+        }),
+      ]),
+    );
+  }, [matchesMap, matchViewFilter]);
+  const matchedAccountsCount = useMemo(
+    () => Object.values(filteredMatchesMap).filter((partners) => partners.length > 0).length,
+    [filteredMatchesMap],
+  );
+
+  // Find the maximum match count (only counts > 1 qualify as "top")
+  const topMatchCount = useMemo(() => {
+    const counts = Object.values(filteredMatchesMap).map((p) => p.length);
+    const max = Math.max(0, ...counts);
+    return max > 1 ? max : 0; // Only highlight if more than 1 match
+  }, [filteredMatchesMap]);
+
+  const sortedAccounts = useMemo(() => {
+    return [...activeAccounts].sort((a, b) => {
+      const aMatches = (filteredMatchesMap[a.id] || []).length;
+      const bMatches = (filteredMatchesMap[b.id] || []).length;
+      return bMatches - aMatches;
+    });
+  }, [activeAccounts, filteredMatchesMap]);
 
   if (loading || !user) {
     return <LoadingScreen message="Loading your dashboard..." />;
   }
 
-  const pendingConnections = connections.filter(c => c.status === 'pending');
-  const activeConnections = connections.filter(c => c.status === 'accepted');
-
   return (
     <>
-      {/* Dark Header */}
-      <header className="bg-slate-900 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex justify-between items-center">
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-white truncate">GTM Account Mapper</h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                Welcome, <Link href="/dashboard/profile" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">{user.name}</Link>!
-              </p>
-            </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              size="sm"
-              className="shrink-0 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-600"
-            >
-              <LogOut className="w-4 h-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Log Out</span>
-            </Button>
-          </div>
+      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            Welcome back, {user.name}
+          </h1>
+          <p className="mt-1 text-sm sm:text-base text-slate-500">
+            Here&apos;s an overview of your account mapping activity
+          </p>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <PageTransition>
-          {/* Gradient Stat Cards */}
           {loadingData ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
               <SkeletonCard />
@@ -116,7 +136,7 @@ export default function DashboardPage() {
           ) : (
             <StaggerList className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
               <StaggerItem>
-                <Card hover className="border-l-4 border-l-indigo-500">
+                <Card hover className="border-t-4 border-t-indigo-500 rounded-none">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-sm font-medium text-slate-500 mb-1">Account List</p>
@@ -130,7 +150,7 @@ export default function DashboardPage() {
                 </Card>
               </StaggerItem>
               <StaggerItem>
-                <Card hover className="border-l-4 border-l-emerald-500">
+                <Card hover className="border-t-4 border-t-emerald-500 rounded-none">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-sm font-medium text-slate-500 mb-1">Active Connections</p>
@@ -144,7 +164,7 @@ export default function DashboardPage() {
                 </Card>
               </StaggerItem>
               <StaggerItem>
-                <Card hover className="border-l-4 border-l-amber-500">
+                <Card hover className="border-t-4 border-t-amber-500 rounded-none">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-sm font-medium text-slate-500 mb-1">Pending Requests</p>
@@ -160,22 +180,36 @@ export default function DashboardPage() {
             </StaggerList>
           )}
 
-          {/* Quick Actions — Hover Cards */}
           <FadeIn delay={0.15}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <Link href="/dashboard/upload" className="group">
-                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <CloudUpload className="w-5 h-5 text-indigo-600" />
+              {activeList ? (
+                <Link href={`/dashboard/lists/${activeList.id}`} className="group" data-tour="upload-list">
+                  <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                      <FileText className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-slate-900 text-sm">View List</div>
+                      <div className="text-xs text-slate-500">{activeList.name}</div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm">Upload List</div>
-                    <div className="text-xs text-slate-500">Add account list</div>
+                </Link>
+              ) : (
+                <Link href="/dashboard/upload" className="group" data-tour="upload-list">
+                  <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                      <CloudUpload className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-slate-900 text-sm">Upload List</div>
+                      <div className="text-xs text-slate-500">Add account list</div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
-                </div>
-              </Link>
-              <button onClick={() => setShowInviteModal(true)} className="group text-left">
+                </Link>
+              )}
+              <button onClick={() => setShowInviteModal(true)} className="group text-left" data-tour="invite-partner">
                 <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-violet-200 transition-all duration-200">
                   <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                     <Mail className="w-5 h-5 text-violet-600" />
@@ -199,7 +233,7 @@ export default function DashboardPage() {
                   <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                 </div>
               </Link>
-              <Link href="/dashboard/matches" className="group">
+              <Link href="/dashboard/matches" className="group" data-tour="view-matches">
                 <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-sky-200 transition-all duration-200">
                   <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                     <ClipboardCheck className="w-5 h-5 text-sky-600" />
@@ -214,18 +248,16 @@ export default function DashboardPage() {
             </div>
           </FadeIn>
 
-          {/* Account List Table */}
           <FadeIn delay={0.2}>
             <Card className="mb-8">
-              {/* Premium Header */}
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 sm:gap-0 mb-6 pb-6 border-b border-slate-100">
-                <div className="flex items-start gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
+                <div className="flex items-center gap-4 min-w-0">
                   <div className="w-11 h-11 bg-linear-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <h3 className="text-base sm:text-lg font-semibold text-slate-900">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <h3 className="text-base sm:text-lg font-semibold text-slate-900 truncate">
                         {activeList ? activeList.name : 'Your Accounts'}
                       </h3>
                       {activeList && (
@@ -238,27 +270,36 @@ export default function DashboardPage() {
                       {activeList
                         ? `${activeAccounts.length} account${activeAccounts.length !== 1 ? 's' : ''}`
                         : 'Upload an account list to get started'}
-                      {Object.keys(matchesMap).length > 0 && (
+                      {matchedAccountsCount > 0 && (
                         <span className="ml-1.5 text-indigo-500">
-                          {'\u2022'} Hover names to see matches
+                          {'\u2022'} Hover match count to see partners
                         </span>
                       )}
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  {activeList && (
-                    <Link href={`/dashboard/lists/${activeList.id}`}>
-                      <Button variant="outline" size="sm">
-                        Edit List
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+                  <Dropdown
+                    aria-label="Match display filter"
+                    value={matchViewFilter}
+                    onChange={(value) => setMatchViewFilter(value as MatchViewFilter)}
+                    options={matchViewOptions}
+                    className="sm:w-48"
+                  />
+                  <div className="flex gap-2">
+                    {activeList && (
+                      <Link href={`/dashboard/lists/${activeList.id}`}>
+                        <Button variant="outline" size="sm">
+                          Edit List
+                        </Button>
+                      </Link>
+                    )}
+                    <Link href="/dashboard/upload">
+                      <Button variant="primary" size="sm">
+                        + Upload New
                       </Button>
                     </Link>
-                  )}
-                  <Link href="/dashboard/upload">
-                    <Button variant="primary" size="sm">
-                      + Upload New
-                    </Button>
-                  </Link>
+                  </div>
                 </div>
               </div>
 
@@ -280,93 +321,96 @@ export default function DashboardPage() {
                   />
                 </div>
               ) : (
-                <div className="overflow-hidden rounded-xl border border-slate-200/60">
+                <div className="overflow-hidden rounded-xl border mx-auto w-full max-w-440 border-slate-200/60">
                   <table className="w-full min-w-0">
                     <thead>
-                      <tr className="bg-slate-50/60 border-b border-slate-100">
-                        <th scope="col" className="hidden sm:table-cell px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-14">
-                          #
+                      <tr className="bg-linear-to-r from-slate-50 via-slate-50/80 to-indigo-50/40">
+                        <th scope="col" className="hidden sm:table-cell px-4 py-3.5 text-left w-14">
+                          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-200/60 text-slate-500">
+                            <span className="text-[10px] font-bold">#</span>
+                          </div>
                         </th>
-                        <th scope="col" className="px-3 sm:px-5 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                          Account
+                        <th scope="col" className="px-3 sm:px-5 py-3.5 text-left">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                            <span className="text-xs font-semibold text-slate-600 tracking-wide">Account</span>
+                          </div>
                         </th>
-                        <th scope="col" className="hidden md:table-cell px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-60">
-                          Matched Partners
+                        <th scope="col" className="px-3 sm:px-4 py-3.5 text-right w-24 sm:w-32">
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-xs font-semibold text-slate-600 tracking-wide">Matches</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          </div>
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
-                      {activeAccounts.map((account, index) => {
-                        const partners = matchesMap[account.id] || [];
-                        const avatarColors = [
-                          'from-indigo-500 to-violet-500 shadow-indigo-500/15',
-                          'from-sky-500 to-blue-500 shadow-sky-500/15',
-                          'from-emerald-500 to-teal-500 shadow-emerald-500/15',
-                          'from-amber-500 to-orange-500 shadow-amber-500/15',
-                          'from-rose-500 to-pink-500 shadow-rose-500/15',
-                          'from-violet-500 to-purple-500 shadow-violet-500/15',
-                        ];
+                      {sortedAccounts.map((account, index) => {
+                        const partners = filteredMatchesMap[account.id] || [];
+                        const isTopMatch = topMatchCount > 0 && partners.length === topMatchCount;
                         const colorClass = avatarColors[index % avatarColors.length];
                         return (
                           <tr
                             key={account.id}
-                            className="group bg-white hover:bg-slate-50/80 transition-colors duration-150"
+                            className={`group transition-colors duration-150 ${
+                              isTopMatch
+                                ? 'bg-indigo-50/40 hover:bg-indigo-50/60'
+                                : 'bg-white hover:bg-slate-50/80'
+                            }`}
                           >
                             <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap">
-                              <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-400 text-xs font-semibold group-hover:bg-slate-200/80 group-hover:text-slate-500 transition-colors">
+                              <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-semibold transition-colors ${
+                                isTopMatch
+                                  ? 'bg-indigo-100 text-indigo-600'
+                                  : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200/80 group-hover:text-slate-500'
+                              }`}>
                                 {index + 1}
                               </span>
                             </td>
                             <td className="px-3 sm:px-5 py-3">
                               <div className="flex items-center gap-2 sm:gap-3">
-                                <div className={`hidden sm:flex w-8 h-8 rounded-lg bg-linear-to-br ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-md`}>
+                                <div className={`hidden sm:flex w-8 h-8 rounded-full ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-sm`}>
                                   {account.accountName.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="min-w-0">
-                                  <AccountMatchTooltip partners={partners}>
-                                    <span className="font-medium text-sm sm:text-base text-slate-800">
-                                      {account.accountName}
-                                    </span>
-                                  </AccountMatchTooltip>
+                                  <span className={`font-medium text-sm sm:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}>
+                                    {account.accountName}
+                                  </span>
                                 </div>
                               </div>
                             </td>
-                            <td className="hidden md:table-cell px-4 py-3">
+                            <td className="px-3 sm:px-4 py-3 text-right">
                               {partners.length > 0 ? (
-                                <div className="flex items-center gap-2">
-                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 ring-1 ring-emerald-200/60">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                    <span className="text-xs font-medium text-emerald-700 truncate max-w-44">
-                                      {partners[0].partnerName}
-                                      {partners[0].partnerCompany && (
-                                        <span className="text-emerald-500"> – {partners[0].partnerCompany}</span>
-                                      )}
+                                <AccountMatchTooltip partners={partners}>
+                                  {isTopMatch ? (
+                                    <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-white text-[10px] sm:text-xs font-bold cursor-pointer transition-all whitespace-nowrap bg-linear-to-r from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 hover:scale-105">
+                                      <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-white" />
+                                      </span>
+                                      {partners.length} matches
                                     </span>
-                                  </div>
-                                  {partners.length > 1 && (
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
-                                      +{partners.length - 1}
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold cursor-pointer transition-colors whitespace-nowrap bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80 hover:bg-emerald-100 hover:ring-emerald-300">
+                                      {partners.length} matches
                                     </span>
                                   )}
-                                </div>
-                              ) : (
-                                <span className="text-slate-300 text-xs">&mdash;</span>
-                              )}
+                                </AccountMatchTooltip>
+                              ) : null}
                             </td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
-                  {/* Footer */}
                   <div className="bg-slate-50/60 px-3 sm:px-5 py-2.5 border-t border-slate-100">
                     <div className="flex items-center justify-between">
                       <p className="text-xs sm:text-sm text-slate-500">
                         <span className="font-semibold text-slate-700">{activeAccounts.length}</span> account{activeAccounts.length !== 1 ? 's' : ''}
-                        {Object.keys(matchesMap).length > 0 && (
+                        {matchedAccountsCount > 0 && (
                           <span className="ml-3 text-emerald-600">
                             <span className="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 align-middle" />
-                            {Object.values(matchesMap).filter(v => v.length > 0).length} matched
+                            {matchedAccountsCount} matched
                           </span>
                         )}
                       </p>
@@ -383,6 +427,20 @@ export default function DashboardPage() {
       <InviteModal
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
+      />
+
+      <OnboardingTour
+        isOpen={showTour}
+        onClose={closeTour}
+        onAction={(stepId) => {
+          if (stepId === 'upload') {
+            router.push('/dashboard/upload');
+          } else if (stepId === 'overlaps') {
+            router.push('/dashboard/matches');
+          } else if (stepId === 'invite') {
+            setShowInviteModal(true);
+          }
+        }}
       />
     </>
   );

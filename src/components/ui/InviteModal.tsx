@@ -5,6 +5,7 @@ import { X, Mail, User, Send, Sparkles, ArrowRight } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { invitesApi } from '@/features/invites/invites.api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/error-utils';
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -34,6 +35,12 @@ export function InviteModal({ isOpen, onClose, onSuccess }: InviteModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      toast.error('Enter valid email address');
+      return;
+    }
+
     setSending(true);
     try {
       const res = await invitesApi.send({
@@ -54,8 +61,8 @@ export function InviteModal({ isOpen, onClose, onSuccess }: InviteModalProps) {
       setName('');
       onClose();
       onSuccess?.();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to send invite.');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to send invite.'));
     } finally {
       setSending(false);
     }

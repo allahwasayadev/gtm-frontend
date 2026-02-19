@@ -6,11 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
 import {
   Button, Input, Card, CardHeader, CardTitle, CardDescription,
-  DashboardHeader, PageTransition, FadeIn, LoadingScreen,
+  PageHeader, PageTransition, FadeIn, LoadingScreen,
 } from '@/components/ui';
-import { User, Mail, Building2, Shield } from 'lucide-react';
+import { User, Mail, Building2, Shield, Factory, Store } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { getErrorMessage } from '@/lib/error-utils';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function ProfilePage() {
     name: '',
     email: '',
     company: '',
+    isOemSeller: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -31,6 +33,7 @@ export default function ProfilePage() {
         name: user.name,
         email: user.email,
         company: user.company || '',
+        isOemSeller: user.isOemSeller,
       });
     }
   }, [user, loading, router]);
@@ -62,6 +65,7 @@ export default function ProfilePage() {
         name: formData.name,
         email: formData.email,
         company: formData.company,
+        isOemSeller: formData.isOemSeller,
       });
       const { token, ...updatedUser } = response.data;
       updateUser(
@@ -70,13 +74,15 @@ export default function ProfilePage() {
           name: updatedUser.name,
           email: updatedUser.email,
           company: updatedUser.company,
+          isOemSeller: updatedUser.isOemSeller,
+          emailVerified: user?.emailVerified ?? false,
           createdAt: updatedUser.createdAt,
         },
         token,
       );
       toast.success('Profile updated successfully!');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update profile');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to update profile'));
     } finally {
       setIsSubmitting(false);
     }
@@ -87,15 +93,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
-      <DashboardHeader
+    <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <PageHeader
         title="Profile Settings"
         description="Update your personal information"
         backHref="/dashboard"
       />
-
-      <main className="max-w-2xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <PageTransition>
+      <PageTransition>
           <FadeIn>
             {/* Profile Avatar Card */}
             <Card className="mb-6">
@@ -109,6 +113,9 @@ export default function ProfilePage() {
                   {user.company && (
                     <p className="text-sm text-slate-400 mt-0.5">{user.company}</p>
                   )}
+                  <p className="text-xs text-indigo-600 mt-1 font-medium">
+                    {user.isOemSeller ? 'OEM Seller' : 'Reseller'}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -170,6 +177,56 @@ export default function ProfilePage() {
                   helperText="Optional — used for grouping and context"
                   autoComplete="organization"
                 />
+                <fieldset>
+                  <legend className="block text-sm font-medium text-slate-700 mb-2">
+                    Role
+                  </legend>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <label
+                      className={`rounded-xl border p-3 cursor-pointer transition-colors ${
+                        formData.isOemSeller
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        className="sr-only"
+                        checked={formData.isOemSeller}
+                        onChange={() => setFormData({ ...formData, isOemSeller: true })}
+                      />
+                      <div className="flex items-center gap-2">
+                        <Factory className={`w-4 h-4 ${formData.isOemSeller ? 'text-indigo-600' : 'text-slate-600'}`} />
+                        <span className="text-sm font-medium text-slate-800">
+                          OEM Seller
+                        </span>
+                      </div>
+                    </label>
+
+                    <label
+                      className={`rounded-xl border p-3 cursor-pointer transition-colors ${
+                        !formData.isOemSeller
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        className="sr-only"
+                        checked={!formData.isOemSeller}
+                        onChange={() => setFormData({ ...formData, isOemSeller: false })}
+                      />
+                      <div className="flex items-center gap-2">
+                        <Store className={`w-4 h-4 ${!formData.isOemSeller ? 'text-indigo-600' : 'text-slate-600'}`} />
+                        <span className="text-sm font-medium text-slate-800">
+                          Reseller
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                </fieldset>
                 <div className="flex gap-3 pt-4 border-t border-slate-100">
                   <Button
                     type="submit"
@@ -188,8 +245,7 @@ export default function ProfilePage() {
               </form>
             </Card>
           </FadeIn>
-        </PageTransition>
-      </main>
-    </>
+      </PageTransition>
+    </main>
   );
 }

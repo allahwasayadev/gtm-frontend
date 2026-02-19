@@ -4,6 +4,7 @@ export interface Connection {
   id: string;
   status: string;
   createdAt: string;
+  isMuted: boolean;
   otherUser: User;
   isSender: boolean;
 }

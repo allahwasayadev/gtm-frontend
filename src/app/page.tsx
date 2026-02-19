@@ -104,7 +104,7 @@ export default function LandingPage() {
               visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.4 } },
             }}
           >
-            {steps.map((step, i) => (
+            {steps.map((step) => (
               <motion.div
                 key={step.title}
                 className="bg-white rounded-2xl p-6 shadow-card border border-slate-200/60 hover:shadow-card-hover transition-all duration-200"
@@ -158,9 +158,14 @@ export default function LandingPage() {
       {/* Dark Footer */}
       <div className="bg-slate-900 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-sm text-slate-400">
-            &copy; 2026 GTM Account Mapper. Built for sales professionals.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+            <p className="text-sm text-slate-400">
+              &copy; 2026 GTM Account Mapper. Built for sales professionals.
+            </p>
+            <Link href="/about" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">
+              About
+            </Link>
+          </div>
         </div>
       </div>
     </div>

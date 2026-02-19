@@ -3,8 +3,6 @@
 import { motion, type Variants } from 'framer-motion';
 import { ReactNode } from 'react';
 
-/* ─── Fade + slide-up for full page content ─── */
-
 interface PageTransitionProps {
   children: ReactNode;
   className?: string;
@@ -31,8 +29,6 @@ export function PageTransition({ children, className = '' }: PageTransitionProps
     </motion.div>
   );
 }
-
-/* ─── Stagger container + animated children ─── */
 
 interface StaggerListProps {
   children: ReactNode;
@@ -82,8 +78,6 @@ export function StaggerItem({ children, className = '' }: { children: ReactNode;
   );
 }
 
-/* ─── Fade in for individual sections ─── */
-
 interface FadeInProps {
   children: ReactNode;
   className?: string;
@@ -112,8 +106,6 @@ export function FadeIn({ children, className = '', delay = 0, direction = 'up' }
   );
 }
 
-/* ─── Branded loading screen ─── */
-
 export function LoadingScreen({ message = 'Loading...' }: { message?: string }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -122,8 +114,7 @@ export function LoadingScreen({ message = 'Loading...' }: { message?: string }) 
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
         className="flex flex-col items-center gap-5"
-      >
-        {/* Animated dots loader */}
+      > 
         <div className="flex items-center gap-1.5">
           {[0, 1, 2].map((i) => (
             <motion.div

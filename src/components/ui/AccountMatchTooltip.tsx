@@ -3,11 +3,15 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Users, CheckCircle2 } from 'lucide-react';
 
+type MatchType = 'exact' | 'auto' | 'suggested' | 'accepted';
+
 interface PartnerMatch {
   partnerName: string;
   partnerCompany: string | null;
+  partnerRelationshipType: 'OEM' | 'RESELLER';
   matchConfidence?: number;
   theirAccountName?: string;
+  matchType?: MatchType;
 }
 
 interface AccountMatchTooltipProps {
@@ -20,17 +24,28 @@ export function AccountMatchTooltip({
   partners,
 }: AccountMatchTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; below: boolean }>({ top: 0, left: 0, below: false });
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; below: boolean; positionRight: boolean; }>({ top: 0, left: 0, below: false, positionRight: false });
   const containerRef = useRef<HTMLDivElement>(null);
 
   const updatePosition = useCallback(() => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const below = rect.top < 140;
+    const tooltipWidth = 288; // w-72 = 18rem = 288px
+
+    let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+
+    if (left < 10) left = 10;
+    if (left + tooltipWidth > window.innerWidth - 10) {
+      left = window.innerWidth - tooltipWidth - 10;
+    }
+
+    const below = rect.top < 200;
+
     setTooltipPos({
       top: below ? rect.bottom + 10 : rect.top - 10,
-      left: rect.left,
+      left,
       below,
+      positionRight: false,
     });
   }, []);
 
@@ -50,7 +65,10 @@ export function AccountMatchTooltip({
     };
   }, [isVisible]);
 
-  if (!partners || partners.length === 0) {
+  const confirmedPartners = partners.filter(
+    (p) => p.matchType !== 'suggested'
+  );
+  if (!confirmedPartners || confirmedPartners.length === 0) {
     return <>{children}</>;
   }
 
@@ -72,19 +90,19 @@ export function AccountMatchTooltip({
         setIsVisible((v) => !v);
       }}
     >
-      <div className="cursor-pointer underline decoration-dotted decoration-indigo-300/60 underline-offset-4 hover:decoration-indigo-400 transition-colors">
-        {children}
-      </div>
+      <div className="cursor-pointer">{children}</div>
       {isVisible && (
         <div
           className="fixed z-50 animate-in fade-in-0 zoom-in-95 duration-150"
           style={{
             top: tooltipPos.below ? tooltipPos.top : undefined,
-            bottom: tooltipPos.below ? undefined : `calc(100vh - ${tooltipPos.top}px)`,
+            bottom: tooltipPos.below
+              ? undefined
+              : `calc(100vh - ${tooltipPos.top}px)`,
             left: tooltipPos.left,
           }}
         >
-          <div className="rounded-xl shadow-lg ring-1 ring-slate-200/60 text-sm max-w-75 sm:max-w-none overflow-hidden">
+          <div className="rounded-xl shadow-lg ring-1 ring-slate-200/60 text-sm w-72 overflow-hidden">
             {/* Header */}
             <div className="flex items-center gap-2 px-4 py-3 bg-linear-to-r from-slate-800 to-slate-700">
               <div className="w-6 h-6 bg-emerald-500/20 rounded-md flex items-center justify-center">
@@ -94,57 +112,67 @@ export function AccountMatchTooltip({
                 Matched Partners
               </span>
               <span className="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                {partners.length}
+                {confirmedPartners.length}
               </span>
             </div>
-            {/* Partner List */}
-            <div className="bg-white px-4 py-3 space-y-3">
-              {partners.map((partner, idx) => {
-                const isExact = !partner.matchConfidence || partner.matchConfidence >= 1.0;
+            <div className="bg-white">
+              {confirmedPartners.map((partner, idx) => {
+                const matchType = partner.matchType;
+                const isExact = matchType === 'exact' || matchType === 'accepted';
+                const isAuto = matchType === 'auto';
+
                 return (
-                  <div key={idx} className="flex items-start gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-linear-to-br from-emerald-400 to-emerald-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-sm shadow-emerald-500/15 mt-0.5">
-                      {partner.partnerName.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-slate-900 text-sm truncate">
-                          {partner.partnerName}
-                        </span>
+                  <div
+                    key={idx}
+                    className={`px-4 py-3 ${idx !== confirmedPartners.length - 1 ? 'border-b border-slate-100' : ''}`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1 text-left">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-800 text-[13px] leading-tight truncate">
+                            {partner.partnerName}
+                          </span>
+                          <span className="text-[9px] font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded uppercase tracking-wide shrink-0">
+                            {partner.partnerRelationshipType}
+                          </span>
+                        </div>
+                        {partner.partnerCompany && (
+                          <div className="text-[11px] text-slate-400 mt-0.5 truncate">
+                            {partner.partnerCompany}
+                          </div>
+                        )}
+                      </div>
+                      <div className="shrink-0">
                         {isExact ? (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-semibold ring-1 ring-emerald-200/60 shrink-0">
-                            <CheckCircle2 className="w-2.5 h-2.5" />
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-semibold">
+                            <CheckCircle2 className="w-3 h-3" />
                             Exact
                           </span>
+                        ) : isAuto ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-sky-50 text-sky-600 text-[10px] font-semibold">
+                            Auto
+                          </span>
                         ) : (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-semibold ring-1 ring-amber-200/60 shrink-0">
-                            ~{Math.round(partner.matchConfidence! * 100)}%
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-semibold">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Exact
                           </span>
                         )}
                       </div>
-                      {partner.partnerCompany && (
-                        <div className="text-[11px] text-slate-400 truncate">
-                          {partner.partnerCompany}
-                        </div>
-                      )}
-                      {!isExact && partner.theirAccountName && (
-                        <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-50 text-[10px] text-slate-500 ring-1 ring-slate-100">
-                          Their name: <span className="font-medium text-slate-700">{partner.theirAccountName}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
-          {/* Arrow */}
           <div
-            className={`absolute left-5 ${
-              tooltipPos.below ? 'bottom-full -mb-1.25' : 'top-full -mt-1.25'
+            className={`absolute left-1/2 -translate-x-1/2 ${
+              tooltipPos.below ? '-top-1.5' : '-bottom-1.5'
             }`}
           >
-            <div className={`w-2.5 h-2.5 ring-1 ring-slate-200/60 transform rotate-45 ${tooltipPos.below ? 'bg-slate-800' : 'bg-white'}`} />
+            <div
+              className={`w-3 h-3 ring-1 ring-slate-200/60 transform rotate-45 ${tooltipPos.below ? 'bg-slate-800' : 'bg-white'}`}
+            />
           </div>
         </div>
       )}

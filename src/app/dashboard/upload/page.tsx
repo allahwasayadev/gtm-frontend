@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
-import { Button, DashboardHeader, PageTransition } from '@/components/ui';
+import { Button, PageHeader, PageTransition } from '@/components/ui';
 import { CloudUpload, Check, Info, FileSpreadsheet, ArrowRight, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/error-utils';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -78,8 +79,8 @@ export default function UploadPage() {
       const response = await accountListsApi.upload(file, listName.trim());
       toast.success('Account list uploaded successfully!');
       router.push(`/dashboard/lists/${response.data.id}`);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to upload file');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to upload file'));
     } finally {
       setUploading(false);
     }
@@ -92,14 +93,12 @@ export default function UploadPage() {
   const isReady = !!file && !!listName.trim();
 
   return (
-    <>
-      <DashboardHeader
+    <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8">
+      <PageHeader
         title="Upload Account List"
         description="Import your accounts from CSV or Excel"
         backHref="/dashboard"
       />
-
-      <main className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <PageTransition>
           <form onSubmit={handleSubmit}>
             <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card overflow-hidden">
@@ -263,7 +262,6 @@ export default function UploadPage() {
             </div>
           </form>
         </PageTransition>
-      </main>
-    </>
+    </main>
   );
 }

@@ -3,6 +3,8 @@ export interface User {
   name: string;
   email: string;
   company?: string | null;
+  isOemSeller: boolean;
+  emailVerified: boolean;
   createdAt: string;
 }
 
@@ -10,6 +12,7 @@ export interface UpdateProfileDto {
   name?: string;
   email?: string;
   company?: string;
+  isOemSeller?: boolean;
 }
 
 export interface UpdateProfileResponse {
@@ -17,6 +20,7 @@ export interface UpdateProfileResponse {
   name: string;
   email: string;
   company?: string | null;
+  isOemSeller: boolean;
   createdAt: string;
   token?: string;
 }
@@ -31,9 +35,37 @@ export interface SignupDto {
   email: string;
   password: string;
   company?: string;
+  isOemSeller: boolean;
 }
 
 export interface LoginDto {
   email: string;
   password: string;
+}
+
+export interface VerifyEmailDto {
+  email: string;
+  code: string;
+}
+
+export interface ResendVerificationDto {
+  email: string;
+}
+
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface ResetPasswordDto {
+  token: string;
+  newPassword: string;
+}
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface ValidateResetTokenResponse {
+  valid: boolean;
+  email?: string;
 }

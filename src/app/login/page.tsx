@@ -35,7 +35,11 @@ function LoginContent() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push(redirectTo || '/dashboard');
+      if (user.emailVerified) {
+        router.push(redirectTo || '/dashboard');
+      } else {
+        router.push(`/verify-email?email=${encodeURIComponent(user.email)}`);
+      }
     }
   }, [user, loading, router, redirectTo]);
 
@@ -43,8 +47,13 @@ function LoginContent() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await login(formData.email, formData.password);
-    } catch (error) {
+      const response = await login(formData.email, formData.password);
+      if (response?.emailVerified) {
+        router.push(redirectTo || '/dashboard');
+      } else {
+        router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+      }
+    } catch {
       // Error is handled by AuthContext with toast
     } finally {
       setIsSubmitting(false);
@@ -138,16 +147,26 @@ function LoginContent() {
                 autoComplete="email"
               />
 
-              <Input
-                label="Password"
-                icon={Lock}
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Enter your password"
-                autoComplete="current-password"
-              />
+              <div>
+                <Input
+                  label="Password"
+                  icon={Lock}
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                />
+                <div className="mt-2 text-right">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
 
               <Button
                 type="submit"

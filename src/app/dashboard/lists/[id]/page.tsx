@@ -1,24 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import type { AccountList, Account } from '@/features/accountLists/types';
 import {
   Button, Card, Badge, EmptyState,
-  DashboardHeader, SkeletonTable, Skeleton, PageTransition,
+  PageHeader, SkeletonTable, Skeleton, PageTransition, ConfirmationModal,
 } from '@/components/ui';
 import { Pencil, X, Plus, FileText, Save, List } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const avatarColors = [
-  'from-indigo-500 to-violet-500 shadow-indigo-500/15',
-  'from-sky-500 to-blue-500 shadow-sky-500/15',
-  'from-emerald-500 to-teal-500 shadow-emerald-500/15',
-  'from-amber-500 to-orange-500 shadow-amber-500/15',
-  'from-rose-500 to-pink-500 shadow-rose-500/15',
-  'from-violet-500 to-purple-500 shadow-violet-500/15',
-];
+import { avatarColors } from '@/lib/avatar-colors';
 
 export default function ListDetailPage() {
   const router = useRouter();
@@ -31,33 +23,34 @@ export default function ListDetailPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  useEffect(() => {
-    loadList();
-  }, [listId]);
-
-  const loadList = async () => {
+  const loadList = useCallback(async () => {
     try {
       const response = await accountListsApi.getOne(listId);
       setList(response.data);
       if (response.data.accounts) {
         setAccounts(response.data.accounts);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to load account list');
       router.push('/dashboard');
     } finally {
       setLoading(false);
     }
-  };
+  }, [listId, router]);
+
+  useEffect(() => {
+    void loadList();
+  }, [loadList]);
 
   const handlePublish = async () => {
     setPublishing(true);
     try {
       await accountListsApi.publish(listId);
       toast.success('Account list published!');
-      loadList();
-    } catch (error) {
+      await loadList();
+    } catch {
       toast.error('Failed to publish list');
     } finally {
       setPublishing(false);
@@ -65,18 +58,15 @@ export default function ListDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this account list?')) {
-      return;
-    }
-
     setDeleting(true);
     try {
       await accountListsApi.delete(listId);
       toast.success('Account list deleted');
       router.push('/dashboard');
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete list');
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -88,8 +78,8 @@ export default function ListDetailPage() {
       await accountListsApi.updateAccounts(listId, accountsData);
       toast.success('Changes saved!');
       setEditing(false);
-      loadList();
-    } catch (error) {
+      await loadList();
+    } catch {
       toast.error('Failed to save changes');
     }
   };
@@ -116,37 +106,27 @@ export default function ListDetailPage() {
 
   if (loading) {
     return (
-      <>
-        <header className="bg-slate-900 border-b border-slate-800">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-            <div className="flex justify-between items-center gap-2">
-              <div className="flex items-center gap-2 sm:gap-4">
-                <Skeleton className="h-4 w-12" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Skeleton variant="rect" className="h-8 w-20" />
-                <Skeleton variant="rect" className="h-8 w-20" />
-              </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-start gap-3">
+            <Skeleton variant="rect" className="h-8 w-8 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-32" />
             </div>
           </div>
-        </header>
-        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card p-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-28" />
-                <Skeleton className="h-3 w-48" />
-              </div>
-              <Skeleton variant="rect" className="h-8 w-16" />
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card p-6">
+          <div className="flex justify-between items-center mb-6">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-3 w-48" />
             </div>
-            <SkeletonTable rows={6} />
+            <Skeleton variant="rect" className="h-8 w-16" />
           </div>
-        </main>
-      </>
+          <SkeletonTable rows={6} />
+        </div>
+      </main>
     );
   }
 
@@ -161,8 +141,8 @@ export default function ListDetailPage() {
     : <Badge variant="outline">Draft</Badge>;
 
   return (
-    <>
-      <DashboardHeader
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <PageHeader
         title={list.name}
         description={`${accounts.length} account${accounts.length !== 1 ? 's' : ''}`}
         backHref="/dashboard"
@@ -181,7 +161,7 @@ export default function ListDetailPage() {
               </Button>
             )}
             <Button
-              onClick={handleDelete}
+              onClick={() => setShowDeleteModal(true)}
               disabled={deleting}
               variant="danger"
               size="sm"
@@ -192,9 +172,7 @@ export default function ListDetailPage() {
           </>
         }
       />
-
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <PageTransition>
+      <PageTransition>
           <Card>
             {/* Premium Header */}
             <div className="flex justify-between items-start mb-6 pb-6 border-b border-slate-100">
@@ -225,7 +203,7 @@ export default function ListDetailPage() {
                   <Button
                     onClick={() => {
                       setEditing(false);
-                      loadList();
+                      void loadList();
                     }}
                     variant="outline"
                     size="sm"
@@ -310,7 +288,7 @@ export default function ListDetailPage() {
                               />
                             ) : (
                               <div className="flex items-center gap-2 sm:gap-3">
-                                <div className={`hidden sm:flex w-8 h-8 rounded-lg bg-linear-to-br ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-md`}>
+                                <div className={`hidden sm:flex w-8 h-8 rounded-full ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-sm`}>
                                   {account.accountName
                                     .charAt(0)
                                     .toUpperCase()}
@@ -362,8 +340,23 @@ export default function ListDetailPage() {
               </div>
             )}
           </Card>
-        </PageTransition>
-      </main>
-    </>
+      </PageTransition>
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title="Delete Account List"
+        description={`Are you sure you want to delete "${list.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        intent="danger"
+        isLoading={deleting}
+        onConfirm={handleDelete}
+        onClose={() => {
+          if (!deleting) {
+            setShowDeleteModal(false);
+          }
+        }}
+      />
+    </main>
   );
 }
