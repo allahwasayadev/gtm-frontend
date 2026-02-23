@@ -5,6 +5,7 @@ export interface Connection {
   status: string;
   createdAt: string;
   isMuted: boolean;
+  sharedMatchCount?: number;
   otherUser: User;
   isSender: boolean;
 }

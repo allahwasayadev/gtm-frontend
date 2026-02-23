@@ -249,10 +249,9 @@ export function NotificationBell() {
                       <Link
                         href={notification.ctaUrl}
                         onClick={() => setIsOpen(false)}
+                        className="inline-flex items-center justify-center rounded-lg bg-linear-to-r from-indigo-600 to-indigo-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-indigo-700 hover:to-indigo-600 hover:shadow-md"
                       >
-                        <Button variant="primary" size="sm">
-                          View
-                        </Button>
+                        View
                       </Link>
                     )}
                   </div>

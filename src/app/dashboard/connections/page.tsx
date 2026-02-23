@@ -271,6 +271,7 @@ export default function ConnectionsPage() {
                     {activeAccepted.map((connection, index) => {
                       const colorClass = avatarColors[index % avatarColors.length];
                       const initials = getUserInitials(connection.otherUser.name);
+                      const sharedMatchCount = connection.sharedMatchCount ?? 0;
                       return (
                         <motion.div
                           key={connection.id}
@@ -287,6 +288,14 @@ export default function ConnectionsPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
                                 <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.email}</div>
+                                <div className="mt-1">
+                                  <Badge
+                                    variant={sharedMatchCount > 0 ? 'success' : 'outline'}
+                                    size="sm"
+                                  >
+                                    {sharedMatchCount} {sharedMatchCount === 1 ? 'match' : 'matches'}
+                                  </Badge>
+                                </div>
                               </div>
                               <span className="hidden md:inline-block text-xs text-slate-400 shrink-0">
                                 {new Date(connection.createdAt).toLocaleDateString('en-US', {
@@ -342,6 +351,7 @@ export default function ConnectionsPage() {
                 {mutedAccepted.map((connection, index) => {
                   const colorClass = avatarColors[index % avatarColors.length];
                   const initials = getUserInitials(connection.otherUser.name);
+                  const sharedMatchCount = connection.sharedMatchCount ?? 0;
                   return (
                     <div
                       key={connection.id}
@@ -360,6 +370,14 @@ export default function ConnectionsPage() {
                           </div>
                           <div className="text-xs sm:text-sm text-slate-500 truncate">
                             {connection.otherUser.email}
+                          </div>
+                          <div className="mt-1">
+                            <Badge
+                              variant={sharedMatchCount > 0 ? 'success' : 'outline'}
+                              size="sm"
+                            >
+                              {sharedMatchCount} {sharedMatchCount === 1 ? 'match' : 'matches'}
+                            </Badge>
                           </div>
                         </div>
                       </div>

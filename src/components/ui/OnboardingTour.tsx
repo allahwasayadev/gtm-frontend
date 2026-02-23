@@ -315,8 +315,8 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                       </Button>
                     </>
                   ) : (
-                    <Button type="button" variant="primary" size="sm" onClick={handlePrimaryAction}>
-                      {step.buttonText}
+                    <Button type="button" variant="primary" size="sm" onClick={handleClose}>
+                      Finish Tour
                       <ChevronRight className="w-4 h-4 -mr-1" aria-hidden />
                     </Button>
                   )}
