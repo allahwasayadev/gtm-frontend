@@ -1,6 +1,6 @@
 import { api } from '@/lib/axios';
 import type {
-  AccountMatchesMap,
+  AllMatchesResponse,
   ConnectionMatchesResponse,
   SetMatchDecisionDto,
 } from './types';
@@ -8,7 +8,7 @@ import type {
 export const matchingApi = {
   getMatches: (connectionId: string) =>
     api.get<ConnectionMatchesResponse>(`/matching/connections/${connectionId}`),
-  getAllMatches: () => api.get<AccountMatchesMap>('/matching/all-matches'),
+  getAllMatches: () => api.get<AllMatchesResponse>('/matching/all-matches'),
   setMatchDecision: (connectionId: string, payload: SetMatchDecisionDto) =>
     api.post(`/matching/connections/${connectionId}/decisions`, payload),
 };

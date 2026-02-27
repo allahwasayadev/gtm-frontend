@@ -4,7 +4,10 @@ export interface User {
   email: string;
   company?: string | null;
   isOemSeller: boolean;
+  hasCompletedOnboarding: boolean;
   emailVerified: boolean;
+  phoneNumber?: string | null;
+  isPhoneVerified?: boolean;
   createdAt: string;
 }
 
@@ -13,6 +16,7 @@ export interface UpdateProfileDto {
   email?: string;
   company?: string;
   isOemSeller?: boolean;
+  phoneNumber?: string;
 }
 
 export interface UpdateProfileResponse {
@@ -21,8 +25,34 @@ export interface UpdateProfileResponse {
   email: string;
   company?: string | null;
   isOemSeller: boolean;
+  hasCompletedOnboarding: boolean;
+  phoneNumber?: string | null;
+  isPhoneVerified: boolean;
   createdAt: string;
   token?: string;
+}
+
+export interface SendPhoneVerificationCodeDto {
+  phoneNumber: string;
+}
+
+export interface SendPhoneVerificationCodeResponse {
+  message: string;
+  phoneNumber: string;
+  isPhoneVerified: boolean;
+  expiresAt?: string;
+  /** Present only when LOG_PHONE_VERIFICATION_CODE=true (dev/testing) */
+  code?: string;
+}
+
+export interface VerifyPhoneVerificationCodeDto {
+  code: string;
+}
+
+export interface VerifyPhoneVerificationCodeResponse {
+  message: string;
+  phoneNumber: string;
+  isPhoneVerified: boolean;
 }
 
 export interface AuthResponse {
@@ -63,6 +93,15 @@ export interface ResetPasswordDto {
 
 export interface MessageResponse {
   message: string;
+}
+
+export interface CompleteOnboardingDto {
+  hasCompletedOnboarding: true;
+}
+
+export interface CompleteOnboardingResponse {
+  message: string;
+  hasCompletedOnboarding: boolean;
 }
 
 export interface ValidateResetTokenResponse {

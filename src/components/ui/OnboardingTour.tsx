@@ -7,8 +7,6 @@ import type { LucideIcon } from 'lucide-react';
 import { CloudUpload, BarChart3, Mail, ChevronRight } from 'lucide-react';
 import { Button } from './Button';
 
-const ONBOARDING_COMPLETE_KEY = 'gtm_onboarding_complete';
-
 interface TourStep {
   id: string;
   targetSelector: string;
@@ -60,7 +58,7 @@ interface SpotlightRect {
 
 interface OnboardingTourProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: () => void | Promise<void>;
   onAction: (stepId: string) => void;
 }
 
@@ -103,8 +101,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
   const maskId = useId();
 
   const handleClose = useCallback(() => {
-    localStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
-    onClose();
+    void onClose();
   }, [onClose]);
 
   useLayoutEffect(() => {
@@ -342,22 +339,23 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
 interface UseOnboardingTourOptions {
   /** Delay showing until content (e.g. dashboard targets) is ready */
   ready?: boolean;
+  hasCompletedOnboarding?: boolean;
 }
 
 /**
- * Shows onboarding tour on first dashboard visit only. Uses localStorage key gtm_onboarding_complete.
+ * Shows onboarding tour only when the authenticated user has not completed onboarding.
  * Use on the dashboard page. Set ready=true once targets (data-tour) are in the DOM.
  */
 export function useOnboardingTour(options: UseOnboardingTourOptions = {}) {
-  const { ready = true } = options;
+  const { ready = true, hasCompletedOnboarding } = options;
   const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !ready) return;
-    if (localStorage.getItem(ONBOARDING_COMPLETE_KEY)) return;
+    if (hasCompletedOnboarding !== false) return;
     const timer = setTimeout(() => setShowTour(true), 400);
     return () => clearTimeout(timer);
-  }, [ready]);
+  }, [ready, hasCompletedOnboarding]);
 
   const closeTour = useCallback(() => setShowTour(false), []);
 

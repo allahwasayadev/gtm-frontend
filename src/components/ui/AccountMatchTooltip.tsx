@@ -65,10 +65,8 @@ export function AccountMatchTooltip({
     };
   }, [isVisible]);
 
-  const confirmedPartners = partners.filter(
-    (p) => p.matchType !== 'suggested'
-  );
-  if (!confirmedPartners || confirmedPartners.length === 0) {
+  const displayPartners = partners;
+  if (!displayPartners || displayPartners.length === 0) {
     return <>{children}</>;
   }
 
@@ -112,19 +110,18 @@ export function AccountMatchTooltip({
                 Matched Partners
               </span>
               <span className="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                {confirmedPartners.length}
+                {displayPartners.length}
               </span>
             </div>
             <div className="bg-white">
-              {confirmedPartners.map((partner, idx) => {
+              {displayPartners.map((partner, idx) => {
                 const matchType = partner.matchType;
-                const isExact = matchType === 'exact' || matchType === 'accepted';
-                const isAuto = matchType === 'auto';
+                const isSuggested = matchType === 'suggested';
 
                 return (
                   <div
                     key={idx}
-                    className={`px-4 py-3 ${idx !== confirmedPartners.length - 1 ? 'border-b border-slate-100' : ''}`}
+                    className={`px-4 py-3 ${idx !== displayPartners.length - 1 ? 'border-b border-slate-100' : ''}`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1 text-left">
@@ -143,14 +140,9 @@ export function AccountMatchTooltip({
                         )}
                       </div>
                       <div className="shrink-0">
-                        {isExact ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-semibold">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Exact
-                          </span>
-                        ) : isAuto ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-sky-50 text-sky-600 text-[10px] font-semibold">
-                            Auto
+                        {isSuggested ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-amber-50 text-amber-600 text-[10px] font-semibold">
+                            Suggested
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-semibold">

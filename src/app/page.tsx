@@ -49,14 +49,14 @@ export default function LandingPage() {
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="text-center">
-          <motion.h1
-            className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-6 tracking-tight"
+          <motion.div
+            className="flex justify-center mb-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            GTM Account Mapper
-          </motion.h1>
+            <img src="/ovrlap-logo.png" alt="Ovrlap" className="h-20 sm:h-24 md:h-28 w-auto" />
+          </motion.div>
           <motion.p
             className="text-xl md:text-2xl font-medium text-slate-600 mb-4"
             initial={{ opacity: 0, y: 20 }}
@@ -160,7 +160,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
             <p className="text-sm text-slate-400">
-              &copy; 2026 GTM Account Mapper. Built for sales professionals.
+              &copy; 2026 Ovrlap. Built for sales professionals.
             </p>
             <Link href="/about" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">
               About

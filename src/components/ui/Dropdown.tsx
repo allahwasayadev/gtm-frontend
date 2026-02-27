@@ -16,6 +16,7 @@ interface DropdownProps {
   options: DropdownOption[];
   placeholder?: string;
   className?: string;
+  triggerClassName?: string;
   disabled?: boolean;
   variant?: 'default' | 'light';
   'aria-label'?: string;
@@ -27,6 +28,7 @@ export function Dropdown({
   options,
   placeholder = 'Select...',
   className = '',
+  triggerClassName = '',
   disabled = false,
   variant = 'default',
   'aria-label': ariaLabel,
@@ -170,12 +172,20 @@ export function Dropdown({
     }
   }, [isOpen, safeHighlightedIndex]);
 
+  const toggle = useCallback(() => {
+    if (isOpen) close();
+    else open();
+  }, [isOpen, open, close]);
+
   const handleTriggerKeyDown = (event: React.KeyboardEvent) => {
     if (!isOpen) {
       if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
         event.preventDefault();
         open();
       }
+    } else if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      close();
     }
   };
 
@@ -189,7 +199,7 @@ export function Dropdown({
       <button
         ref={triggerRef}
         type="button"
-        onClick={open}
+        onClick={toggle}
         onKeyDown={handleTriggerKeyDown}
         disabled={disabled}
         aria-label={ariaLabel}
@@ -197,13 +207,14 @@ export function Dropdown({
         aria-haspopup="listbox"
         aria-controls={listboxId}
         className={`
-          w-full flex items-center justify-between gap-2 px-3.5 py-2 text-sm rounded-lg cursor-pointer
+          w-full flex items-center justify-between gap-2 px-4 py-2.5 pr-3 text-sm rounded-xl cursor-pointer
           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0
           disabled:opacity-50 disabled:cursor-not-allowed
           ${variant === 'light'
             ? `bg-white/15 border-white/20 text-white hover:bg-white/25 hover:border-white/30 focus:ring-white/30 ${isOpen ? 'border-white/40 ring-2 ring-white/20' : ''} disabled:hover:bg-white/15`
-            : `bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 focus:ring-indigo-500/30 ${isOpen ? 'border-indigo-400 ring-2 ring-indigo-500/20' : ''} disabled:hover:bg-white`
+            : `bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 focus:ring-indigo-500/20 focus:border-indigo-500 ${isOpen ? 'border-indigo-400 ring-2 ring-indigo-500/20' : ''} disabled:hover:bg-white`
           }
+          ${triggerClassName}
         `}
       >
         <span className={`truncate ${variant === 'light' ? 'text-white' : selectedOption ? 'text-slate-700' : 'text-slate-400'}`}>
@@ -225,7 +236,7 @@ export function Dropdown({
             role="listbox"
             aria-label={ariaLabel}
             tabIndex={-1}
-            className="fixed z-1000 py-1 bg-white rounded-xl border border-slate-200/80 shadow-lg shadow-slate-200/50 overflow-y-auto max-h-60 focus:outline-none"
+            className="fixed z-1000 py-1.5 px-1.5 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-300/30 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
             style={{
               top: listPosition.top,
               left: listPosition.left,
@@ -247,12 +258,12 @@ export function Dropdown({
                   onClick={() => handleOptionClick(option)}
                   onMouseEnter={() => !isDisabled && setHighlightedIndex(index)}
                   className={`
-                    w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-sm text-left
+                    w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-left rounded-lg min-w-0
                     transition-colors duration-150
-                    ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-50'}
-                    ${isSelected && !isDisabled ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-slate-600'}
-                    ${isHighlighted && !isSelected && !isDisabled ? 'bg-slate-50' : ''}
-                    ${isSelected && isHighlighted && !isDisabled ? 'bg-indigo-100' : ''}
+                    ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
+                    ${isSelected && !isDisabled ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-slate-700'}
+                    ${!isDisabled && (isHighlighted || (isSelected && isHighlighted)) ? 'bg-indigo-50' : ''}
+                    ${!isDisabled && !isSelected && !isHighlighted ? 'hover:bg-slate-50' : ''}
                   `}
                 >
                   <span className="truncate">{option.label}</span>

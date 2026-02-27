@@ -6,18 +6,45 @@ import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { connectionsApi } from '@/features/connections/connections.api';
 import { matchingApi } from '@/features/matching/matching.api';
+import { usersApi } from '@/features/users/users.api';
 import type { AccountList, Account } from '@/features/accountLists/types';
 import type { Connection } from '@/features/connections/types';
-import type { AccountMatchesMap, PartnerRelationshipType } from '@/features/matching/types';
+import type {
+  AccountMatchesMap,
+  PartnerRelationshipType,
+} from '@/features/matching/types';
 import {
-  Button, Card, Badge, Dropdown,
-  SkeletonCard, SkeletonTable, EmptyState,
-  PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen,
-  AccountMatchTooltip, InviteModal, OnboardingTour, useOnboardingTour,
+  Button,
+  Card,
+  Badge,
+  Dropdown,
+  SkeletonCard,
+  SkeletonTable,
+  EmptyState,
+  PageTransition,
+  StaggerList,
+  StaggerItem,
+  FadeIn,
+  LoadingScreen,
+  AccountMatchTooltip,
+  InviteModal,
+  OnboardingTour,
+  useOnboardingTour,
 } from '@/components/ui';
-import { FileText, Users, Clock, CloudUpload, Mail, ClipboardCheck, ArrowRight } from 'lucide-react';
+import {
+  FileText,
+  Users,
+  Clock,
+  CloudUpload,
+  Mail,
+  ClipboardCheck,
+  ArrowRight,
+  Shield,
+} from 'lucide-react';
 import Link from 'next/link';
 import { avatarColors } from '@/lib/avatar-colors';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/error-utils';
 
 type MatchViewFilter = 'ALL' | PartnerRelationshipType;
 
@@ -29,15 +56,19 @@ const matchViewOptions = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, updateUser } = useAuth();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
   const [activeList, setActiveList] = useState<AccountList | null>(null);
   const [matchesMap, setMatchesMap] = useState<AccountMatchesMap>({});
   const [loadingData, setLoadingData] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [matchViewFilter, setMatchViewFilter] = useState<MatchViewFilter>('ALL');
-  const { showTour, closeTour } = useOnboardingTour({ ready: !loadingData });
+  const [matchViewFilter, setMatchViewFilter] =
+    useState<MatchViewFilter>('RESELLER');
+  const { showTour, closeTour } = useOnboardingTour({
+    ready: !loadingData && !loading,
+    hasCompletedOnboarding: user?.hasCompletedOnboarding,
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -66,24 +97,25 @@ export default function DashboardPage() {
 
       try {
         const matchesRes = await matchingApi.getAllMatches();
-        setMatchesMap(matchesRes.data);
-      } catch {
-      }
+        setMatchesMap(matchesRes.data.matchesMap ?? {});
+      } catch {}
     } catch {
     } finally {
       setLoadingData(false);
     }
   };
 
-  const pendingConnections = connections.filter(c => c.status === 'pending');
-  const activeConnections = connections.filter(c => c.status === 'accepted');
+  const pendingConnections = connections.filter((c) => c.status === 'pending');
+  const activeConnections = connections.filter((c) => c.status === 'accepted');
   const filteredMatchesMap = useMemo<AccountMatchesMap>(() => {
     return Object.fromEntries(
       Object.entries(matchesMap).map(([accountId, partners]) => [
         accountId,
         partners.filter((partner) => {
-          if (partner.matchType === 'suggested') return false;
-          if (matchViewFilter !== 'ALL' && partner.partnerRelationshipType !== matchViewFilter) {
+          if (
+            matchViewFilter !== 'ALL' &&
+            partner.partnerRelationshipType !== matchViewFilter
+          ) {
             return false;
           }
           return true;
@@ -92,11 +124,13 @@ export default function DashboardPage() {
     );
   }, [matchesMap, matchViewFilter]);
   const matchedAccountsCount = useMemo(
-    () => Object.values(filteredMatchesMap).filter((partners) => partners.length > 0).length,
+    () =>
+      Object.values(filteredMatchesMap).filter(
+        (partners) => partners.length > 0,
+      ).length,
     [filteredMatchesMap],
   );
 
-  // Find the maximum match count (only counts > 1 qualify as "top")
   const topMatchCount = useMemo(() => {
     const counts = Object.values(filteredMatchesMap).map((p) => p.length);
     const max = Math.max(0, ...counts);
@@ -115,6 +149,26 @@ export default function DashboardPage() {
     return <LoadingScreen message="Loading your dashboard..." />;
   }
 
+  const handleOnboardingClose = async () => {
+    if (user.hasCompletedOnboarding) {
+      closeTour();
+      return;
+    }
+
+    try {
+      const response = await usersApi.completeOnboarding({
+        hasCompletedOnboarding: true,
+      });
+      updateUser({
+        ...user,
+        hasCompletedOnboarding: response.data.hasCompletedOnboarding,
+      });
+      closeTour();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to complete onboarding'));
+    }
+  };
+
   return (
     <>
       <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8">
@@ -126,6 +180,29 @@ export default function DashboardPage() {
             Here&apos;s an overview of your account mapping activity
           </p>
         </div>
+
+        {!user.phoneNumber?.trim() && (
+          <Link
+            href="/dashboard/profile"
+            className="block mb-6 group"
+          >
+            <div className="flex items-start sm:items-center gap-3 p-4 rounded-xl border border-amber-200/80 bg-amber-50/80 hover:bg-amber-50 transition-colors">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                <Shield className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-amber-800">
+                  Add a phone number to secure your account
+                </p>
+                <p className="text-xs text-amber-700/90 mt-0.5">
+                  Help protect your account and recover it if you get locked out.
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-amber-600 shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+            </div>
+          </Link>
+        )}
+
         <PageTransition>
           {loadingData ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
@@ -136,12 +213,25 @@ export default function DashboardPage() {
           ) : (
             <StaggerList className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
               <StaggerItem>
-                <Card hover className="border-t-4 border-t-indigo-500 rounded-none">
+                <Card
+                  hover
+                  className="border-t-4 border-t-indigo-500 rounded-none"
+                >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">Account List</p>
-                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">{activeList ? 1 : 0}</p>
-                      <p className="text-xs text-slate-400 mt-1">{activeList?.status === 'active' ? 'Published' : activeList ? 'Draft' : 'No list yet'}</p>
+                      <p className="text-sm font-medium text-slate-500 mb-1">
+                        Account List
+                      </p>
+                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">
+                        {activeList ? 1 : 0}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {activeList?.status === 'active'
+                          ? 'Published'
+                          : activeList
+                            ? 'Draft'
+                            : 'No list yet'}
+                      </p>
                     </div>
                     <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                       <FileText className="w-6 h-6 text-white" />
@@ -150,12 +240,23 @@ export default function DashboardPage() {
                 </Card>
               </StaggerItem>
               <StaggerItem>
-                <Card hover className="border-t-4 border-t-emerald-500 rounded-none">
+                <Card
+                  hover
+                  className="border-t-4 border-t-emerald-500 rounded-none"
+                >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">Active Connections</p>
-                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">{activeConnections.length}</p>
-                      <p className="text-xs text-slate-400 mt-1">{activeConnections.length === 0 ? 'Send your first invite' : 'Collaboration partners'}</p>
+                      <p className="text-sm font-medium text-slate-500 mb-1">
+                        Active Connections
+                      </p>
+                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">
+                        {activeConnections.length}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {activeConnections.length === 0
+                          ? 'Send your first invite'
+                          : 'Collaboration partners'}
+                      </p>
                     </div>
                     <div className="w-12 h-12 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
                       <Users className="w-6 h-6 text-white" />
@@ -164,12 +265,23 @@ export default function DashboardPage() {
                 </Card>
               </StaggerItem>
               <StaggerItem>
-                <Card hover className="border-t-4 border-t-amber-500 rounded-none">
+                <Card
+                  hover
+                  className="border-t-4 border-t-amber-500 rounded-none"
+                >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">Pending Requests</p>
-                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">{pendingConnections.length}</p>
-                      <p className="text-xs text-slate-400 mt-1">{pendingConnections.length === 0 ? 'All caught up' : 'Awaiting response'}</p>
+                      <p className="text-sm font-medium text-slate-500 mb-1">
+                        Pending Requests
+                      </p>
+                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">
+                        {pendingConnections.length}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {pendingConnections.length === 0
+                          ? 'All caught up'
+                          : 'Awaiting response'}
+                      </p>
                     </div>
                     <div className="w-12 h-12 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
                       <Clock className="w-6 h-6 text-white" />
@@ -183,40 +295,64 @@ export default function DashboardPage() {
           <FadeIn delay={0.15}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {activeList ? (
-                <Link href={`/dashboard/lists/${activeList.id}`} className="group" data-tour="upload-list">
+                <Link
+                  href={`/dashboard/lists/${activeList.id}`}
+                  className="group"
+                  data-tour="upload-list"
+                >
                   <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
                     <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                       <FileText className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-slate-900 text-sm">View List</div>
-                      <div className="text-xs text-slate-500">{activeList.name}</div>
+                      <div className="font-semibold text-slate-900 text-sm">
+                        View List
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {activeList.name}
+                      </div>
                     </div>
                     <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                   </div>
                 </Link>
               ) : (
-                <Link href="/dashboard/upload" className="group" data-tour="upload-list">
+                <Link
+                  href="/dashboard/upload"
+                  className="group"
+                  data-tour="upload-list"
+                >
                   <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
                     <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                       <CloudUpload className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-slate-900 text-sm">Upload List</div>
-                      <div className="text-xs text-slate-500">Add account list</div>
+                      <div className="font-semibold text-slate-900 text-sm">
+                        Upload List
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        Add account list
+                      </div>
                     </div>
                     <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                   </div>
                 </Link>
               )}
-              <button onClick={() => setShowInviteModal(true)} className="group text-left" data-tour="invite-partner">
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="group text-left"
+                data-tour="invite-partner"
+              >
                 <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-violet-200 transition-all duration-200">
                   <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                     <Mail className="w-5 h-5 text-violet-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm">Invite Partner</div>
-                    <div className="text-xs text-slate-500">Send email invite</div>
+                    <div className="font-semibold text-slate-900 text-sm">
+                      Invite Partner
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Send email invite
+                    </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                 </div>
@@ -227,20 +363,32 @@ export default function DashboardPage() {
                     <Users className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm">Connections</div>
-                    <div className="text-xs text-slate-500">Manage partners</div>
+                    <div className="font-semibold text-slate-900 text-sm">
+                      Connections
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Manage partners
+                    </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                 </div>
               </Link>
-              <Link href="/dashboard/matches" className="group" data-tour="view-matches">
+              <Link
+                href="/dashboard/matches"
+                className="group"
+                data-tour="view-matches"
+              >
                 <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-sky-200 transition-all duration-200">
                   <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                     <ClipboardCheck className="w-5 h-5 text-sky-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm">View Matches</div>
-                    <div className="text-xs text-slate-500">Account overlaps</div>
+                    <div className="font-semibold text-slate-900 text-sm">
+                      View Matches
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Account overlaps
+                    </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                 </div>
@@ -260,11 +408,16 @@ export default function DashboardPage() {
                       <h3 className="text-base sm:text-lg font-semibold text-slate-900 truncate">
                         {activeList ? activeList.name : 'Your Accounts'}
                       </h3>
-                      {activeList && (
-                        activeList.status === 'active'
-                          ? <Badge variant="success" size="sm">Published</Badge>
-                          : <Badge variant="outline" size="sm">Draft</Badge>
-                      )}
+                      {activeList &&
+                        (activeList.status === 'active' ? (
+                          <Badge variant="success" size="sm">
+                            Published
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" size="sm">
+                            Draft
+                          </Badge>
+                        ))}
                     </div>
                     <p className="text-xs sm:text-sm text-slate-500 mt-1">
                       {activeList
@@ -282,7 +435,9 @@ export default function DashboardPage() {
                   <Dropdown
                     aria-label="Match display filter"
                     value={matchViewFilter}
-                    onChange={(value) => setMatchViewFilter(value as MatchViewFilter)}
+                    onChange={(value) =>
+                      setMatchViewFilter(value as MatchViewFilter)
+                    }
                     options={matchViewOptions}
                     className="sm:w-48"
                   />
@@ -325,20 +480,33 @@ export default function DashboardPage() {
                   <table className="w-full min-w-0">
                     <thead>
                       <tr className="bg-linear-to-r from-slate-50 via-slate-50/80 to-indigo-50/40">
-                        <th scope="col" className="hidden sm:table-cell px-4 py-3.5 text-left w-14">
+                        <th
+                          scope="col"
+                          className="hidden sm:table-cell px-4 py-3.5 text-left w-14"
+                        >
                           <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-200/60 text-slate-500">
                             <span className="text-[10px] font-bold">#</span>
                           </div>
                         </th>
-                        <th scope="col" className="px-3 sm:px-5 py-3.5 text-left">
+                        <th
+                          scope="col"
+                          className="px-3 sm:px-5 py-3.5 text-left"
+                        >
                           <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                            <span className="text-xs font-semibold text-slate-600 tracking-wide">Account</span>
+                            <span className="text-xs font-semibold text-slate-600 tracking-wide">
+                              Account
+                            </span>
                           </div>
                         </th>
-                        <th scope="col" className="px-3 sm:px-4 py-3.5 text-right w-24 sm:w-32">
+                        <th
+                          scope="col"
+                          className="px-3 sm:px-4 py-3.5 text-right w-24 sm:w-32"
+                        >
                           <div className="flex items-center justify-end gap-2">
-                            <span className="text-xs font-semibold text-slate-600 tracking-wide">Matches</span>
+                            <span className="text-xs font-semibold text-slate-600 tracking-wide">
+                              Matches
+                            </span>
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                           </div>
                         </th>
@@ -347,8 +515,11 @@ export default function DashboardPage() {
                     <tbody className="divide-y divide-slate-50">
                       {sortedAccounts.map((account, index) => {
                         const partners = filteredMatchesMap[account.id] || [];
-                        const isTopMatch = topMatchCount > 0 && partners.length === topMatchCount;
-                        const colorClass = avatarColors[index % avatarColors.length];
+                        const isTopMatch =
+                          topMatchCount > 0 &&
+                          partners.length === topMatchCount;
+                        const colorClass =
+                          avatarColors[index % avatarColors.length];
                         return (
                           <tr
                             key={account.id}
@@ -359,21 +530,27 @@ export default function DashboardPage() {
                             }`}
                           >
                             <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap">
-                              <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-semibold transition-colors ${
-                                isTopMatch
-                                  ? 'bg-indigo-100 text-indigo-600'
-                                  : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200/80 group-hover:text-slate-500'
-                              }`}>
+                              <span
+                                className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-semibold transition-colors ${
+                                  isTopMatch
+                                    ? 'bg-indigo-100 text-indigo-600'
+                                    : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200/80 group-hover:text-slate-500'
+                                }`}
+                              >
                                 {index + 1}
                               </span>
                             </td>
                             <td className="px-3 sm:px-5 py-3">
                               <div className="flex items-center gap-2 sm:gap-3">
-                                <div className={`hidden sm:flex w-8 h-8 rounded-full ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-sm`}>
+                                <div
+                                  className={`hidden sm:flex w-8 h-8 rounded-full ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-sm`}
+                                >
                                   {account.accountName.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="min-w-0">
-                                  <span className={`font-medium text-sm sm:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}>
+                                  <span
+                                    className={`font-medium text-sm sm:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}
+                                  >
                                     {account.accountName}
                                   </span>
                                 </div>
@@ -406,7 +583,10 @@ export default function DashboardPage() {
                   <div className="bg-slate-50/60 px-3 sm:px-5 py-2.5 border-t border-slate-100">
                     <div className="flex items-center justify-between">
                       <p className="text-xs sm:text-sm text-slate-500">
-                        <span className="font-semibold text-slate-700">{activeAccounts.length}</span> account{activeAccounts.length !== 1 ? 's' : ''}
+                        <span className="font-semibold text-slate-700">
+                          {activeAccounts.length}
+                        </span>{' '}
+                        account{activeAccounts.length !== 1 ? 's' : ''}
                         {matchedAccountsCount > 0 && (
                           <span className="ml-3 text-emerald-600">
                             <span className="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 align-middle" />
@@ -420,7 +600,6 @@ export default function DashboardPage() {
               )}
             </Card>
           </FadeIn>
-
         </PageTransition>
       </main>
 
@@ -431,7 +610,7 @@ export default function DashboardPage() {
 
       <OnboardingTour
         isOpen={showTour}
-        onClose={closeTour}
+        onClose={handleOnboardingClose}
         onAction={(stepId) => {
           if (stepId === 'upload') {
             router.push('/dashboard/upload');

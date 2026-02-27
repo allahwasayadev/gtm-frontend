@@ -11,7 +11,7 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: 'GTM - Account Mapping Made Simple',
+  title: 'Ovrlap - Account Mapping Made Simple',
   description: 'Find overlapping accounts instantly with your sales partners',
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Bell, RefreshCw } from 'lucide-react';
 import { io, type Socket } from 'socket.io-client';
@@ -8,6 +8,7 @@ import { apiBaseUrl } from '@/lib/axios';
 import { notificationsApi } from '@/features/notifications/notifications.api';
 import type { AppNotification } from '@/features/notifications/types';
 import { Button } from './Button';
+const NOTIFICATIONS_PAGE_SIZE = 25;
 
 function formatTimestamp(value: string) {
   const date = new Date(value);
@@ -21,11 +22,15 @@ function formatTimestamp(value: string) {
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [markingAllRead, setMarkingAllRead] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const loadNotifications = useCallback(async (silent = false) => {
     if (!silent) {
@@ -33,14 +38,18 @@ export function NotificationBell() {
     }
 
     try {
-      const response = await notificationsApi.getAll({
-        limit: 25,
-        cacheBust: Date.now(),
-      });
-      setNotifications(response.data);
+      const [notificationsResponse, unreadCountResponse] = await Promise.all([
+        notificationsApi.getAll({ limit: NOTIFICATIONS_PAGE_SIZE, offset: 0, cacheBust: Date.now() }),
+        notificationsApi.getUnreadCount(),
+      ]);
+      setNotifications(notificationsResponse.data);
+      setUnreadCount(unreadCountResponse.data.count);
+      setHasMore(notificationsResponse.data.length === NOTIFICATIONS_PAGE_SIZE);
     } catch {
       if (!silent) {
         setNotifications([]);
+        setUnreadCount(0);
+        setHasMore(false);
       }
     } finally {
       if (!silent) {
@@ -48,6 +57,28 @@ export function NotificationBell() {
       }
     }
   }, []);
+
+  const loadMoreNotifications = useCallback(async () => {
+    if (loading || loadingMore || !hasMore) {
+      return;
+    }
+
+    setLoadingMore(true);
+    try {
+      const response = await notificationsApi.getAll({ limit: NOTIFICATIONS_PAGE_SIZE, offset: notifications.length, cacheBust: Date.now() });
+
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((item) => item.id));
+        const nextItems = response.data.filter((item) => !existingIds.has(item.id));
+        return [...prev, ...nextItems];
+      });
+      setHasMore(response.data.length === NOTIFICATIONS_PAGE_SIZE);
+    } catch {
+      // Keep current list usable if pagination fetch fails.
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, loading, loadingMore, notifications.length]);
 
   useEffect(() => {
     void loadNotifications();
@@ -71,16 +102,22 @@ export function NotificationBell() {
 
     const handleRealtimeNotification = (notification: AppNotification) => {
       setNotifications((prev) => {
-        const existingIndex = prev.findIndex(
-          (item) => item.id === notification.id,
-        );
+        const existingIndex = prev.findIndex((item) => item.id === notification.id);
         if (existingIndex >= 0) {
+          const wasUnread = !prev[existingIndex].isRead;
+          const isUnread = !notification.isRead;
+          if (wasUnread !== isUnread) {
+            setUnreadCount((count) => Math.max(0, count + (isUnread ? 1 : -1)));
+          }
           const next = [...prev];
           next[existingIndex] = notification;
           return next;
         }
 
-        return [notification, ...prev].slice(0, 25);
+        if (!notification.isRead) {
+          setUnreadCount((count) => count + 1);
+        }
+        return [notification, ...prev];
       });
     };
     const handleSocketConnect = () => {
@@ -137,11 +174,6 @@ export function NotificationBell() {
     };
   }, [isOpen]);
 
-  const unreadCount = useMemo(
-    () => notifications.filter((notification) => !notification.isRead).length,
-    [notifications],
-  );
-
   const markAllRead = useCallback(async () => {
     setMarkingAllRead(true);
     try {
@@ -152,6 +184,7 @@ export function NotificationBell() {
           isRead: true,
         })),
       );
+      setUnreadCount(0);
     } catch {
       // Keep the menu usable even if the read-all endpoint fails.
     } finally {
@@ -176,6 +209,18 @@ export function NotificationBell() {
       setRefreshing(false);
     }
   };
+
+  const handleListScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      const target = event.currentTarget;
+      const remaining =
+        target.scrollHeight - target.scrollTop - target.clientHeight;
+      if (remaining <= 48) {
+        void loadMoreNotifications();
+      }
+    },
+    [loadMoreNotifications],
+  );
 
   return (
     <div ref={rootRef} className="relative">
@@ -217,7 +262,11 @@ export function NotificationBell() {
             </button>
           </div>
 
-          <div className="max-h-96 space-y-2 overflow-y-auto px-3 py-3">
+          <div
+            ref={listRef}
+            onScroll={handleListScroll}
+            className="max-h-96 space-y-2 overflow-y-auto px-3 py-3"
+          >
             {loading ? (
               <p className="px-1 py-4 text-center text-sm text-slate-500">
                 Loading notifications...
@@ -260,6 +309,16 @@ export function NotificationBell() {
                   </p>
                 </div>
               ))
+            )}
+            {!loading && loadingMore && (
+              <p className="px-1 py-2 text-center text-xs text-slate-500">
+                Loading more...
+              </p>
+            )}
+            {!loading && !loadingMore && notifications.length > 0 && !hasMore && (
+              <p className="px-1 py-2 text-center text-xs text-slate-400">
+                End of notifications
+              </p>
             )}
           </div>
 

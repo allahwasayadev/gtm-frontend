@@ -79,8 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      // Clear onboarding flag so new users see the tour
-      localStorage.removeItem('gtm_onboarding_complete');
       setUser(user);
 
       toast.success('Account created! Please check your email for verification code.');

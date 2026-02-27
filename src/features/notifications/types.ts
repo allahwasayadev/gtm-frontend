@@ -7,3 +7,7 @@ export interface AppNotification {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface UnreadNotificationsCountResponse {
+  count: number;
+}

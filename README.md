@@ -1,6 +1,6 @@
-# GTM Frontend
+# Ovrlap Frontend
 
-Frontend for the GTM (Go To Market) Account Mapper application, built with [Next.js](https://nextjs.org/) and [React](https://react.dev/).
+Frontend for the Ovrlap account mapping application, built with [Next.js](https://nextjs.org/) and [React](https://react.dev/).
 
 ## Tech Stack
 

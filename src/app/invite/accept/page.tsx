@@ -85,7 +85,7 @@ function InviteAcceptContent() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block group">
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 transition-colors group-hover:text-indigo-600">
-              GTM Account Mapper
+              Ovrlap
             </h1>
           </Link>
         </div>
@@ -136,7 +136,7 @@ function InviteAcceptContent() {
                 {validation.inviterCompany && (
                   <span className="text-slate-400"> from {validation.inviterCompany}</span>
                 )}{' '}
-                wants to connect with you on GTM Account Mapper.
+                wants to connect with you on Ovrlap.
               </p>
 
               {user ? (

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input } from '@/components/ui';
 import { motion } from 'framer-motion';
-import { Mail, ArrowLeftRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
@@ -52,10 +52,8 @@ export default function ForgotPasswordPage() {
         <div className="absolute bottom-1/3 left-1/4 w-24 h-24 bg-violet-400/20 rounded-full blur-2xl" />
 
         <div className="relative">
-          <Link href="/">
-            <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-indigo-900/30">
-              <ArrowLeftRight className="w-7 h-7 text-white" />
-            </div>
+          <Link href="/" className="inline-block mb-8">
+            <img src="/overlap-white-logo.png" alt="Ovrlap" className="h-16 w-auto" />
           </Link>
 
           <h1 className="text-3xl xl:text-4xl font-bold text-white mb-3">
@@ -79,12 +77,12 @@ export default function ForgotPasswordPage() {
           <div className="text-center mb-8 lg:hidden">
             <Link href="/" className="inline-block group">
               <motion.div
-                className="w-14 h-14 bg-linear-to-br from-amber-400 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/25"
+                className="flex justify-center mb-4"
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
               >
-                <Mail className="w-7 h-7 text-white" />
+                <img src="/ovrlap-logo.png" alt="Ovrlap" className="h-14 w-auto" />
               </motion.div>
               <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
                 Reset Password

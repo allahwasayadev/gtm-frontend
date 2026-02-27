@@ -68,18 +68,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
       <div className="mx-auto lg:px-14 px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 to-violet-600 shadow-lg shadow-indigo-500/25 transition-shadow group-hover:shadow-indigo-500/40">
-              <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-            <span className="hidden sm:block text-lg">
-              <span className="font-bold tracking-tight text-slate-900">GTM</span>
-              <span className="font-medium text-slate-500 ml-1">Mapper</span>
-            </span>
+          <Link href="/dashboard">
+          <img src="/ovrlap-logo.png" alt="Ovrlap"className="h-12 w-auto object-contain" />
           </Link>
 
           <nav className="hidden md:flex items-center">
