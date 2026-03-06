@@ -31,6 +31,16 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const refetchUnreadCountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const refetchUnreadCount = useCallback(async () => {
+    try {
+      const res = await notificationsApi.getUnreadCount();
+      setUnreadCount(res.data.count);
+    } catch {
+      // Keep current count on error
+    }
+  }, []);
 
   const loadNotifications = useCallback(async (silent = false) => {
     if (!silent) {
@@ -104,21 +114,19 @@ export function NotificationBell() {
       setNotifications((prev) => {
         const existingIndex = prev.findIndex((item) => item.id === notification.id);
         if (existingIndex >= 0) {
-          const wasUnread = !prev[existingIndex].isRead;
-          const isUnread = !notification.isRead;
-          if (wasUnread !== isUnread) {
-            setUnreadCount((count) => Math.max(0, count + (isUnread ? 1 : -1)));
-          }
           const next = [...prev];
           next[existingIndex] = notification;
           return next;
         }
-
-        if (!notification.isRead) {
-          setUnreadCount((count) => count + 1);
-        }
         return [notification, ...prev];
       });
+      if (refetchUnreadCountTimerRef.current) {
+        clearTimeout(refetchUnreadCountTimerRef.current);
+      }
+      refetchUnreadCountTimerRef.current = setTimeout(() => {
+        refetchUnreadCountTimerRef.current = null;
+        void refetchUnreadCount();
+      }, 400);
     };
     const handleSocketConnect = () => {
       void loadNotifications(true);
@@ -133,12 +141,16 @@ export function NotificationBell() {
     manager.on('reconnect', handleSocketReconnect);
 
     return () => {
+      if (refetchUnreadCountTimerRef.current) {
+        clearTimeout(refetchUnreadCountTimerRef.current);
+        refetchUnreadCountTimerRef.current = null;
+      }
       socket.off('connect', handleSocketConnect);
       socket.off('notifications.new', handleRealtimeNotification);
       manager.off('reconnect', handleSocketReconnect);
       socket.disconnect();
     };
-  }, [loadNotifications]);
+  }, [loadNotifications, refetchUnreadCount]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {

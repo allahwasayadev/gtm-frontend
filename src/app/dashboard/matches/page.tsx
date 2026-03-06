@@ -49,12 +49,12 @@ type PartnerTypeFilter = 'ALL' | PartnerRelationshipType;
 
 const partnerTypeFilterOptions: { value: PartnerTypeFilter; label: string }[] = [
   { value: 'ALL', label: 'All partners' },
-  { value: 'RESELLER', label: 'Resellers only' },
   { value: 'OEM', label: 'OEMs only' },
+  { value: 'RESELLER', label: 'Resellers only' },
 ];
 
 function getPartnerTypeFromConnection(connection: Connection): PartnerRelationshipType {
-  return connection.otherUser?.isOemSeller ? 'OEM' : 'RESELLER';
+  return connection.otherUser?.roles?.includes('OEM') ? 'OEM' : 'RESELLER';
 }
 
 export default function MatchesPage() {

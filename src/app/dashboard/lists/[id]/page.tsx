@@ -24,6 +24,7 @@ export default function ListDetailPage() {
   const [publishing, setPublishing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPublishSuccessModal, setShowPublishSuccessModal] = useState(false);
 
   const loadList = useCallback(async () => {
     try {
@@ -47,9 +48,15 @@ export default function ListDetailPage() {
   const handlePublish = async () => {
     setPublishing(true);
     try {
+      const listsRes = await accountListsApi.getAll();
+      const hadPublishedBefore = listsRes.data.some((l) => l.status === 'active');
       await accountListsApi.publish(listId);
-      toast.success('Account list published!');
       await loadList();
+      if (!hadPublishedBefore) {
+        setShowPublishSuccessModal(true);
+      } else {
+        toast.success('Account list published!');
+      }
     } catch {
       toast.error('Failed to publish list');
     } finally {
@@ -356,6 +363,20 @@ export default function ListDetailPage() {
             setShowDeleteModal(false);
           }
         }}
+      />
+
+      <ConfirmationModal
+        isOpen={showPublishSuccessModal}
+        title="List published"
+        description="Your account list is now live. Go to the dashboard to see matches and manage connections."
+        confirmLabel="Go to Dashboard"
+        cancelLabel="Stay"
+        intent="default"
+        onConfirm={() => {
+          setShowPublishSuccessModal(false);
+          router.push('/dashboard');
+        }}
+        onClose={() => setShowPublishSuccessModal(false)}
       />
     </main>
   );

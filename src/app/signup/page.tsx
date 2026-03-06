@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import type { UserRole } from '@/features/auth/types';
 import { Button, Input, Dropdown, LoadingScreen } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { User, Building2, Mail, Lock, ArrowRight, Check } from 'lucide-react';
@@ -28,13 +29,20 @@ function SignupContent() {
   const redirectTo = searchParams.get('redirect');
   const prefillEmail = searchParams.get('email');
   const { signup, user, loading } = useAuth();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    company: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    role: UserRole | null;
+  }>({
     name: '',
     company: '',
     email: prefillEmail || '',
     password: '',
     confirmPassword: '',
-    isOemSeller: null as boolean | null,
+    role: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,8 +74,8 @@ function SignupContent() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.isOemSeller === null) {
-      newErrors.isOemSeller = 'Please select your role';
+    if (formData.role === null) {
+      newErrors.role = 'Please select your role';
     }
 
     setErrors(newErrors);
@@ -83,9 +91,8 @@ function SignupContent() {
 
     setIsSubmitting(true);
     try {
-      // Role mapping: OEM Seller => isOemSeller true, Reseller => isOemSeller false (validated above)
-      await signup(formData.name, formData.email, formData.password, formData.isOemSeller as boolean, formData.company || undefined);
-      // Redirect to verify-email page with the email
+      const selectedRole = formData.role as UserRole;
+      await signup(formData.name, formData.email, formData.password, [selectedRole], formData.company || undefined);
       router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch {
       // Error is handled by AuthContext with toast
@@ -201,22 +208,22 @@ function SignupContent() {
                   aria-label="Role"
                   placeholder="Select role"
                   options={[
-                    { value: 'oem', label: 'OEM Seller (manufacture or supply)' },
-                    { value: 'reseller', label: 'Reseller (sell or distribute)' },
+                    { value: 'OEM', label: 'OEM Seller (manufacture or supply)' },
+                    { value: 'Reseller', label: 'Reseller (sell or distribute)' },
                   ]}
-                  value={formData.isOemSeller === null ? '' : formData.isOemSeller ? 'oem' : 'reseller'}
+                  value={formData.role ?? ''}
                   onChange={(v) => {
                     setFormData({
                       ...formData,
-                      isOemSeller: v === '' ? null : v === 'oem',
+                      role: (v === 'OEM' || v === 'Reseller') ? v : null,
                     });
-                    setErrors({ ...errors, isOemSeller: '' });
+                    setErrors({ ...errors, role: '' });
                   }}
                 />
-                {errors.isOemSeller && (
-                  <p className="mt-1.5 text-sm text-red-600">{errors.isOemSeller}</p>
+                {errors.role && (
+                  <p className="mt-1.5 text-sm text-red-600">{errors.role}</p>
                 )}
-                {!errors.isOemSeller && (
+                {!errors.role && (
                   <p className="mt-1.5 text-sm text-slate-500">This helps us show the right labels and connection context.</p>
                 )}
               </div>

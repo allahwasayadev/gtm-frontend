@@ -14,6 +14,7 @@ import {
   Save,
   Shield,
   Store,
+  Trash2,
   User,
   X,
 } from 'lucide-react';
@@ -21,7 +22,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
 import {
-  Button, FadeIn, Input, LoadingScreen, PageTransition,
+  Button, ConfirmationModal, FadeIn, Input, LoadingScreen, PageTransition,
 } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
 
@@ -30,7 +31,8 @@ type ProfileFormState = {
   email: string;
   phoneNumber: string;
   company: string;
-  isOemSeller: boolean;
+  /** Single business role for form: OEM or Reseller (Admin is not user-editable) */
+  role: 'OEM' | 'Reseller';
 };
 
 function normalizePhoneForCompare(phoneNumber: string): string {
@@ -44,13 +46,13 @@ function isValidPhoneNumber(phoneNumber: string): boolean {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading, updateUser } = useAuth();
+  const { user, loading, updateUser, deleteAccount } = useAuth();
   const [formData, setFormData] = useState<ProfileFormState>({
     name: '',
     email: '',
     phoneNumber: '',
     company: '',
-    isOemSeller: false,
+    role: 'Reseller',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
@@ -73,18 +75,21 @@ export default function ProfilePage() {
       setModalAnimate(false);
     }
   }, [showVerifyPhoneModal]);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     } else if (user) {
+      const businessRole = user.roles?.includes('OEM') ? 'OEM' : 'Reseller';
       setFormData({
         name: user.name,
         email: user.email,
         phoneNumber: user.phoneNumber || '',
         company: user.company || '',
-        isOemSeller: user.isOemSeller,
+        role: businessRole,
       });
       setIsEmailEditingEnabled(false);
       setVerifyCodeInput('');
@@ -249,7 +254,7 @@ export default function ProfilePage() {
         email: formData.email,
         phoneNumber: formData.phoneNumber,
         company: formData.company,
-        isOemSeller: formData.isOemSeller,
+        roles: [formData.role],
       });
       const { token, ...updatedUser } = response.data;
 
@@ -259,7 +264,7 @@ export default function ProfilePage() {
           name: updatedUser.name,
           email: updatedUser.email,
           company: updatedUser.company,
-          isOemSeller: updatedUser.isOemSeller,
+          roles: updatedUser.roles ?? [],
           hasCompletedOnboarding: updatedUser.hasCompletedOnboarding,
           emailVerified: user?.emailVerified ?? false,
           phoneNumber: updatedUser.phoneNumber ?? null,
@@ -326,8 +331,8 @@ export default function ProfilePage() {
                       <p className="text-indigo-100 text-sm">{user.email}</p>
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-lg text-xs font-medium text-white">
-                          {user.isOemSeller ? <Factory className="w-3 h-3" /> : <Store className="w-3 h-3" />}
-                          {user.isOemSeller ? 'OEM Seller' : 'Reseller'}
+                          {user.roles?.includes('OEM') ? <Factory className="w-3 h-3" /> : <Store className="w-3 h-3" />}
+                          {user.roles?.includes('OEM') ? 'OEM Seller' : 'Reseller'}
                         </span>
                         {user.company && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-lg text-xs font-medium text-white">
@@ -511,7 +516,7 @@ export default function ProfilePage() {
                       <div className="grid sm:grid-cols-2 gap-3">
                         <label
                           className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                            formData.isOemSeller
+                            formData.role === 'OEM'
                               ? 'border-indigo-500 bg-indigo-50/50'
                               : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                           }`}
@@ -520,29 +525,29 @@ export default function ProfilePage() {
                             type="radio"
                             name="role"
                             className="sr-only"
-                            checked={formData.isOemSeller}
-                            onChange={() => setFormData({ ...formData, isOemSeller: true })}
+                            checked={formData.role === 'OEM'}
+                            onChange={() => setFormData({ ...formData, role: 'OEM' })}
                           />
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            formData.isOemSeller ? 'bg-indigo-500' : 'bg-slate-100'
+                            formData.role === 'OEM' ? 'bg-indigo-500' : 'bg-slate-100'
                           }`}
                           >
-                            <Factory className={`w-6 h-6 ${formData.isOemSeller ? 'text-white' : 'text-slate-500'}`} />
+                            <Factory className={`w-6 h-6 ${formData.role === 'OEM' ? 'text-white' : 'text-slate-500'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-medium ${formData.isOemSeller ? 'text-indigo-900' : 'text-slate-900'}`}>
+                            <p className={`font-medium ${formData.role === 'OEM' ? 'text-indigo-900' : 'text-slate-900'}`}>
                               OEM Seller
                             </p>
                             <p className="text-sm text-slate-500 truncate">Original equipment manufacturer</p>
                           </div>
-                          {formData.isOemSeller && (
+                          {formData.role === 'OEM' && (
                             <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
                           )}
                         </label>
 
                         <label
                           className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                            !formData.isOemSeller
+                            formData.role === 'Reseller'
                               ? 'border-indigo-500 bg-indigo-50/50'
                               : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                           }`}
@@ -551,22 +556,22 @@ export default function ProfilePage() {
                             type="radio"
                             name="role"
                             className="sr-only"
-                            checked={!formData.isOemSeller}
-                            onChange={() => setFormData({ ...formData, isOemSeller: false })}
+                            checked={formData.role === 'Reseller'}
+                            onChange={() => setFormData({ ...formData, role: 'Reseller' })}
                           />
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            !formData.isOemSeller ? 'bg-indigo-500' : 'bg-slate-100'
+                            formData.role === 'Reseller' ? 'bg-indigo-500' : 'bg-slate-100'
                           }`}
                           >
-                            <Store className={`w-6 h-6 ${!formData.isOemSeller ? 'text-white' : 'text-slate-500'}`} />
+                            <Store className={`w-6 h-6 ${formData.role === 'Reseller' ? 'text-white' : 'text-slate-500'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-medium ${!formData.isOemSeller ? 'text-indigo-900' : 'text-slate-900'}`}>
+                            <p className={`font-medium ${formData.role === 'Reseller' ? 'text-indigo-900' : 'text-slate-900'}`}>
                               Reseller
                             </p>
                             <p className="text-sm text-slate-500 truncate">Channel partner or distributor</p>
                           </div>
-                          {!formData.isOemSeller && (
+                          {formData.role === 'Reseller' && (
                             <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
                           )}
                         </label>
@@ -591,12 +596,51 @@ export default function ProfilePage() {
                       Save Changes
                     </Button>
                   </div>
+
+                  <div className="mt-10 pt-8 border-t border-slate-200">
+                    <h3 className="text-sm font-semibold text-slate-900">Danger zone</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Permanently delete your account and all associated data (lists, connections, invites). You will not be able to sign in again.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      className="mt-4 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                      onClick={() => setShowDeleteAccountModal(true)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete my account
+                    </Button>
+                  </div>
                 </form>
               </div>
             </FadeIn>
           </div>
         </div>
       </PageTransition>
+
+      <ConfirmationModal
+        isOpen={showDeleteAccountModal}
+        title="Delete your account?"
+        description="This will permanently delete your profile and all your data (account lists, connections, invites). You will not be able to sign in again. This cannot be undone."
+        confirmLabel="Delete account"
+        cancelLabel="Cancel"
+        intent="danger"
+        isLoading={isDeletingAccount}
+        onConfirm={async () => {
+          setIsDeletingAccount(true);
+          try {
+            await deleteAccount();
+            setShowDeleteAccountModal(false);
+          } catch {
+            // Toast handled in deleteAccount
+          } finally {
+            setIsDeletingAccount(false);
+          }
+        }}
+        onClose={() => !isDeletingAccount && setShowDeleteAccountModal(false)}
+      />
 
       {mounted &&
         showVerifyPhoneModal &&

@@ -127,7 +127,7 @@ export function InviteModal({ isOpen, onClose, onSuccess }: InviteModalProps) {
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <p className="text-sm text-slate-600 leading-relaxed">
-                If they already have an account, the connection is created <span className="font-medium text-slate-800">instantly</span>. Otherwise, they&apos;ll receive an email invite.
+                If they already have an account, they&apos;ll receive a connection request and can <span className="font-medium text-slate-800">accept or reject</span> it. If not, they&apos;ll get an email invite and must sign up and confirm before you&apos;re connected.
               </p>
             </div>
 

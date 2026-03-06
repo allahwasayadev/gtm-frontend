@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { getUserInitials } from '@/lib/user-initials';
 import { NotificationBell } from './NotificationBell';
-import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info } from 'lucide-react';
+import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info, UsersRound } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
@@ -53,8 +53,11 @@ export function Header() {
     if (hasLists === false) {
       base.splice(1, 0, { name: 'Upload', href: '/dashboard/upload', icon: Upload });
     }
+    if (user?.roles?.includes('Admin')) {
+      base.splice(base.length - 1, 0, { name: 'Users', href: '/dashboard/users', icon: UsersRound });
+    }
     return base;
-  }, [hasLists]);
+  }, [hasLists, user?.roles]);
 
   const isActive = (href: string) =>
     href === '/dashboard' ? pathname === href : pathname.startsWith(href);

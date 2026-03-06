@@ -22,8 +22,6 @@ import {
   SkeletonTable,
   EmptyState,
   PageTransition,
-  StaggerList,
-  StaggerItem,
   FadeIn,
   LoadingScreen,
   AccountMatchTooltip,
@@ -105,7 +103,9 @@ export default function DashboardPage() {
     }
   };
 
-  const pendingConnections = connections.filter((c) => c.status === 'pending');
+  const pendingReceived = connections.filter(
+    (c) => c.status === 'pending' && !c.isSender,
+  );
   const activeConnections = connections.filter((c) => c.status === 'accepted');
   const filteredMatchesMap = useMemo<AccountMatchesMap>(() => {
     return Object.fromEntries(
@@ -211,85 +211,76 @@ export default function DashboardPage() {
               <SkeletonCard />
             </div>
           ) : (
-            <StaggerList className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-              <StaggerItem>
-                <Card
-                  hover
-                  className="border-t-4 border-t-indigo-500 rounded-none"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">
-                        Account List
-                      </p>
-                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">
-                        {activeList ? 1 : 0}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {activeList?.status === 'active'
-                          ? 'Published'
-                          : activeList
-                            ? 'Draft'
-                            : 'No list yet'}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                      <FileText className="w-6 h-6 text-white" />
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+              <Card
+                className="border-t-4 border-t-indigo-500 rounded-none cursor-default"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500 mb-1">
+                      Account List
+                    </p>
+                    <p className="text-4xl font-extrabold tracking-tight text-slate-900">
+                      {activeList ? 1 : 0}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {activeList?.status === 'active'
+                        ? 'Published'
+                        : activeList
+                          ? 'Draft'
+                          : 'No list yet'}
+                    </p>
                   </div>
-                </Card>
-              </StaggerItem>
-              <StaggerItem>
-                <Card
-                  hover
-                  className="border-t-4 border-t-emerald-500 rounded-none"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">
-                        Active Connections
-                      </p>
-                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">
-                        {activeConnections.length}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {activeConnections.length === 0
-                          ? 'Send your first invite'
-                          : 'Collaboration partners'}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
+                  <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <FileText className="w-6 h-6 text-white" />
                   </div>
-                </Card>
-              </StaggerItem>
-              <StaggerItem>
-                <Card
-                  hover
-                  className="border-t-4 border-t-amber-500 rounded-none"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">
-                        Pending Requests
-                      </p>
-                      <p className="text-4xl font-extrabold tracking-tight text-slate-900">
-                        {pendingConnections.length}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {pendingConnections.length === 0
-                          ? 'All caught up'
-                          : 'Awaiting response'}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                      <Clock className="w-6 h-6 text-white" />
-                    </div>
+                </div>
+              </Card>
+              <Card
+                className="border-t-4 border-t-emerald-500 rounded-none cursor-default"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500 mb-1">
+                      Active Connections
+                    </p>
+                    <p className="text-4xl font-extrabold tracking-tight text-slate-900">
+                      {activeConnections.length}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {activeConnections.length === 0
+                        ? 'Send your first invite'
+                        : 'Collaboration partners'}
+                    </p>
                   </div>
-                </Card>
-              </StaggerItem>
-            </StaggerList>
+                  <div className="w-12 h-12 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+              </Card>
+              <Card
+                className="border-t-4 border-t-amber-500 rounded-none cursor-default"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500 mb-1">
+                      Pending Requests
+                    </p>
+                    <p className="text-4xl font-extrabold tracking-tight text-slate-900">
+                      {pendingReceived.length}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {pendingReceived.length === 0
+                        ? 'All caught up'
+                        : 'Awaiting response'}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <Clock className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+              </Card>
+            </div>
           )}
 
           <FadeIn delay={0.15}>

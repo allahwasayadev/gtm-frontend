@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { authApi } from '@/features/auth/auth.api';
-import type { User } from '@/features/auth/types';
+import { usersApi } from '@/features/users/users.api';
+import type { User, UserRole } from '@/features/auth/types';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/error-utils';
@@ -11,9 +12,10 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  signup: (name: string, email: string, password: string, isOemSeller: boolean, company?: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: User, newToken?: string) => void;
+  deleteAccount: () => Promise<void>;
   verifyEmail: (email: string, code: string) => Promise<void>;
   resendVerificationCode: (email: string) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
@@ -42,7 +44,14 @@ function getStoredUser(): User | null {
   }
 
   try {
-    return JSON.parse(storedUser) as User;
+    const parsed = JSON.parse(storedUser) as User & { isOemSeller?: boolean };
+    if (!parsed.roles && 'isOemSeller' in parsed) {
+      return {
+        ...parsed,
+        roles: parsed.isOemSeller ? ['OEM'] : ['Reseller'],
+      } as User;
+    }
+    return parsed as User;
   } catch {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -72,9 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (name: string, email: string, password: string, isOemSeller: boolean, company?: string) => {
+  const signup = async (name: string, email: string, password: string, roles: UserRole[], company?: string) => {
     try {
-      const response = await authApi.signup({ name, email, password, isOemSeller, ...(company && { company }) });
+      const response = await authApi.signup({ name, email, password, roles, ...(company && { company }) });
       const { user, token } = response.data;
 
       localStorage.setItem('token', token);
@@ -142,6 +151,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      await usersApi.deleteMyAccount();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      toast.success('Account deleted successfully');
+      router.push('/login');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to delete account'));
+      throw error;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -158,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signup,
       logout,
       updateUser,
+      deleteAccount,
       verifyEmail,
       resendVerificationCode,
       requestPasswordReset,

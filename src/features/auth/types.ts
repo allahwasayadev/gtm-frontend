@@ -1,9 +1,11 @@
+export type UserRole = 'Admin' | 'OEM' | 'Reseller';
+
 export interface User {
   id: string;
   name: string;
   email: string;
   company?: string | null;
-  isOemSeller: boolean;
+  roles: UserRole[];
   hasCompletedOnboarding: boolean;
   emailVerified: boolean;
   phoneNumber?: string | null;
@@ -15,7 +17,7 @@ export interface UpdateProfileDto {
   name?: string;
   email?: string;
   company?: string;
-  isOemSeller?: boolean;
+  roles?: UserRole[];
   phoneNumber?: string;
 }
 
@@ -24,7 +26,7 @@ export interface UpdateProfileResponse {
   name: string;
   email: string;
   company?: string | null;
-  isOemSeller: boolean;
+  roles: UserRole[];
   hasCompletedOnboarding: boolean;
   phoneNumber?: string | null;
   isPhoneVerified: boolean;
@@ -65,7 +67,7 @@ export interface SignupDto {
   email: string;
   password: string;
   company?: string;
-  isOemSeller: boolean;
+  roles: UserRole[];
 }
 
 export interface LoginDto {
