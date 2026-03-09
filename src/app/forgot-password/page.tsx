@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
 
         <div className="relative">
           <Link href="/" className="inline-block mb-8">
-            <img src="/overlap-white-logo.png" alt="Ovrlap" className="h-16 w-auto" />
+            <img src="/ovrlap-logo-white.svg" alt="Ovrlap" className="h-16 w-auto" />
           </Link>
 
           <h1 className="text-3xl xl:text-4xl font-bold text-white mb-3">
@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
               >
-                <img src="/ovrlap-logo.png" alt="Ovrlap" className="h-14 w-auto" />
+                <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-14 w-auto" />
               </motion.div>
               <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
                 Reset Password
