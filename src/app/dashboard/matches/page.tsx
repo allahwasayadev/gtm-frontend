@@ -23,7 +23,6 @@ import type {
   AllMatchesResponse,
   ConnectionMatchSummary,
   Match,
-  MatchType,
   PartnerRelationshipType,
 } from '@/features/matching/types';
 import {
@@ -181,8 +180,8 @@ function MatchesContent() {
           partnerTypeFilter === 'ALL'
             ? account.partners
             : account.partners.filter(
-                (p) => p.partnerRelationshipType === partnerTypeFilter,
-              ),
+              (p) => p.partnerRelationshipType === partnerTypeFilter,
+            ),
       }))
       .filter((account) => account.partners.length > 0)
       .sort((a, b) => b.partners.length - a.partners.length);
@@ -376,11 +375,10 @@ function MatchesContent() {
                 <button
                   type="button"
                   onClick={() => setSelectedConnectionId('')}
-                  className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
-                    allPartnersMode
-                      ? 'border-indigo-300 bg-indigo-50'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
-                  }`}
+                  className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${allPartnersMode
+                    ? 'border-indigo-300 bg-indigo-50'
+                    : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
@@ -411,11 +409,10 @@ function MatchesContent() {
                         key={connection.id}
                         type="button"
                         onClick={() => setSelectedConnectionId(connection.id)}
-                        className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
-                          isSelected
-                            ? 'border-indigo-300 bg-indigo-50'
-                            : 'border-slate-200 bg-white hover:bg-slate-50'
-                        }`}
+                        className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${isSelected
+                          ? 'border-indigo-300 bg-indigo-50'
+                          : 'border-slate-200 bg-white hover:bg-slate-50'
+                          }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -607,14 +604,14 @@ function AllPartnersPanel({
 
       <Card className="p-0 overflow-hidden">
         <div className="divide-y divide-slate-100">
-          {accounts.map((account, index) => (
+          {accounts.map((account) => (
             <div key={account.yourAccountId} className="p-4 sm:p-5">
               <div className="flex flex-col lg:flex-row lg:items-start gap-4">
                 <div className="min-w-0 lg:w-72">
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-xs font-semibold text-slate-600 shrink-0">
-                      {index + 1}
-                    </span>
+                    <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 text-indigo-600" />
+                    </div>
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-900 truncate">
                         {account.yourAccountName}
@@ -627,29 +624,29 @@ function AllPartnersPanel({
                   </div>
                 </div>
 
-                <div className="flex-1 flex flex-wrap gap-2">
+                <div className="flex-1 flex flex-col gap-3">
                   {account.partners.map((partner) => (
                     <button
                       key={`${account.yourAccountId}-${partner.connectionId}`}
                       type="button"
                       onClick={() => onSelectConnection(partner.connectionId)}
-                      className="group rounded-xl border border-slate-200 bg-white px-3 py-2 text-left hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors"
+                      className="group w-full text-left rounded-2xl border border-slate-200/90 bg-white shadow-[0_6px_18px_rgba(15,23,42,0.04)] px-4 py-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200/70"
                     >
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span className="font-semibold text-slate-700 group-hover:text-indigo-700">
-                          {partner.partnerName}
-                        </span>
-                        <span>•</span>
-                        <span>{confidenceLabel(partner.confidence)}</span>
-                        <Badge
-                          variant={matchTypeBadgeVariant(partner.matchType)}
-                          className="!rounded-full"
-                        >
-                          {matchTypeLabel(partner.matchType)}
-                        </Badge>
-                      </div>
-                      <div className="mt-1 text-sm font-medium text-slate-900">
-                        {partner.theirAccountName}
+                      <div className="flex items-start gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-center shrink-0 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-800">
+                          {getInitials(partner.partnerName)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 truncate">
+                            {partner.partnerName}
+                          </div>
+                          <div className="text-xs text-slate-500 truncate">
+                            {partner.partnerCompany || 'Company not provided'}
+                          </div>
+                          <div className="mt-1 text-xs text-slate-500 truncate">
+                            Their list: {partner.theirAccountName}
+                          </div>
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -777,11 +774,12 @@ function PartnerPanel({
                       <div className="text-sm text-slate-600 truncate">
                         Them: {match.theirAccountName}
                       </div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <Badge variant="info">
-                          {confidenceLabel(match.matchConfidence)}
-                        </Badge>
-                        <Badge variant="outline">Suggested</Badge>
+                      <div className="mt-2 text-xs text-slate-500">
+                        {connection.otherUser.name} •{' '}
+                        {connection.otherUser.company ?? connection.otherUser.email}
+                      </div>
+                      <div className="mt-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-700">
+                        Suggested match
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -837,16 +835,13 @@ function PartnerPanel({
           </div>
 
           <div className="divide-y divide-slate-100">
-            {resolvedMatches.map((match, index) => (
+            {resolvedMatches.map((match) => (
               <div
                 key={`${match.yourAccountId}-${match.theirAccountId}`}
                 className="px-4 sm:px-5 py-4"
               >
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   <div className="flex items-center gap-3 min-w-0 lg:w-80">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-xs font-semibold text-slate-600 shrink-0">
-                      {index + 1}
-                    </span>
                     <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
                       <Building2 className="w-4 h-4 text-indigo-600" />
                     </div>
@@ -860,13 +855,13 @@ function PartnerPanel({
                     </div>
                   </div>
 
-                  <div className="flex-1 flex flex-wrap items-center gap-2">
-                    <Badge variant={matchTypeBadgeVariant(match.matchType)}>
-                      {matchTypeLabel(match.matchType)}
-                    </Badge>
-                    <Badge variant="info">
-                      {confidenceLabel(match.matchConfidence)}
-                    </Badge>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-slate-900 truncate">
+                      {connection.otherUser.name}
+                    </div>
+                    <div className="text-xs text-slate-500 truncate">
+                      {connection.otherUser.company ?? connection.otherUser.email}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -878,30 +873,11 @@ function PartnerPanel({
   );
 }
 
-function confidenceLabel(value: number): string {
-  return `${Math.round(value * 100)}%`;
-}
+function getInitials(name: string): string {
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length === 0) return '?';
 
-function matchTypeLabel(matchType: MatchType): string {
-  switch (matchType) {
-    case 'accepted':
-      return 'Exact';
-    case 'auto':
-      return 'Exact';
-    case 'suggested':
-      return 'Suggested';
-    default:
-      return 'Exact';
-  }
-}
-
-function matchTypeBadgeVariant(
-  matchType: MatchType,
-): 'success' | 'info' | 'warning' {
-  switch (matchType) {
-    case 'suggested':
-      return 'warning';
-    default:
-      return 'success';
-  }
+  const [first, second] = parts;
+  const initials = `${first[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
+  return initials || '?';
 }

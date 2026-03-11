@@ -55,7 +55,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <img src="/ovrlap-logo.png" alt="Ovrlap" className="h-20 sm:h-24 md:h-28 w-auto" />
+            <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-20 sm:h-24 md:h-28 w-auto" />
           </motion.div>
           <motion.p
             className="text-xl md:text-2xl font-medium text-slate-600 mb-4"

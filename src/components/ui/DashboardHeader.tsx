@@ -71,8 +71,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
       <div className="mx-auto lg:px-14 px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/dashboard">
-          <img src="/ovrlap-logo.png" alt="Ovrlap"className="h-12 w-auto object-contain" />
+          <Link href="/dashboard" className="inline-flex items-center">
+            <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-12 w-auto object-contain" />
           </Link>
 
           <nav className="hidden md:flex items-center">

@@ -13,6 +13,11 @@ const lato = Lato({
 export const metadata: Metadata = {
   title: 'Ovrlap - Account Mapping Made Simple',
   description: 'Find overlapping accounts instantly with your sales partners',
+  icons: {
+    icon: '/ovrlap-mark.svg',
+    shortcut: '/ovrlap-mark.svg',
+    apple: '/ovrlap-mark.svg',
+  },
 };
 
 export default function RootLayout({
