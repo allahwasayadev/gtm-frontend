@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from './Button';
 
 interface ConfirmationModalProps {
@@ -26,10 +26,15 @@ export function ConfirmationModal({
   onConfirm,
   onClose,
 }: ConfirmationModalProps) {
+  const [animateIn, setAnimateIn] = useState(false);
+
   useEffect(() => {
     if (!isOpen) {
+      setAnimateIn(false);
       return;
     }
+
+    const id = requestAnimationFrame(() => setAnimateIn(true));
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -39,6 +44,7 @@ export function ConfirmationModal({
 
     window.addEventListener('keydown', handleEscape);
     return () => {
+      cancelAnimationFrame(id);
       window.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
@@ -50,10 +56,17 @@ export function ConfirmationModal({
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-slate-900/55 backdrop-blur-sm"
+        className={`absolute inset-0 bg-slate-900/55 backdrop-blur-sm transition-opacity duration-300 ${
+          animateIn ? 'opacity-100' : 'opacity-0'
+        }`}
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/70">
+      <div
+        className={`relative w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/70 transition-all duration-300 ease-out ${
+          animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
+        }`}
+        style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
+      >
         <div className="px-6 py-5 border-b border-slate-100">
           <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
           <p className="mt-2 text-sm text-slate-600 leading-relaxed">
