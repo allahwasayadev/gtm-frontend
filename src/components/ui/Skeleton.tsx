@@ -69,7 +69,7 @@ export function SkeletonListItem() {
 export function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200">
-      <div className="bg-slate-800 px-4 py-3 flex gap-6">
+      <div className="bg-slate-50 px-4 py-3 flex gap-6">
         <Skeleton className="h-3 w-8 opacity-30" />
         <Skeleton className="h-3 w-40 opacity-30" />
         <Skeleton className="h-3 w-20 opacity-30" />
