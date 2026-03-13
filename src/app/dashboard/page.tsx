@@ -37,6 +37,7 @@ import {
   Mail,
   ClipboardCheck,
   ArrowRight,
+  ChevronRight,
   Shield,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -216,7 +217,10 @@ export default function DashboardPage() {
                 className="border-t-4 border-t-indigo-500 rounded-none cursor-default"
               >
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-right">
                     <p className="text-sm font-medium text-slate-500 mb-1">
                       Account List
                     </p>
@@ -231,16 +235,16 @@ export default function DashboardPage() {
                           : 'No list yet'}
                     </p>
                   </div>
-                  <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
                 </div>
               </Card>
               <Card
                 className="border-t-4 border-t-emerald-500 rounded-none cursor-default"
               >
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="w-12 h-12 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-right">
                     <p className="text-sm font-medium text-slate-500 mb-1">
                       Active Connections
                     </p>
@@ -253,16 +257,16 @@ export default function DashboardPage() {
                         : 'Collaboration partners'}
                     </p>
                   </div>
-                  <div className="w-12 h-12 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
                 </div>
               </Card>
               <Card
                 className="border-t-4 border-t-amber-500 rounded-none cursor-default"
               >
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="w-12 h-12 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <Clock className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-right">
                     <p className="text-sm font-medium text-slate-500 mb-1">
                       Pending Requests
                     </p>
@@ -274,9 +278,6 @@ export default function DashboardPage() {
                         ? 'All caught up'
                         : 'Awaiting response'}
                     </p>
-                  </div>
-                  <div className="w-12 h-12 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                    <Clock className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </Card>
@@ -303,7 +304,7 @@ export default function DashboardPage() {
                         {activeList.name}
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
                   </div>
                 </Link>
               ) : (
@@ -324,7 +325,7 @@ export default function DashboardPage() {
                         Add account list
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
                   </div>
                 </Link>
               )}
@@ -345,7 +346,7 @@ export default function DashboardPage() {
                       Send email invite
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                  <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </button>
               <Link href="/dashboard/connections" className="group">
@@ -361,7 +362,7 @@ export default function DashboardPage() {
                       Manage partners
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                  <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </Link>
               <Link
@@ -381,7 +382,7 @@ export default function DashboardPage() {
                       Account overlaps
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                  <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </Link>
             </div>
