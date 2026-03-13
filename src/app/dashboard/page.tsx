@@ -63,7 +63,7 @@ export default function DashboardPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [matchViewFilter, setMatchViewFilter] =
-    useState<MatchViewFilter>('RESELLER');
+    useState<MatchViewFilter>('ALL');
   const { showTour, closeTour } = useOnboardingTour({
     ready: !loadingData && !loading,
     hasCompletedOnboarding: user?.hasCompletedOnboarding,
