@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { connectionsApi } from '@/features/connections/connections.api';
@@ -30,6 +31,7 @@ import {
   useOnboardingTour,
 } from '@/components/ui';
 import {
+  Building2,
   FileText,
   Users,
   Clock,
@@ -64,6 +66,7 @@ export default function DashboardPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [matchViewFilter, setMatchViewFilter] =
     useState<MatchViewFilter>('ALL');
+  const [companyFilter, setCompanyFilter] = useState<string>('');
   const { showTour, closeTour } = useOnboardingTour({
     ready: !loadingData && !loading,
     hasCompletedOnboarding: user?.hasCompletedOnboarding,
@@ -108,6 +111,19 @@ export default function DashboardPage() {
     (c) => c.status === 'pending' && !c.isSender,
   );
   const activeConnections = connections.filter((c) => c.status === 'accepted');
+  const companyFilterOptions = useMemo(() => {
+    const companies = new Set<string>();
+    Object.values(matchesMap).forEach((partners) => {
+      partners.forEach((p) => {
+        if (p.partnerCompany) companies.add(p.partnerCompany);
+      });
+    });
+    return [
+      { value: '', label: 'All companies' },
+      ...[...companies].sort().map((c) => ({ value: c, label: c })),
+    ];
+  }, [matchesMap]);
+
   const filteredMatchesMap = useMemo<AccountMatchesMap>(() => {
     return Object.fromEntries(
       Object.entries(matchesMap).map(([accountId, partners]) => [
@@ -119,11 +135,14 @@ export default function DashboardPage() {
           ) {
             return false;
           }
+          if (companyFilter && partner.partnerCompany !== companyFilter) {
+            return false;
+          }
           return true;
         }),
       ]),
     );
-  }, [matchesMap, matchViewFilter]);
+  }, [matchesMap, matchViewFilter, companyFilter]);
   const matchedAccountsCount = useMemo(
     () =>
       Object.values(filteredMatchesMap).filter(
@@ -145,6 +164,45 @@ export default function DashboardPage() {
       return bMatches - aMatches;
     });
   }, [activeAccounts, filteredMatchesMap]);
+
+  // Rep groups for company-filtered view on dashboard
+  const dashboardRepGroups = useMemo(() => {
+    if (!companyFilter) return [];
+    const groupMap = new Map<
+      string,
+      {
+        connectionId: string;
+        partnerName: string;
+        accounts: Array<{ accountId: string; accountName: string; theirAccountName: string }>;
+      }
+    >();
+    for (const [accountId, partners] of Object.entries(filteredMatchesMap)) {
+      const account = activeAccounts.find((a) => a.id === accountId);
+      if (!account) continue;
+      for (const partner of partners) {
+        const key = partner.connectionId ?? partner.partnerName;
+        if (!groupMap.has(key)) {
+          groupMap.set(key, {
+            connectionId: partner.connectionId ?? '',
+            partnerName: partner.partnerName,
+            accounts: [],
+          });
+        }
+        groupMap.get(key)!.accounts.push({
+          accountId,
+          accountName: account.accountName,
+          theirAccountName: partner.theirAccountName,
+        });
+      }
+    }
+    return [...groupMap.values()].sort(
+      (a, b) => b.accounts.length - a.accounts.length,
+    );
+  }, [companyFilter, filteredMatchesMap, activeAccounts]);
+
+  const companyOverlapTotal = useMemo(() => {
+    return dashboardRepGroups.reduce((sum, g) => sum + g.accounts.length, 0);
+  }, [dashboardRepGroups]);
 
   if (loading || !user) {
     return <LoadingScreen message="Loading your dashboard..." />;
@@ -425,6 +483,14 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
                   <Dropdown
+                    aria-label="Company filter"
+                    value={companyFilter}
+                    onChange={setCompanyFilter}
+                    options={companyFilterOptions}
+                    placeholder="All companies"
+                    className="sm:w-44"
+                  />
+                  <Dropdown
                     aria-label="Match display filter"
                     value={matchViewFilter}
                     onChange={(value) =>
@@ -452,6 +518,107 @@ export default function DashboardPage() {
 
               {loadingData ? (
                 <SkeletonTable rows={6} />
+              ) : companyFilter && activeList && activeAccounts.length > 0 ? (
+                dashboardRepGroups.length === 0 ? (
+                  <div className="py-8">
+                    <EmptyState
+                      icon={FileText}
+                      title="No overlaps found"
+                      description={`No account overlaps found for ${companyFilter} with the current filters.`}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Company header */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="flex items-center gap-3 p-4 rounded-xl border border-indigo-100 bg-indigo-50/50"
+                    >
+                      <div className="h-10 w-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">
+                        {companyFilter.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-base font-bold text-slate-900">
+                          {companyFilter}
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          {companyOverlapTotal} overlap{companyOverlapTotal !== 1 ? 's' : ''}
+                          {' · '}
+                          {dashboardRepGroups.length} rep{dashboardRepGroups.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <Badge variant="info">{companyOverlapTotal}</Badge>
+                    </motion.div>
+
+                    {/* Rep groups */}
+                    {dashboardRepGroups.map((group, groupIndex) => (
+                      <motion.div
+                        key={group.connectionId || group.partnerName}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          delay: groupIndex * 0.06,
+                          duration: 0.3,
+                          ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+                        }}
+                        className="rounded-xl border border-slate-200/60 overflow-hidden"
+                      >
+                        {/* Rep header */}
+                        <div className="px-4 py-3 bg-slate-50/70 border-b border-slate-100">
+                          <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-700 font-semibold text-sm flex items-center justify-center shrink-0">
+                              {getInitials(group.partnerName)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-semibold text-slate-900 text-sm truncate">
+                                {group.partnerName}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {group.accounts.length} overlap{group.accounts.length !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+                            <Badge variant={group.accounts.length > 0 ? 'success' : 'outline'}>
+                              {group.accounts.length}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Account list */}
+                        <div className="divide-y divide-slate-50">
+                          {group.accounts.map((account, accountIndex) => (
+                            <motion.div
+                              key={account.accountId}
+                              initial={{ opacity: 0, x: -6 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{
+                                delay: accountIndex * 0.03,
+                                duration: 0.2,
+                                ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+                              }}
+                              className="px-4 py-2.5 bg-white"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                  <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-medium text-slate-900 text-sm truncate">
+                                    {account.accountName}
+                                  </div>
+                                  <div className="text-xs text-slate-500 truncate">
+                                    Matched to {account.theirAccountName}
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )
               ) : !activeList || activeAccounts.length === 0 ? (
                 <div className="border-2 border-dashed border-slate-200 rounded-xl">
                   <EmptyState
@@ -615,4 +782,12 @@ export default function DashboardPage() {
       />
     </>
   );
+}
+
+function getInitials(name: string): string {
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length === 0) return '?';
+  const [first, second] = parts;
+  const initials = `${first[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
+  return initials || '?';
 }

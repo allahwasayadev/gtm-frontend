@@ -46,13 +46,16 @@ const EMPTY_ALL_MATCHES: AllMatchesResponse = {
 
 type PartnerTypeFilter = 'ALL' | PartnerRelationshipType;
 
-const partnerTypeFilterOptions: { value: PartnerTypeFilter; label: string }[] = [
-  { value: 'ALL', label: 'All partners' },
-  { value: 'OEM', label: 'OEMs only' },
-  { value: 'RESELLER', label: 'Resellers only' },
-];
+const partnerTypeFilterOptions: { value: PartnerTypeFilter; label: string }[] =
+  [
+    { value: 'ALL', label: 'All partners' },
+    { value: 'OEM', label: 'OEMs only' },
+    { value: 'RESELLER', label: 'Resellers only' },
+  ];
 
-function getPartnerTypeFromConnection(connection: Connection): PartnerRelationshipType {
+function getPartnerTypeFromConnection(
+  connection: Connection,
+): PartnerRelationshipType {
   return connection.otherUser?.roles?.includes('OEM') ? 'OEM' : 'RESELLER';
 }
 
@@ -83,7 +86,7 @@ function MatchesContent() {
     null,
   );
   const [partnerTypeFilter, setPartnerTypeFilter] =
-    useState<PartnerTypeFilter>('RESELLER');
+    useState<PartnerTypeFilter>('ALL');
 
   const loadConnections = useCallback(async () => {
     try {
@@ -180,8 +183,8 @@ function MatchesContent() {
           partnerTypeFilter === 'ALL'
             ? account.partners
             : account.partners.filter(
-              (p) => p.partnerRelationshipType === partnerTypeFilter,
-            ),
+                (p) => p.partnerRelationshipType === partnerTypeFilter,
+              ),
       }))
       .filter((account) => account.partners.length > 0)
       .sort((a, b) => b.partners.length - a.partners.length);
@@ -199,7 +202,9 @@ function MatchesContent() {
     return connections
       .filter((connection) => {
         const summary = summaryByConnectionId.get(connection.id);
-        const type = summary?.partnerRelationshipType ?? getPartnerTypeFromConnection(connection);
+        const type =
+          summary?.partnerRelationshipType ??
+          getPartnerTypeFromConnection(connection);
         return partnerTypeFilter === 'ALL' || type === partnerTypeFilter;
       })
       .map((connection) => {
@@ -222,14 +227,20 @@ function MatchesContent() {
     if (selectedConnectionId && partnerTypeFilter !== 'ALL') {
       const conn = connections.find((c) => c.id === selectedConnectionId);
       if (conn) {
-        const type = summaryByConnectionId.get(conn.id)?.partnerRelationshipType
-          ?? getPartnerTypeFromConnection(conn);
+        const type =
+          summaryByConnectionId.get(conn.id)?.partnerRelationshipType ??
+          getPartnerTypeFromConnection(conn);
         if (type !== partnerTypeFilter) {
           setSelectedConnectionId('');
         }
       }
     }
-  }, [partnerTypeFilter, selectedConnectionId, connections, summaryByConnectionId]);
+  }, [
+    partnerTypeFilter,
+    selectedConnectionId,
+    connections,
+    summaryByConnectionId,
+  ]);
 
   const refreshCurrentView = useCallback(async () => {
     if (selectedConnectionId) {
@@ -375,10 +386,11 @@ function MatchesContent() {
                 <button
                   type="button"
                   onClick={() => setSelectedConnectionId('')}
-                  className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${allPartnersMode
-                    ? 'border-indigo-300 bg-indigo-50'
-                    : 'border-slate-200 bg-white hover:bg-slate-50'
-                    }`}
+                  className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
+                    allPartnersMode
+                      ? 'border-indigo-300 bg-indigo-50'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
@@ -409,10 +421,11 @@ function MatchesContent() {
                         key={connection.id}
                         type="button"
                         onClick={() => setSelectedConnectionId(connection.id)}
-                        className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${isSelected
-                          ? 'border-indigo-300 bg-indigo-50'
-                          : 'border-slate-200 bg-white hover:bg-slate-50'
-                          }`}
+                        className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
+                          isSelected
+                            ? 'border-indigo-300 bg-indigo-50'
+                            : 'border-slate-200 bg-white hover:bg-slate-50'
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -776,7 +789,8 @@ function PartnerPanel({
                       </div>
                       <div className="mt-2 text-xs text-slate-500">
                         {connection.otherUser.name} •{' '}
-                        {connection.otherUser.company ?? connection.otherUser.email}
+                        {connection.otherUser.company ??
+                          connection.otherUser.email}
                       </div>
                       <div className="mt-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-700">
                         Suggested match
@@ -860,7 +874,8 @@ function PartnerPanel({
                       {connection.otherUser.name}
                     </div>
                     <div className="text-xs text-slate-500 truncate">
-                      {connection.otherUser.company ?? connection.otherUser.email}
+                      {connection.otherUser.company ??
+                        connection.otherUser.email}
                     </div>
                   </div>
                 </div>
