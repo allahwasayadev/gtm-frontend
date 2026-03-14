@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { getUserInitials } from '@/lib/user-initials';
 import { NotificationBell } from './NotificationBell';
-import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info, UsersRound } from 'lucide-react';
+import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info, UsersRound, Shield, Scale } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
@@ -49,12 +49,14 @@ export function Header() {
       { name: 'Connections', href: '/dashboard/connections', icon: Users },
       { name: 'Matches', href: '/dashboard/matches', icon: ClipboardCheck },
       { name: 'About', href: '/about', icon: Info },
+      { name: 'Privacy', href: '/privacy', icon: Shield },
+      { name: 'Terms', href: '/terms', icon: Scale },
     ];
     if (hasLists === false) {
       base.splice(1, 0, { name: 'Upload', href: '/dashboard/upload', icon: Upload });
     }
     if (user?.roles?.includes('Admin')) {
-      base.splice(base.length - 1, 0, { name: 'Users', href: '/dashboard/users', icon: UsersRound });
+      base.splice(base.indexOf(base.find(i => i.name === 'About')!), 0, { name: 'Users', href: '/dashboard/users', icon: UsersRound });
     }
     return base;
   }, [hasLists, user?.roles]);
