@@ -175,7 +175,7 @@ export default function ConnectionsPage() {
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="min-w-0">
                           <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
-                          <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.email}</div>
+                          <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
                         </div>
                       </div>
                       <div className="flex gap-2 shrink-0 sm:ml-auto">
@@ -277,7 +277,7 @@ export default function ConnectionsPage() {
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className="flex-1 min-w-0">
                                 <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
-                                <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.email}</div>
+                                <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
                                 <div className="mt-1">
                                   <Badge
                                     variant={sharedMatchCount > 0 ? 'success' : 'outline'}
@@ -354,7 +354,7 @@ export default function ConnectionsPage() {
                             <Badge variant="warning" size="sm">Muted</Badge>
                           </div>
                           <div className="text-xs sm:text-sm text-slate-500 truncate">
-                            {connection.otherUser.email}
+                            {connection.otherUser.company || connection.otherUser.email}
                           </div>
                           <div className="mt-1">
                             <Badge
@@ -411,7 +411,7 @@ export default function ConnectionsPage() {
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="min-w-0">
                         <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
-                        <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.email}</div>
+                        <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 sm:ml-auto">
