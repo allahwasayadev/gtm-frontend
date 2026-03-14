@@ -199,10 +199,6 @@ export default function DashboardPage() {
     );
   }, [companyFilter, filteredMatchesMap, activeAccounts]);
 
-  const companyOverlapTotal = useMemo(() => {
-    return dashboardRepGroups.reduce((sum, g) => sum + g.accounts.length, 0);
-  }, [dashboardRepGroups]);
-
   if (loading || !user) {
     return <LoadingScreen message="Loading your dashboard..." />;
   }
@@ -455,7 +451,9 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap">
                       <h3 className="text-base sm:text-lg font-semibold text-slate-900 truncate">
-                        {activeList ? activeList.name : 'Your Accounts'}
+                        {companyFilter
+                          ? `Accounts overlapping between ${user.name} and ${companyFilter}`
+                          : `${user.name} Accounts`}
                       </h3>
                       {activeList &&
                         (activeList.status === 'active' ? (
@@ -528,26 +526,6 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Company header */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                      className="flex items-center gap-3 p-4 rounded-xl border border-indigo-100 bg-indigo-50/50"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-base font-bold text-slate-900">
-                          {companyFilter}
-                        </h4>
-                        <p className="text-xs text-slate-500">
-                          {companyOverlapTotal} overlap{companyOverlapTotal !== 1 ? 's' : ''}
-                          {' · '}
-                          {dashboardRepGroups.length} rep{dashboardRepGroups.length !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                      <Badge variant="info">{companyOverlapTotal}</Badge>
-                    </motion.div>
-
                     {/* Rep groups */}
                     {dashboardRepGroups.map((group, groupIndex) => (
                       <motion.div
