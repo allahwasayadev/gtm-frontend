@@ -44,13 +44,17 @@ export function Header() {
   }, [user]);
 
   const navItems = useMemo(() => {
+    const publicItems = [
+      { name: 'About', href: '/about', icon: Info },
+      { name: 'Privacy', href: '/privacy', icon: Shield },
+      { name: 'Terms', href: '/terms', icon: Scale },
+    ];
+    if (!user) return publicItems;
     const base = [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
       { name: 'Connections', href: '/dashboard/connections', icon: Users },
       { name: 'Matches', href: '/dashboard/matches', icon: ClipboardCheck },
-      { name: 'About', href: '/about', icon: Info },
-      { name: 'Privacy', href: '/privacy', icon: Shield },
-      { name: 'Terms', href: '/terms', icon: Scale },
+      ...publicItems,
     ];
     if (hasLists === false) {
       base.splice(1, 0, { name: 'Upload', href: '/dashboard/upload', icon: Upload });
@@ -59,7 +63,7 @@ export function Header() {
       base.splice(base.indexOf(base.find(i => i.name === 'About')!), 0, { name: 'Users', href: '/dashboard/users', icon: UsersRound });
     }
     return base;
-  }, [hasLists, user?.roles]);
+  }, [hasLists, user]);
 
   const isActive = (href: string) =>
     href === '/dashboard' ? pathname === href : pathname.startsWith(href);
@@ -98,49 +102,62 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <NotificationBell />
+            {user ? (
+              <>
+                <NotificationBell />
 
-            <div ref={menuRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(prev => !prev)}
-                className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-all ${isMenuOpen ? 'bg-slate-100' : 'hover:bg-slate-100'}`}
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 to-violet-500 text-sm font-semibold text-white shadow-sm">
-                  {getUserInitials(user?.name, 1)}
-                </div>
-                <span className="hidden sm:block text-sm font-medium text-slate-700 max-w-24 truncate">
-                  {user?.name || 'User'}
-                </span>
-                <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
+                <div ref={menuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsMenuOpen(prev => !prev)}
+                    className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-all ${isMenuOpen ? 'bg-slate-100' : 'hover:bg-slate-100'}`}
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 to-violet-500 text-sm font-semibold text-white shadow-sm">
+                      {getUserInitials(user?.name, 1)}
+                    </div>
+                    <span className="hidden sm:block text-sm font-medium text-slate-700 max-w-24 truncate">
+                      {user?.name || 'User'}
+                    </span>
+                    <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
 
-              {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200/80 bg-white py-1 shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
-                  <div className="border-b border-slate-100 px-4 py-3">
-                    <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
-                    <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
-                    {user?.company && <p className="text-xs text-indigo-600 font-medium mt-1">{user.company}</p>}
-                  </div>
-                  <div className="py-1">
-                    <Link href="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                      <User className="h-4 w-4 text-slate-400" />
-                      Your Profile
-                    </Link>
-                    <Link href="/dashboard/connections" onClick={closeMenu} className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                      <Settings className="h-4 w-4 text-slate-400" />
-                      Settings
-                    </Link>
-                  </div>
-                  <div className="border-t border-slate-100 py-1">
-                    <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                      <LogOut className="h-4 w-4" />
-                      Sign out
-                    </button>
-                  </div>
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200/80 bg-white py-1 shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
+                      <div className="border-b border-slate-100 px-4 py-3">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
+                        <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
+                        {user?.company && <p className="text-xs text-indigo-600 font-medium mt-1">{user.company}</p>}
+                      </div>
+                      <div className="py-1">
+                        <Link href="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                          <User className="h-4 w-4 text-slate-400" />
+                          Your Profile
+                        </Link>
+                        <Link href="/dashboard/connections" onClick={closeMenu} className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                          <Settings className="h-4 w-4 text-slate-400" />
+                          Settings
+                        </Link>
+                      </div>
+                      <div className="border-t border-slate-100 py-1">
+                        <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                          <LogOut className="h-4 w-4" />
+                          Sign out
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link href="/login" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                  Log in
+                </Link>
+                <Link href="/signup" className="rounded-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                  Sign up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

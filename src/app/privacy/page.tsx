@@ -16,6 +16,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { Header } from '@/components/ui';
+import Link from 'next/link';
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -376,10 +377,14 @@ export default function PrivacyPage() {
           {/* Footer */}
           <footer className="border-t border-slate-200 bg-white mt-auto">
             <div className="px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
-              <div className="max-w-4xl mx-auto text-center">
+              <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
                 <p className="text-slate-500 text-sm">
                   &copy; {new Date().getFullYear()} Ovrlap. All rights reserved.
                 </p>
+                <div className="flex items-center gap-6">
+                  <Link href="/about" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">About</Link>
+                  <Link href="/terms" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Terms</Link>
+                </div>
               </div>
             </div>
           </footer>

@@ -25,9 +25,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const publicPaths = ['/about', '/privacy', '/terms', '/login', '/signup', '/forgot-password', '/reset-password'];
+      const isPublicPage = publicPaths.some(p => window.location.pathname.startsWith(p));
+      if (!isPublicPage) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   },

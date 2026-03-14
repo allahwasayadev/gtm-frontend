@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Mail, Check, X, ArrowRight, Zap, RefreshCw, Eye } from 'lucide-react';
 import { Header } from '@/components/ui';
+import Link from 'next/link';
 
 export default function AboutPage() {
   const oldWay = [
@@ -268,10 +269,14 @@ export default function AboutPage() {
           {/* Footer */}
           <footer className="border-t border-slate-200 bg-white mt-auto">
             <div className="px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
-              <div className="max-w-4xl mx-auto text-center">
+              <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
                 <p className="text-slate-500 text-sm">
                   &copy; {new Date().getFullYear()} Ovrlap. All rights reserved.
                 </p>
+                <div className="flex items-center gap-6">
+                  <Link href="/privacy" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Privacy</Link>
+                  <Link href="/terms" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Terms</Link>
+                </div>
               </div>
             </div>
           </footer>

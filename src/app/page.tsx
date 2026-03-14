@@ -165,6 +165,12 @@ export default function LandingPage() {
             <Link href="/about" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">
               About
             </Link>
+            <Link href="/privacy" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">
+              Terms
+            </Link>
           </div>
         </div>
       </div>
