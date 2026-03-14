@@ -43,7 +43,6 @@ import {
   Shield,
 } from 'lucide-react';
 import Link from 'next/link';
-import { avatarColors } from '@/lib/avatar-colors';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/error-utils';
 
@@ -536,9 +535,6 @@ export default function DashboardPage() {
                       transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                       className="flex items-center gap-3 p-4 rounded-xl border border-indigo-100 bg-indigo-50/50"
                     >
-                      <div className="h-10 w-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">
-                        {companyFilter.charAt(0).toUpperCase()}
-                      </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-base font-bold text-slate-900">
                           {companyFilter}
@@ -568,9 +564,6 @@ export default function DashboardPage() {
                         {/* Rep header */}
                         <div className="px-4 py-3 bg-slate-50/70 border-b border-slate-100">
                           <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-700 font-semibold text-sm flex items-center justify-center shrink-0">
-                              {getInitials(group.partnerName)}
-                            </div>
                             <div className="min-w-0 flex-1">
                               <div className="font-semibold text-slate-900 text-sm truncate">
                                 {group.partnerName}
@@ -677,8 +670,6 @@ export default function DashboardPage() {
                         const isTopMatch =
                           topMatchCount > 0 &&
                           partners.length === topMatchCount;
-                        const colorClass =
-                          avatarColors[index % avatarColors.length];
                         return (
                           <tr
                             key={account.id}
@@ -701,11 +692,6 @@ export default function DashboardPage() {
                             </td>
                             <td className="px-3 sm:px-5 py-3">
                               <div className="flex items-center gap-2 sm:gap-3">
-                                <div
-                                  className={`hidden sm:flex w-8 h-8 rounded-full ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-sm`}
-                                >
-                                  {account.accountName.charAt(0).toUpperCase()}
-                                </div>
                                 <div className="min-w-0">
                                   <span
                                     className={`font-medium text-sm sm:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}
@@ -782,12 +768,4 @@ export default function DashboardPage() {
       />
     </>
   );
-}
-
-function getInitials(name: string): string {
-  const parts = name.split(' ').filter(Boolean);
-  if (parts.length === 0) return '?';
-  const [first, second] = parts;
-  const initials = `${first[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
-  return initials || '?';
 }

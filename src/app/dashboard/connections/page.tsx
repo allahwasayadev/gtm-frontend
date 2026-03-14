@@ -14,8 +14,6 @@ import {
 import { Users, Clock, Mail, ArrowLeftRight, Bell, CheckCircle2, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { avatarColors } from '@/lib/avatar-colors';
-import { getUserInitials } from '@/lib/user-initials';
 
 export default function ConnectionsPage() {
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -175,9 +173,6 @@ export default function ConnectionsPage() {
                       className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 bg-amber-50/50 border border-amber-200/60 rounded-xl"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className={`w-10 h-10 sm:w-11 sm:h-11 ${avatarColors[index % avatarColors.length]} rounded-full flex items-center justify-center shrink-0 shadow-sm text-white font-semibold text-sm`}>
-                          {getUserInitials(connection.otherUser.name)}
-                        </div>
                         <div className="min-w-0">
                           <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
                           <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.email}</div>
@@ -268,9 +263,7 @@ export default function ConnectionsPage() {
               ) : (
                 <div className="space-y-0 divide-y divide-slate-100">
                   <AnimatePresence initial={false}>
-                    {activeAccepted.map((connection, index) => {
-                      const colorClass = avatarColors[index % avatarColors.length];
-                      const initials = getUserInitials(connection.otherUser.name);
+                    {activeAccepted.map((connection) => {
                       const sharedMatchCount = connection.sharedMatchCount ?? 0;
                       return (
                         <motion.div
@@ -282,9 +275,6 @@ export default function ConnectionsPage() {
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center gap-3 py-3.5 px-1 sm:px-2 group hover:bg-indigo-50/40 rounded-lg transition-colors duration-150 -mx-1 sm:-mx-2">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div className={`w-10 h-10 sm:w-11 sm:h-11 ${colorClass} rounded-full flex items-center justify-center shrink-0 shadow-sm text-white font-semibold text-sm`}>
-                                {initials}
-                              </div>
                               <div className="flex-1 min-w-0">
                                 <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
                                 <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.email}</div>
@@ -348,9 +338,7 @@ export default function ConnectionsPage() {
                 </div>
               </div>
               <div className="px-5 sm:px-6 py-4 space-y-0 divide-y divide-amber-100/70">
-                {mutedAccepted.map((connection, index) => {
-                  const colorClass = avatarColors[index % avatarColors.length];
-                  const initials = getUserInitials(connection.otherUser.name);
+                {mutedAccepted.map((connection) => {
                   const sharedMatchCount = connection.sharedMatchCount ?? 0;
                   return (
                     <div
@@ -358,9 +346,6 @@ export default function ConnectionsPage() {
                       className="flex flex-col sm:flex-row sm:items-center gap-3 py-3.5 px-1 sm:px-2"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className={`w-10 h-10 sm:w-11 sm:h-11 ${colorClass} rounded-full flex items-center justify-center shrink-0 shadow-sm text-white font-semibold text-sm`}>
-                          {initials}
-                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 min-w-0">
                             <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">
@@ -424,9 +409,6 @@ export default function ConnectionsPage() {
                     className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 border border-slate-100 rounded-xl"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-linear-to-br from-sky-400 to-blue-500 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-sky-500/15 text-white font-semibold text-sm">
-                        {getUserInitials(connection.otherUser.name)}
-                      </div>
                       <div className="min-w-0">
                         <div className="font-semibold text-slate-900 text-sm sm:text-base truncate">{connection.otherUser.name}</div>
                         <div className="text-xs sm:text-sm text-slate-500 truncate">{connection.otherUser.email}</div>

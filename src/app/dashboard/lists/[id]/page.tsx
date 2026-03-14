@@ -10,7 +10,6 @@ import {
 } from '@/components/ui';
 import { Pencil, X, Plus, FileText, Save, List } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { avatarColors } from '@/lib/avatar-colors';
 
 export default function ListDetailPage() {
   const router = useRouter();
@@ -268,7 +267,6 @@ export default function ListDetailPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {accounts.map((account, index) => {
-                      const colorClass = avatarColors[index % avatarColors.length];
                       return (
                         <tr
                           key={account.id}
@@ -295,11 +293,6 @@ export default function ListDetailPage() {
                               />
                             ) : (
                               <div className="flex items-center gap-2 sm:gap-3">
-                                <div className={`hidden sm:flex w-8 h-8 rounded-full ${colorClass} items-center justify-center text-white font-semibold text-sm shrink-0 shadow-sm`}>
-                                  {account.accountName
-                                    .charAt(0)
-                                    .toUpperCase()}
-                                </div>
                                 <span className="font-medium text-slate-700 text-sm sm:text-base group-hover:text-slate-900 transition-colors">
                                   {account.accountName}
                                 </span>

@@ -646,9 +646,6 @@ function AllPartnersPanel({
                       className="group w-full text-left rounded-2xl border border-slate-200/90 bg-white shadow-[0_6px_18px_rgba(15,23,42,0.04)] px-4 py-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200/70"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-center shrink-0 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-800">
-                          {getInitials(partner.partnerName)}
-                        </div>
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-slate-900 truncate">
                             {partner.partnerName}
@@ -886,13 +883,4 @@ function PartnerPanel({
       )}
     </div>
   );
-}
-
-function getInitials(name: string): string {
-  const parts = name.split(' ').filter(Boolean);
-  if (parts.length === 0) return '?';
-
-  const [first, second] = parts;
-  const initials = `${first[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
-  return initials || '?';
 }

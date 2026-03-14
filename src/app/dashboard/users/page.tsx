@@ -14,7 +14,6 @@ import {
 import { usersApi, type ListUserItem, type AdminStats } from '@/features/users/users.api';
 import { useAuth } from '@/contexts/AuthContext';
 import { getErrorMessage } from '@/lib/error-utils';
-import { getUserInitials } from '@/lib/user-initials';
 import toast from 'react-hot-toast';
 import { UsersRound, Trash2, Mail, Building2, Shield, User as UserIcon, FileStack, GitBranch, Layers } from 'lucide-react';
 
@@ -203,15 +202,6 @@ export default function UsersPage() {
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div
-                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold ${
-                                  isYou
-                                    ? 'bg-indigo-500 text-white ring-2 ring-indigo-200/80'
-                                    : 'bg-slate-100 text-slate-600'
-                                }`}
-                              >
-                                {getUserInitials(isYou ? user?.name ?? 'You' : u.name, 2)}
-                              </div>
                               <div className="min-w-0">
                                 <p className="font-semibold text-slate-900 truncate">
                                   {isYou ? (

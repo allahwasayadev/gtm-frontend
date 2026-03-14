@@ -285,13 +285,6 @@ export default function ProfilePage() {
     }
   };
 
-  const getInitials = (name: string) => name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -319,10 +312,7 @@ export default function ProfilePage() {
                 <div className="bg-linear-to-r from-indigo-500 via-indigo-600 to-violet-600 px-6 py-8">
                   <div className="flex flex-col sm:flex-row items-center gap-5">
                     <div className="relative">
-                      <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white/30 shadow-xl">
-                        <span className="text-3xl font-bold text-white">{getInitials(user.name)}</span>
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 rounded-lg border-2 border-white flex items-center justify-center">
+                      <div className="w-6 h-6 bg-emerald-400 rounded-lg border-2 border-white flex items-center justify-center">
                         <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                       </div>
                     </div>
