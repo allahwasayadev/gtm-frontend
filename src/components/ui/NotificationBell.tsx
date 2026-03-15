@@ -165,7 +165,7 @@ export function NotificationBell() {
       return;
     }
 
-    const handleMouseDown = (event: MouseEvent) => {
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -177,11 +177,13 @@ export function NotificationBell() {
       }
     };
 
-    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
     document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen]);
@@ -251,7 +253,7 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 z-50 w-[min(24rem,calc(100vw-1.5rem))] rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
+        <div className="fixed inset-x-0 top-16 z-50 mx-3 sm:absolute sm:inset-x-auto sm:top-12 sm:right-0 sm:mx-0 sm:w-96 rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-slate-900">
@@ -277,7 +279,7 @@ export function NotificationBell() {
           <div
             ref={listRef}
             onScroll={handleListScroll}
-            className="max-h-96 space-y-2 overflow-y-auto px-3 py-3"
+            className="max-h-[60vh] sm:max-h-96 space-y-2 overflow-y-auto px-3 py-3"
           >
             {loading ? (
               <p className="px-1 py-4 text-center text-sm text-slate-500">
@@ -297,12 +299,12 @@ export function NotificationBell() {
                       : 'border-sky-200 bg-sky-50'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">
+                  <div className="flex items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-slate-900 line-clamp-2">
                         {notification.title}
                       </p>
-                      <p className="mt-0.5 text-xs text-slate-600">
+                      <p className="mt-0.5 text-xs text-slate-600 line-clamp-2">
                         {notification.message}
                       </p>
                     </div>
@@ -310,7 +312,7 @@ export function NotificationBell() {
                       <Link
                         href={notification.ctaUrl}
                         onClick={() => setIsOpen(false)}
-                        className="inline-flex items-center justify-center rounded-lg bg-linear-to-r from-indigo-600 to-indigo-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-indigo-700 hover:to-indigo-600 hover:shadow-md"
+                        className="inline-flex items-center justify-center rounded-lg bg-linear-to-r from-indigo-600 to-indigo-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-indigo-700 hover:to-indigo-600 hover:shadow-md shrink-0"
                       >
                         View
                       </Link>
