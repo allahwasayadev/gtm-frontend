@@ -26,6 +26,9 @@ export function AccountMatchTooltip({
   const [isVisible, setIsVisible] = useState(false);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; below: boolean; positionRight: boolean; }>({ top: 0, left: 0, below: false, positionRight: false });
   const containerRef = useRef<HTMLDivElement>(null);
+  // Track whether the last interaction was touch-based so we can
+  // suppress the synthetic mouseenter that mobile browsers fire after a tap.
+  const isTouchRef = useRef(false);
 
   const updatePosition = useCallback(() => {
     if (!containerRef.current) return;
@@ -49,17 +52,25 @@ export function AccountMatchTooltip({
     });
   }, []);
 
-  // Close tooltip when tapping outside (mobile)
+  // Close tooltip when tapping/clicking outside
   useEffect(() => {
     if (!isVisible) return;
+
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsVisible(false);
       }
     };
-    document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('touchstart', handleOutsideClick);
+
+    // Use a rAF to defer registration so the current event cycle
+    // (the tap that opened the tooltip) doesn't immediately close it.
+    const rafId = requestAnimationFrame(() => {
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('touchstart', handleOutsideClick);
+    });
+
     return () => {
+      cancelAnimationFrame(rafId);
       document.removeEventListener('mousedown', handleOutsideClick);
       document.removeEventListener('touchstart', handleOutsideClick);
     };
@@ -70,22 +81,46 @@ export function AccountMatchTooltip({
     return <>{children}</>;
   }
 
-  const handleShow = () => {
-    updatePosition();
-    setIsVisible(true);
-  };
-
   return (
     <div
       ref={containerRef}
       className="relative"
-      onMouseEnter={handleShow}
-      onMouseLeave={() => setIsVisible(false)}
+      onTouchStart={() => {
+        // Flag that this interaction is touch-based.
+        // This prevents the subsequent synthetic mouseenter from interfering.
+        isTouchRef.current = true;
+      }}
+      onMouseEnter={() => {
+        // Skip if this mouseenter was triggered by a tap (mobile).
+        if (isTouchRef.current) return;
+        updatePosition();
+        setIsVisible(true);
+      }}
+      onMouseLeave={() => {
+        // Skip if we're in touch mode — let onClick handle closing.
+        if (isTouchRef.current) return;
+        setIsVisible(false);
+      }}
       onClick={() => {
-        if (!isVisible) {
-          updatePosition();
+        // On desktop with mouse, hover already handles open/close,
+        // but clicking should still toggle for accessibility.
+        // On mobile (touch), this is the primary interaction.
+        if (isTouchRef.current) {
+          if (!isVisible) {
+            updatePosition();
+            setIsVisible(true);
+          } else {
+            setIsVisible(false);
+          }
+          // Reset the touch flag after a short delay so that
+          // if the user later uses a mouse, hover works again.
+          setTimeout(() => { isTouchRef.current = false; }, 400);
+        } else {
+          if (!isVisible) {
+            updatePosition();
+          }
+          setIsVisible((v) => !v);
         }
-        setIsVisible((v) => !v);
       }}
     >
       <div className="cursor-pointer">{children}</div>
