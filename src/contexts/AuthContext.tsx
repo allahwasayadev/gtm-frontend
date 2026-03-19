@@ -12,12 +12,14 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: User, newToken?: string) => void;
   deleteAccount: () => Promise<void>;
   verifyEmail: (email: string, code: string) => Promise<void>;
   resendVerificationCode: (email: string) => Promise<void>;
+  sendPhoneVerificationCode: (phoneNumber: string) => Promise<{ code?: string }>;
+  verifyPhoneCode: (code: string) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
@@ -81,9 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (name: string, email: string, password: string, roles: UserRole[], company?: string) => {
+  const signup = async (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string) => {
     try {
-      const response = await authApi.signup({ name, email, password, roles, ...(company && { company }) });
+      const response = await authApi.signup({ name, email, password, roles, ...(company && { company }), ...(phoneNumber && { phoneNumber }) });
       const { user, token } = response.data;
 
       localStorage.setItem('token', token);
@@ -119,6 +121,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.success('New verification code sent!');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to resend code'));
+      throw error;
+    }
+  };
+
+  const sendPhoneVerificationCode = async (phoneNumber: string): Promise<{ code?: string }> => {
+    try {
+      const response = await authApi.sendPhoneVerificationCode({ phoneNumber });
+      toast.success('Verification code sent to your phone.');
+      return { code: response.data.code };
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to send verification code'));
+      throw error;
+    }
+  };
+
+  const verifyPhoneCode = async (code: string) => {
+    try {
+      const response = await authApi.verifyPhoneCode({ code });
+      const { user: updatedUser, token } = response.data;
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+
+      toast.success('Phone number verified!');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Verification failed'));
       throw error;
     }
   };
@@ -184,6 +213,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       deleteAccount,
       verifyEmail,
       resendVerificationCode,
+      sendPhoneVerificationCode,
+      verifyPhoneCode,
       requestPasswordReset,
       resetPassword,
     }}>

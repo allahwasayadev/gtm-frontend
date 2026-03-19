@@ -39,7 +39,11 @@ function VerifyEmailContent() {
   // Redirect if already verified
   useEffect(() => {
     if (!loading && user?.emailVerified) {
-      router.push('/dashboard');
+      if (!user.isPhoneVerified) {
+        router.push('/verify-phone');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }, [user, loading, router]);
 
@@ -62,7 +66,8 @@ function VerifyEmailContent() {
 
     try {
       await verifyEmail(email, code);
-      router.push('/dashboard');
+      // After email verification, check if phone needs verification
+      router.push('/verify-phone');
     } catch (error: unknown) {
       setError(getErrorMessage(error, 'Verification failed'));
     } finally {

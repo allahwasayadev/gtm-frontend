@@ -68,6 +68,7 @@ export interface SignupDto {
   password: string;
   company?: string;
   roles: UserRole[];
+  phoneNumber?: string;
 }
 
 export interface LoginDto {

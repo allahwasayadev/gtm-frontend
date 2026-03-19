@@ -206,6 +206,9 @@ export default function TermsPage() {
                   Ovrlap uses SMS verification to authenticate user accounts and improve platform security.
                 </p>
                 <p>
+                  Consent is collected on the required phone number verification screen during sign-up, where users agree to receive automated SMS verification codes for account security.
+                </p>
+                <p>
                   By providing your phone number, you consent to receive verification messages related to account authentication.
                 </p>
                 <div className="bg-slate-50 rounded-xl p-5 space-y-3 border border-slate-100">

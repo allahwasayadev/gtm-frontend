@@ -4,10 +4,11 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import type { UserRole } from '@/features/auth/types';
-import { Button, Input, Dropdown, LoadingScreen } from '@/components/ui';
+import { Button, Input, Dropdown, LoadingScreen, CountryCodeSelect } from '@/components/ui';
 import { motion } from 'framer-motion';
-import { User, Building2, Mail, Lock, ArrowRight, Check } from 'lucide-react';
+import { User, Building2, Mail, Lock, ArrowRight, Check, Phone } from 'lucide-react';
 import Link from 'next/link';
+
 
 const features = [
   'Upload your account lists securely',
@@ -36,6 +37,9 @@ function SignupContent() {
     password: string;
     confirmPassword: string;
     role: UserRole | null;
+    countryCode: string;
+    phoneLocal: string;
+    smsConsent: boolean;
   }>({
     name: '',
     company: '',
@@ -43,6 +47,9 @@ function SignupContent() {
     password: '',
     confirmPassword: '',
     role: null,
+    countryCode: '+1',
+    phoneLocal: '',
+    smsConsent: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -78,6 +85,16 @@ function SignupContent() {
       newErrors.role = 'Please select your role';
     }
 
+    const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
+    if (!phoneDigits) {
+      newErrors.phone = 'Phone number is required';
+    } else {
+      const fullPhone = `${formData.countryCode}${phoneDigits}`;
+      if (!/^\+[1-9]\d{7,14}$/.test(fullPhone)) {
+        newErrors.phone = 'Enter a valid phone number';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -92,7 +109,8 @@ function SignupContent() {
     setIsSubmitting(true);
     try {
       const selectedRole = formData.role as UserRole;
-      await signup(formData.name, formData.email, formData.password, [selectedRole], formData.company || undefined);
+      const phoneNumber = `${formData.countryCode}${formData.phoneLocal.replace(/\D/g, '')}`;
+      await signup(formData.name, formData.email, formData.password, [selectedRole], formData.company || undefined, phoneNumber);
       router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch {
       // Error is handled by AuthContext with toast
@@ -274,11 +292,89 @@ function SignupContent() {
                 autoComplete="new-password"
               />
 
+              {/* Phone Number */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <CountryCodeSelect
+                    value={formData.countryCode}
+                    onChange={(code) => {
+                      setFormData({ ...formData, countryCode: code });
+                      setErrors({ ...errors, phone: '' });
+                    }}
+                  />
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <Phone className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={15}
+                      value={formData.phoneLocal}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 15);
+                        setFormData({ ...formData, phoneLocal: digits });
+                        setErrors({ ...errors, phone: '' });
+                      }}
+                      placeholder="5551234567"
+                      className={`block w-full pl-10 pr-4 py-2.5 text-sm text-slate-900 bg-white border rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-white focus:shadow-sm transition-all ${
+                        errors.phone
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20'
+                      }`}
+                      autoComplete="tel-national"
+                    />
+                  </div>
+                </div>
+                {errors.phone && (
+                  <p className="mt-1.5 text-sm text-red-600">{errors.phone}</p>
+                )}
+              </div>
+
+              {/* SMS Consent Checkbox (A2P 10DLC) */}
+              <label className="flex items-start gap-3 bg-slate-50 rounded-xl p-4 border border-slate-100 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={formData.smsConsent}
+                  onChange={(e) => setFormData({ ...formData, smsConsent: e.target.checked })}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 accent-indigo-600"
+                />
+                <div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    I agree to receive automated SMS verification codes from Ovrlap for account security. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                  </p>
+                  <div className="flex gap-3 mt-2">
+                    <a
+                      href="https://ovrlap.app/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Terms
+                    </a>
+                    <a
+                      href="https://ovrlap.app/privacy-policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Privacy Policy
+                    </a>
+                  </div>
+                </div>
+              </label>
+
               <Button
                 type="submit"
                 variant="primary"
                 size="lg"
                 isLoading={isSubmitting}
+                disabled={!formData.smsConsent}
                 className="w-full shadow-lg shadow-indigo-500/25"
               >
                 Create Account

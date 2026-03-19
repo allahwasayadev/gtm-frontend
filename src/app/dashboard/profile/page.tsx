@@ -441,48 +441,64 @@ export default function ProfilePage() {
 
                     <div className="grid sm:grid-cols-2 gap-5">
                       <div>
-                        <Input
-                          label="Phone Number"
-                          icon={Phone}
-                          type="tel"
-                          value={formData.phoneNumber}
-                          onChange={(e) => {
-                            const nextPhone = e.target.value;
-                            setFormData((prev) => ({ ...prev, phoneNumber: nextPhone }));
-                            setErrors((prev) => ({ ...prev, phoneNumber: '' }));
-                            setIsEmailEditingEnabled(false);
-                            setShowVerifyPhoneModal(false);
-                            setVerifyCodeInput('');
-                            setErrors((prev) => ({ ...prev, verifyCode: '' }));
-
-                            const normalizedNextPhone = normalizePhoneForCompare(nextPhone);
-                            const normalizedStoredPhone = normalizePhoneForCompare(user.phoneNumber || '');
-                            if (!user.isPhoneVerified || normalizedNextPhone !== normalizedStoredPhone) {
-                            } 
-                          }}
-                          placeholder="+15551234567"
-                          helperText={
-                            hasPhoneNumber
-                              ? 'Required to unlock email updates. Use E.164 format.'
-                              : 'Add a phone number for account recovery and to unlock email updates. Use E.164 format.'
-                          }
-                          error={errors.phoneNumber}
-                          autoComplete="tel"
-                        />
-                        {hasPhoneNumber && !isPhoneVerifiedForCurrentPhone && (
-                          <div className="mt-2 flex items-center gap-2 flex-wrap">
-                            <span className="text-sm text-amber-600">Not verified yet</span>
-                            <span className="text-slate-300">·</span>
-                            <Button
-                              type="button"
-                              variant="primary"
-                              size="sm"
-                              onClick={handleVerifyNowClick}
-                              isLoading={isSendingPhoneCode}
-                            >
-                              Verify now?
-                            </Button>
+                        {isPhoneVerifiedForCurrentPhone ? (
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                              Phone Number
+                            </label>
+                            <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                              <Phone className="w-4 h-4 text-slate-400" />
+                              <span className="text-sm text-slate-700 flex-1">{formData.phoneNumber}</span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">
+                                <CheckCircle2 className="w-3 h-3" />
+                                Verified
+                              </span>
+                            </div>
+                            <p className="mt-1.5 text-sm text-slate-500">
+                              Verified phone number. To change, contact support.
+                            </p>
                           </div>
+                        ) : (
+                          <>
+                            <Input
+                              label="Phone Number"
+                              icon={Phone}
+                              type="tel"
+                              value={formData.phoneNumber}
+                              onChange={(e) => {
+                                const nextPhone = e.target.value;
+                                setFormData((prev) => ({ ...prev, phoneNumber: nextPhone }));
+                                setErrors((prev) => ({ ...prev, phoneNumber: '' }));
+                                setIsEmailEditingEnabled(false);
+                                setShowVerifyPhoneModal(false);
+                                setVerifyCodeInput('');
+                                setErrors((prev) => ({ ...prev, verifyCode: '' }));
+                              }}
+                              placeholder="+15551234567"
+                              helperText={
+                                hasPhoneNumber
+                                  ? 'Required to unlock email updates. Use E.164 format.'
+                                  : 'Add a phone number for account recovery and to unlock email updates. Use E.164 format.'
+                              }
+                              error={errors.phoneNumber}
+                              autoComplete="tel"
+                            />
+                            {hasPhoneNumber && !isPhoneVerifiedForCurrentPhone && (
+                              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                <span className="text-sm text-amber-600">Not verified yet</span>
+                                <span className="text-slate-300">·</span>
+                                <Button
+                                  type="button"
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={handleVerifyNowClick}
+                                  isLoading={isSendingPhoneCode}
+                                >
+                                  Verify now?
+                                </Button>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
 
