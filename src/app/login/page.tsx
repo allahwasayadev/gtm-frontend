@@ -37,8 +37,9 @@ function LoginContent() {
     if (!loading && user) {
       if (!user.emailVerified) {
         router.push(`/verify-email?email=${encodeURIComponent(user.email)}`);
-      } else if (!user.isPhoneVerified) {
-        router.push('/verify-phone');
+      // TODO: Uncomment phone verification gate when Twilio A2P 10DLC campaign is approved
+      // } else if (!user.isPhoneVerified) {
+      //   router.push('/verify-phone');
       } else {
         router.push(redirectTo || '/dashboard');
       }
@@ -52,8 +53,9 @@ function LoginContent() {
       const response = await login(formData.email, formData.password);
       if (!response?.emailVerified) {
         router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
-      } else if (!response?.isPhoneVerified) {
-        router.push('/verify-phone');
+      // TODO: Uncomment phone verification gate when Twilio A2P 10DLC campaign is approved
+      // } else if (!response?.isPhoneVerified) {
+      //   router.push('/verify-phone');
       } else {
         router.push(redirectTo || '/dashboard');
       }
