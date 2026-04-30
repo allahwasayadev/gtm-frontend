@@ -319,7 +319,7 @@ function PhoneStep({
       {/* A2P 10DLC consent text */}
       <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
         <p className="text-xs text-slate-600 leading-relaxed">
-          By continuing, you agree to receive automated SMS verification codes from Ovrlap for account security. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+          By continuing, you agree to receive automated SMS messages from Ovrlap for account verification, login, and account security. Message frequency varies based on login or verification activity. Message and data rates may apply. Reply STOP to opt out and HELP for help.
         </p>
         <div className="flex gap-3 mt-2">
           <a
