@@ -276,6 +276,7 @@ export default function AboutPage() {
                 <div className="flex items-center gap-6">
                   <Link href="/privacy" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Privacy</Link>
                   <Link href="/terms" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Terms</Link>
+                  <Link href="/sms-opt-in" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">SMS Terms</Link>
                 </div>
               </div>
             </div>

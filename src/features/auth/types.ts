@@ -10,6 +10,10 @@ export interface User {
   emailVerified: boolean;
   phoneNumber?: string | null;
   isPhoneVerified?: boolean;
+  /** A2P 10DLC consent state, surfaced so the UI never implies consent. */
+  smsConsent?: boolean;
+  smsConsentAt?: string | null;
+  smsOptedOut?: boolean;
   createdAt: string;
 }
 
@@ -36,6 +40,8 @@ export interface UpdateProfileResponse {
 
 export interface SendPhoneVerificationCodeDto {
   phoneNumber: string;
+  /** A2P 10DLC consent captured on this screen, when applicable. */
+  smsConsent?: boolean;
 }
 
 export interface SendPhoneVerificationCodeResponse {
@@ -69,6 +75,8 @@ export interface SignupDto {
   company?: string;
   roles: UserRole[];
   phoneNumber?: string;
+  /** A2P 10DLC consent. Optional — declining must not block account creation. */
+  smsConsent?: boolean;
 }
 
 export interface LoginDto {

@@ -81,7 +81,7 @@ export default function TermsPage() {
                   transition={{ delay: 0.3, duration: 0.4 }}
                 >
                   <Clock className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm text-slate-500">Last Updated: March 13, 2026</span>
+                  <span className="text-sm text-slate-500">Last Updated: September 27, 2026</span>
                 </motion.div>
               </motion.div>
             </div>
@@ -203,19 +203,21 @@ export default function TermsPage() {
                 title="SMS Verification"
               >
                 <p>
-                  Ovrlap uses SMS verification to authenticate user accounts and improve platform security.
+                  Ovrlap uses SMS solely to deliver one-time verification codes that confirm a user controls the phone number on their account.
                 </p>
                 <p>
-                  Consent is collected on the required phone number verification screen during sign-up, where users agree to receive automated SMS messages from Ovrlap for account verification, login, and account security.
+                  Consent is collected by an unchecked opt-in box in three places — the sign-up form, the phone verification screen, and profile settings — where users agree to receive automated SMS messages from Ovrlap containing one-time account verification codes.
                 </p>
                 <p>
-                  By providing your phone number, you consent to receive verification messages related to account authentication.
+                  Consenting to SMS is optional and is not a condition of creating or using an Ovrlap account. Providing a phone number is also optional. Declining does not restrict access to any part of the service, and consent may be withdrawn at any time from profile settings or by replying STOP.
                 </p>
                 <div className="bg-slate-50 rounded-xl p-5 space-y-3 border border-slate-100">
                   {[
-                    'Message frequency varies depending on login and verification activity.',
-                    'Message and data rates may apply depending on your carrier.',
-                    'Users may reply STOP to opt out or HELP for assistance.',
+                    'Ovrlap sends no marketing or promotional text messages.',
+                    'Message frequency varies — a message is sent only when the user requests a verification code.',
+                    'Standard message and data rates may apply depending on your carrier.',
+                    'Users may withdraw consent from profile settings at any time, or reply STOP to opt out, START to resubscribe, or HELP for assistance. Customer care is available at support@ovrlap.app.',
+                    'Carriers are not liable for delayed or undelivered messages.',
                   ].map((item, i) => (
                     <p key={i} className="flex items-start gap-3 text-sm text-slate-600">
                       <div className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 mt-2" />
@@ -223,6 +225,18 @@ export default function TermsPage() {
                     </p>
                   ))}
                 </div>
+                <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
+                  <p className="font-semibold text-indigo-900 leading-relaxed">
+                    No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
+                  </p>
+                </div>
+                <p className="text-sm">
+                  Full details are on the{' '}
+                  <Link href="/sms-opt-in" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                    SMS Terms &amp; Opt-In
+                  </Link>{' '}
+                  page.
+                </p>
               </TermsSection>
 
               {/* Account Deletion */}
@@ -320,6 +334,7 @@ export default function TermsPage() {
                 <div className="flex items-center gap-6">
                   <Link href="/about" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">About</Link>
                   <Link href="/privacy" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Privacy</Link>
+                  <Link href="/sms-opt-in" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">SMS Terms</Link>
                 </div>
               </div>
             </div>

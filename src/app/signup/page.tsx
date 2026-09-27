@@ -8,6 +8,7 @@ import { Button, Input, Dropdown, LoadingScreen, CountryCodeSelect } from '@/com
 import { motion } from 'framer-motion';
 import { User, Building2, Mail, Lock, ArrowRight, Check, Phone } from 'lucide-react';
 import Link from 'next/link';
+import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 
 
 const features = [
@@ -85,14 +86,16 @@ function SignupContent() {
       newErrors.role = 'Please select your role';
     }
 
+    // Phone is optional: it is only needed for SMS verification, and SMS is
+    // never a condition of creating an account. Validate only if supplied.
     const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
-    if (!phoneDigits) {
-      newErrors.phone = 'Phone number is required';
-    } else {
+    if (phoneDigits) {
       const fullPhone = `${formData.countryCode}${phoneDigits}`;
       if (!/^\+[1-9]\d{7,14}$/.test(fullPhone)) {
         newErrors.phone = 'Enter a valid phone number';
       }
+    } else if (formData.smsConsent) {
+      newErrors.phone = 'Add a phone number to receive SMS verification codes';
     }
 
     setErrors(newErrors);
@@ -109,8 +112,21 @@ function SignupContent() {
     setIsSubmitting(true);
     try {
       const selectedRole = formData.role as UserRole;
-      const phoneNumber = `${formData.countryCode}${formData.phoneLocal.replace(/\D/g, '')}`;
-      await signup(formData.name, formData.email, formData.password, [selectedRole], formData.company || undefined, phoneNumber);
+      const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
+      const phoneNumber = phoneDigits
+        ? `${formData.countryCode}${phoneDigits}`
+        : undefined;
+      // Consent travels with the signup so the backend can record when, where
+      // and to what wording the user agreed.
+      await signup(
+        formData.name,
+        formData.email,
+        formData.password,
+        [selectedRole],
+        formData.company || undefined,
+        phoneNumber,
+        formData.smsConsent && Boolean(phoneNumber),
+      );
       router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch {
       // Error is handled by AuthContext with toast
@@ -295,7 +311,8 @@ function SignupContent() {
               {/* Phone Number */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Phone Number <span className="text-red-500">*</span>
+                  Phone Number{' '}
+                  <span className="font-normal text-slate-400">(optional)</span>
                 </label>
                 <div className="flex gap-2">
                   <CountryCodeSelect
@@ -334,7 +351,7 @@ function SignupContent() {
                 )}
               </div>
 
-              {/* SMS Consent Checkbox (A2P 10DLC) */}
+              {/* SMS Consent Checkbox (A2P 10DLC) — optional by design */}
               <label className="flex items-start gap-3 bg-slate-50 rounded-xl p-4 border border-slate-100 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -344,27 +361,37 @@ function SignupContent() {
                 />
                 <div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    I agree to receive automated SMS messages from Ovrlap for account verification, login, and account security. Message frequency varies based on login or verification activity. Message and data rates may apply. Reply STOP to opt out and HELP for help.
+                    {SMS_CONSENT_TEXT}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">
+                    Optional. You can create your account and use Ovrlap without
+                    agreeing to SMS, and you can change this later in your profile.
                   </p>
                   <div className="flex gap-3 mt-2">
-                    <a
-                      href="https://ovrlap.app/terms"
+                    <Link
+                      href="/terms"
                       target="_blank"
-                      rel="noopener noreferrer"
                       className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Terms
-                    </a>
-                    <a
-                      href="https://ovrlap.app/privacy-policy"
+                    </Link>
+                    <Link
+                      href="/privacy"
                       target="_blank"
-                      rel="noopener noreferrer"
                       className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Privacy Policy
-                    </a>
+                    </Link>
+                    <Link
+                      href="/sms-opt-in"
+                      target="_blank"
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      SMS Terms
+                    </Link>
                   </div>
                 </div>
               </label>
@@ -374,7 +401,6 @@ function SignupContent() {
                 variant="primary"
                 size="lg"
                 isLoading={isSubmitting}
-                disabled={!formData.smsConsent}
                 className="w-full shadow-lg shadow-indigo-500/25"
               >
                 Create Account

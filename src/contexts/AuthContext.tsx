@@ -12,13 +12,13 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string, smsConsent?: boolean) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: User, newToken?: string) => void;
   deleteAccount: () => Promise<void>;
   verifyEmail: (email: string, code: string) => Promise<void>;
   resendVerificationCode: (email: string) => Promise<void>;
-  sendPhoneVerificationCode: (phoneNumber: string) => Promise<{ code?: string }>;
+  sendPhoneVerificationCode: (phoneNumber: string, smsConsent?: boolean) => Promise<{ code?: string }>;
   verifyPhoneCode: (code: string) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
@@ -83,9 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string) => {
+  const signup = async (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string, smsConsent?: boolean) => {
     try {
-      const response = await authApi.signup({ name, email, password, roles, ...(company && { company }), ...(phoneNumber && { phoneNumber }) });
+      const response = await authApi.signup({ name, email, password, roles, ...(company && { company }), ...(phoneNumber && { phoneNumber }), ...(smsConsent !== undefined && { smsConsent }) });
       const { user, token } = response.data;
 
       localStorage.setItem('token', token);
@@ -125,9 +125,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const sendPhoneVerificationCode = async (phoneNumber: string): Promise<{ code?: string }> => {
+  const sendPhoneVerificationCode = async (phoneNumber: string, smsConsent?: boolean): Promise<{ code?: string }> => {
     try {
-      const response = await authApi.sendPhoneVerificationCode({ phoneNumber });
+      const response = await authApi.sendPhoneVerificationCode({ phoneNumber, ...(smsConsent !== undefined && { smsConsent }) });
       toast.success('Verification code sent to your phone.');
       return { code: response.data.code };
     } catch (error: unknown) {

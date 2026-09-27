@@ -27,6 +27,10 @@ export const usersApi = {
       '/users/profile/phone-verification/send',
       data,
     ),
+  withdrawSmsConsent: () =>
+    api.post<{ message: string; smsConsent: boolean; smsOptedOut: boolean }>(
+      '/users/profile/sms-consent/withdraw',
+    ),
   verifyPhoneVerificationCode: (data: VerifyPhoneVerificationCodeDto) =>
     api.post<VerifyPhoneVerificationCodeResponse>(
       '/users/profile/phone-verification/verify',

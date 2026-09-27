@@ -171,6 +171,7 @@ export default function LandingPage() {
             <Link href="/terms" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">
               Terms
             </Link>
+                  <Link href="/sms-opt-in" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">SMS Terms</Link>
           </div>
         </div>
       </div>

@@ -3,11 +3,12 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, CodeInput, LoadingScreen, CountryCodeSelect } from '@/components/ui';
+import { Button, CodeInput, LoadingScreen, CountryCodeSelect, COUNTRY_CODES } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { Smartphone, ArrowLeft, RefreshCw, ArrowRight, Shield, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { getErrorMessage } from '@/lib/error-utils';
+import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 
 const RESEND_COOLDOWN = 60;
 
@@ -25,9 +26,13 @@ function VerifyPhoneContent() {
   const router = useRouter();
   const { user, loading, sendPhoneVerificationCode, verifyPhoneCode } = useAuth();
 
-  // If user already has a phone from signup, start on OTP step
+  // Always start on the phone step. The OTP step says "we sent a code", so it
+  // must only be reachable after a send has actually succeeded — otherwise a
+  // failed send leaves the user looking at a claim that is not true.
   const userHasPhone = Boolean(user?.phoneNumber);
-  const [step, setStep] = useState<Step>(userHasPhone ? 'otp' : 'phone');
+  const [step, setStep] = useState<Step>('phone');
+  /** The number a successful send actually went to. */
+  const [sentTo, setSentTo] = useState('');
   const [countryCode, setCountryCode] = useState('+1');
   const [phoneLocal, setPhoneLocal] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -35,10 +40,16 @@ function VerifyPhoneContent() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [error, setError] = useState('');
   const [autoSent, setAutoSent] = useState(false);
+  // Consent already recorded at signup, if any. Users who declined there see
+  // the checkbox here, unchecked, and can still skip the whole step.
+  const alreadyConsented = Boolean(user?.smsConsent);
+  const [smsConsent, setSmsConsent] = useState(false);
+  const hasConsent = alreadyConsented || smsConsent;
 
-  const fullPhoneNumber = userHasPhone && step === 'otp'
-    ? user!.phoneNumber!
-    : `${countryCode}${phoneLocal.replace(/\D/g, '')}`;
+  const fullPhoneNumber =
+    step === 'otp' && sentTo
+      ? sentTo
+      : `${countryCode}${phoneLocal.replace(/\D/g, '')}`;
 
   // Redirect if not logged in or not email-verified
   useEffect(() => {
@@ -58,15 +69,20 @@ function VerifyPhoneContent() {
 
   // Auto-send OTP if phone was collected during signup
   useEffect(() => {
-    if (!loading && user?.phoneNumber && !user.isPhoneVerified && !autoSent) {
+    // Only auto-send when consent is already on record. Never send on page
+    // load to someone who has not opted in.
+    if (!loading && user?.phoneNumber && !user.isPhoneVerified && !autoSent && alreadyConsented) {
+      const target = user.phoneNumber;
       setAutoSent(true);
-      setStep('otp');
       setIsSending(true);
-      sendPhoneVerificationCode(user.phoneNumber)
+      sendPhoneVerificationCode(target)
         .then((result) => {
           if (result?.code) {
             console.log('[Phone verification] Code:', result.code);
           }
+          // Only now is it true that a code was sent.
+          setSentTo(target);
+          setStep('otp');
           setResendCooldown(RESEND_COOLDOWN);
         })
         .catch((err) => {
@@ -76,7 +92,23 @@ function VerifyPhoneContent() {
           setIsSending(false);
         });
     }
-  }, [loading, user, autoSent, sendPhoneVerificationCode]);
+  }, [loading, user, autoSent, alreadyConsented, sendPhoneVerificationCode]);
+
+  // Prefill from the number captured at signup, so starting on the phone step
+  // does not lose it. Longest matching dial code wins (+1 vs +12 etc).
+  useEffect(() => {
+    if (!user?.phoneNumber || phoneLocal) return;
+    const codes = [...new Set(COUNTRY_CODES.map((c) => c.code))].sort(
+      (a, b) => b.length - a.length,
+    );
+    const match = codes.find((c) => user.phoneNumber!.startsWith(c));
+    if (match) {
+      setCountryCode(match);
+      setPhoneLocal(user.phoneNumber!.slice(match.length));
+    } else {
+      setPhoneLocal(user.phoneNumber!.replace(/\D/g, ''));
+    }
+  }, [user?.phoneNumber, phoneLocal]);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -92,15 +124,21 @@ function VerifyPhoneContent() {
       setError('Phone number is required');
       return;
     }
+    if (!hasConsent) {
+      setError('Please agree to receive SMS messages before we send a code.');
+      return;
+    }
 
     setIsSending(true);
     setError('');
 
     try {
-      const result = await sendPhoneVerificationCode(fullPhoneNumber);
+      const target = fullPhoneNumber;
+      const result = await sendPhoneVerificationCode(target, smsConsent || undefined);
       if (result?.code) {
         console.log('[Phone verification] Code:', result.code);
       }
+      setSentTo(target);
       setStep('otp');
       setResendCooldown(RESEND_COOLDOWN);
     } catch (err: unknown) {
@@ -231,6 +269,13 @@ function VerifyPhoneContent() {
                 onSubmit={handleSendCode}
                 isSending={isSending}
                 error={error}
+                smsConsent={smsConsent}
+                alreadyConsented={alreadyConsented}
+                onSmsConsentChange={(v) => {
+                  setSmsConsent(v);
+                  setError('');
+                }}
+                onSkip={() => router.push('/dashboard')}
               />
             ) : (
               <OtpStep
@@ -265,6 +310,10 @@ function PhoneStep({
   onSubmit,
   isSending,
   error,
+  smsConsent,
+  alreadyConsented,
+  onSmsConsentChange,
+  onSkip,
 }: {
   countryCode: string;
   onCountryCodeChange: (v: string) => void;
@@ -273,6 +322,10 @@ function PhoneStep({
   onSubmit: () => void;
   isSending: boolean;
   error: string;
+  smsConsent: boolean;
+  alreadyConsented: boolean;
+  onSmsConsentChange: (v: boolean) => void;
+  onSkip: () => void;
 }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -316,30 +369,55 @@ function PhoneStep({
         )}
       </div>
 
-      {/* A2P 10DLC consent text */}
-      <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-        <p className="text-xs text-slate-600 leading-relaxed">
-          By continuing, you agree to receive automated SMS messages from Ovrlap for account verification, login, and account security. Message frequency varies based on login or verification activity. Message and data rates may apply. Reply STOP to opt out and HELP for help.
-        </p>
-        <div className="flex gap-3 mt-2">
-          <a
-            href="https://ovrlap.app/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
-          >
-            Terms
-          </a>
-          <a
-            href="https://ovrlap.app/privacy-policy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
-          >
-            Privacy Policy
-          </a>
+      {/* A2P 10DLC consent — an explicit checkbox, not implied by continuing */}
+      {alreadyConsented ? (
+        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+          <p className="text-xs text-emerald-800 leading-relaxed">
+            You agreed to receive Ovrlap verification codes by SMS when you signed up.
+            Reply STOP to any message to opt out, or HELP for help.
+          </p>
         </div>
-      </div>
+      ) : (
+        <label className="flex items-start gap-3 bg-slate-50 rounded-xl p-4 border border-slate-100 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={smsConsent}
+            onChange={(e) => onSmsConsentChange(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 accent-indigo-600"
+          />
+          <div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {SMS_CONSENT_TEXT}
+            </p>
+            <div className="flex gap-3 mt-2">
+              <Link
+                href="/terms"
+                target="_blank"
+                className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Terms
+              </Link>
+              <Link
+                href="/privacy"
+                target="_blank"
+                className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/sms-opt-in"
+                target="_blank"
+                className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                SMS Terms
+              </Link>
+            </div>
+          </div>
+        </label>
+      )}
 
       <Button
         type="submit"
@@ -351,6 +429,14 @@ function PhoneStep({
         Send verification code
         <ArrowRight className="w-4 h-4" />
       </Button>
+
+      <button
+        type="button"
+        onClick={onSkip}
+        className="w-full text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+      >
+        Skip for now — continue without SMS
+      </button>
     </form>
   );
 }

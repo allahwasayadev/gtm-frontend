@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
 import {
@@ -59,6 +60,9 @@ export default function ProfilePage() {
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [isEmailEditingEnabled, setIsEmailEditingEnabled] = useState(false);
   const [showVerifyPhoneModal, setShowVerifyPhoneModal] = useState(false);
+  // A2P 10DLC: this screen previously sent SMS with no disclosure at all.
+  const [smsConsent, setSmsConsent] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [verifyCodeInput, setVerifyCodeInput] = useState('');
   const [mounted, setMounted] = useState(false);
   const [modalAnimate, setModalAnimate] = useState(false);
@@ -99,6 +103,7 @@ export default function ProfilePage() {
   const normalizedUserPhone = normalizePhoneForCompare(user?.phoneNumber || '');
   const normalizedFormPhone = normalizePhoneForCompare(formData.phoneNumber);
   const hasPhoneNumber = Boolean(formData.phoneNumber.trim());
+  const alreadyConsented = Boolean(user?.smsConsent);
   const isPhoneVerifiedForCurrentPhone = Boolean(
     user?.isPhoneVerified
       && normalizedUserPhone
@@ -151,10 +156,20 @@ export default function ProfilePage() {
       return;
     }
 
+    // No send without consent on record for this user.
+    if (!alreadyConsented && !smsConsent) {
+      setErrors((prev) => ({
+        ...prev,
+        smsConsent: 'Please agree to receive SMS messages before we send a code.',
+      }));
+      return;
+    }
+
     setIsSendingPhoneCode(true);
     try {
       const response = await usersApi.sendPhoneVerificationCode({
         phoneNumber: formData.phoneNumber,
+        ...(smsConsent && { smsConsent: true }),
       });
       const result = response.data;
 
@@ -188,6 +203,24 @@ export default function ProfilePage() {
       toast.error(getErrorMessage(error, 'Failed to send verification code'));
     } finally {
       setIsSendingPhoneCode(false);
+    }
+  };
+
+  const handleWithdrawSmsConsent = async () => {
+    if (!user) return;
+    setIsWithdrawing(true);
+    try {
+      const { data } = await usersApi.withdrawSmsConsent();
+      updateUser(
+        { ...user, smsConsent: false, smsOptedOut: true },
+        undefined,
+      );
+      setSmsConsent(false);
+      toast.success(data.message);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to withdraw SMS consent'));
+    } finally {
+      setIsWithdrawing(false);
     }
   };
 
@@ -483,6 +516,68 @@ export default function ProfilePage() {
                               error={errors.phoneNumber}
                               autoComplete="tel"
                             />
+                            {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
+                              <label className="mt-3 flex items-start gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={smsConsent}
+                                  onChange={(e) => {
+                                    setSmsConsent(e.target.checked);
+                                    setErrors((prev) => ({ ...prev, smsConsent: '' }));
+                                  }}
+                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 accent-indigo-600"
+                                />
+                                <div>
+                                  <p className="text-xs text-slate-600 leading-relaxed">
+                                    {SMS_CONSENT_TEXT}
+                                  </p>
+                                  <div className="flex gap-3 mt-2">
+                                    <Link href="/terms" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>Terms</Link>
+                                    <Link href="/privacy" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>
+                                    <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>SMS Terms</Link>
+                                  </div>
+                                  {errors.smsConsent && (
+                                    <p className="mt-1.5 text-xs text-red-600">{errors.smsConsent}</p>
+                                  )}
+                                </div>
+                              </label>
+                            )}
+
+                            {/* SMS consent status — always visible when a number is
+                                on file, so a user can see and revoke consent without
+                                needing to have received a text first. */}
+                            {hasPhoneNumber && (alreadyConsented || user?.smsOptedOut) && (
+                              <div className={`mt-3 rounded-xl p-3.5 border ${user?.smsOptedOut ? 'bg-amber-50 border-amber-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                                <div className="flex items-start justify-between gap-3 flex-wrap">
+                                  <div className="min-w-0">
+                                    <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-amber-800' : 'text-emerald-800'}`}>
+                                      {user?.smsOptedOut
+                                        ? 'SMS messages are turned off'
+                                        : 'You agreed to receive Ovrlap SMS'}
+                                    </p>
+                                    <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-amber-700/90' : 'text-emerald-700/90'}`}>
+                                      {user?.smsOptedOut
+                                        ? 'Ovrlap will not send text messages to this number. Tick the box above to opt in again.'
+                                        : user?.smsConsentAt
+                                          ? `Consent recorded ${new Date(user.smsConsentAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}. Account verification messages only — never marketing.`
+                                          : 'Account verification messages only — never marketing.'}
+                                    </p>
+                                  </div>
+                                  {!user?.smsOptedOut && (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={handleWithdrawSmsConsent}
+                                      isLoading={isWithdrawing}
+                                    >
+                                      Withdraw consent
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
                             {hasPhoneNumber && !isPhoneVerifiedForCurrentPhone && (
                               <div className="mt-2 flex items-center gap-2 flex-wrap">
                                 <span className="text-sm text-amber-600">Not verified yet</span>

@@ -39,11 +39,12 @@ function VerifyEmailContent() {
   // Redirect if already verified
   useEffect(() => {
     if (!loading && user?.emailVerified) {
-      // TODO: Uncomment phone verification gate when Twilio A2P 10DLC campaign is approved
-      // if (!user.isPhoneVerified) {
-      //   router.push('/verify-phone');
-      //   return;
-      // }
+      // Offer phone verification once, after email is confirmed. The screen
+      // itself is skippable — it is an offer, not a gate.
+      if (!user.isPhoneVerified) {
+        router.push('/verify-phone');
+        return;
+      }
       router.push('/dashboard');
     }
   }, [user, loading, router]);
@@ -67,9 +68,7 @@ function VerifyEmailContent() {
 
     try {
       await verifyEmail(email, code);
-      // TODO: Uncomment when Twilio A2P 10DLC campaign is approved
-      // router.push('/verify-phone');
-      router.push('/dashboard');
+      router.push('/verify-phone');
     } catch (error: unknown) {
       setError(getErrorMessage(error, 'Verification failed'));
     } finally {

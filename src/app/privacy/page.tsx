@@ -80,7 +80,7 @@ export default function PrivacyPage() {
                   transition={{ delay: 0.3, duration: 0.4 }}
                 >
                   <Clock className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm text-slate-500">Last Updated: March 13, 2026</span>
+                  <span className="text-sm text-slate-500">Last Updated: September 27, 2026</span>
                 </motion.div>
               </motion.div>
             </div>
@@ -128,7 +128,7 @@ export default function PrivacyPage() {
               >
                 <p>When you create an account, we collect:</p>
                 <ul className="space-y-2 ml-1">
-                  {['Name', 'Email address', 'Company name'].map((item) => (
+                  {['Name', 'Email address', 'Company name', 'Phone number (optional)'].map((item) => (
                     <li key={item} className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
                       <span>{item}</span>
@@ -150,10 +150,13 @@ export default function PrivacyPage() {
                 </p>
                 <div className="bg-slate-50 rounded-xl p-5 space-y-3 border border-slate-100">
                   {[
-                    'Your phone number is used only for authentication purposes through SMS verification.',
+                    'Your phone number is used only to send you a one-time verification code. Ovrlap sends no other text messages.',
                     'Ovrlap does not send marketing text messages.',
-                    'Message frequency varies based on login or verification activity.',
+                    'Providing a phone number and consenting to SMS are both optional and are not a condition of creating or using an Ovrlap account.',
+                    'Message frequency varies — you receive a message only when you request a verification code.',
                     'Standard message and data rates may apply depending on your mobile carrier.',
+                    'You can withdraw consent at any time from your Ovrlap profile settings, or by replying STOP to any Ovrlap message. Reply START to resubscribe, or HELP for help. You can also email support@ovrlap.app.',
+                    'We record the date, time, page and exact wording of your consent so that it can be produced on request.',
                   ].map((item, i) => (
                     <p key={i} className="flex items-start gap-3 text-sm text-slate-600">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-2" />
@@ -161,6 +164,18 @@ export default function PrivacyPage() {
                     </p>
                   ))}
                 </div>
+                <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
+                  <p className="font-semibold text-indigo-900 leading-relaxed">
+                    No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
+                  </p>
+                </div>
+                <p className="text-sm">
+                  Full details of our messaging program are on the{' '}
+                  <Link href="/sms-opt-in" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                    SMS Terms &amp; Opt-In
+                  </Link>{' '}
+                  page.
+                </p>
               </PolicySection>
 
               {/* Account List Data */}
@@ -384,6 +399,7 @@ export default function PrivacyPage() {
                 <div className="flex items-center gap-6">
                   <Link href="/about" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">About</Link>
                   <Link href="/terms" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Terms</Link>
+                  <Link href="/sms-opt-in" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">SMS Terms</Link>
                 </div>
               </div>
             </div>

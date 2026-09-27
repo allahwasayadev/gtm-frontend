@@ -37,9 +37,8 @@ function LoginContent() {
     if (!loading && user) {
       if (!user.emailVerified) {
         router.push(`/verify-email?email=${encodeURIComponent(user.email)}`);
-      // TODO: Uncomment phone verification gate when Twilio A2P 10DLC campaign is approved
-      // } else if (!user.isPhoneVerified) {
-      //   router.push('/verify-phone');
+      // Deliberately no phone gate on sign-in: phone verification is optional,
+      // so re-gating here would trap anyone who declined SMS.
       } else {
         router.push(redirectTo || '/dashboard');
       }
@@ -53,9 +52,7 @@ function LoginContent() {
       const response = await login(formData.email, formData.password);
       if (!response?.emailVerified) {
         router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
-      // TODO: Uncomment phone verification gate when Twilio A2P 10DLC campaign is approved
-      // } else if (!response?.isPhoneVerified) {
-      //   router.push('/verify-phone');
+      // No phone gate on sign-in — see the comment above.
       } else {
         router.push(redirectTo || '/dashboard');
       }
