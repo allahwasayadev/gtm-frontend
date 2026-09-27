@@ -210,7 +210,7 @@ function VerifyPhoneContent() {
             One last step
           </h1>
           <p className="text-indigo-200 text-lg mb-8 max-w-sm leading-relaxed">
-            Verify your phone number to secure your account and complete registration.
+            Adding a verified phone number helps secure your account. It is optional — you can skip it and continue.
           </p>
         </div>
       </div>
@@ -250,7 +250,7 @@ function VerifyPhoneContent() {
             </h2>
             <p className="text-slate-500">
               {step === 'phone'
-                ? 'Required to complete your registration'
+                ? 'Optional — you can skip this and use Ovrlap without SMS'
                 : `We sent a 6-digit code to ${fullPhoneNumber}`}
             </p>
           </div>
@@ -293,7 +293,7 @@ function VerifyPhoneContent() {
 
           <p className="text-center text-xs text-slate-400 mt-8">
             {step === 'phone'
-              ? 'Your phone number is used only for account verification'
+              ? 'Your phone number is used only to send account verification codes'
               : 'The code expires in 10 minutes'}
           </p>
         </motion.div>
@@ -336,7 +336,8 @@ function PhoneStep({
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1.5">
-          Phone Number <span className="text-red-500">*</span>
+          Phone Number{' '}
+          <span className="font-normal text-slate-400">(optional)</span>
         </label>
         <div className="flex gap-2">
           <CountryCodeSelect

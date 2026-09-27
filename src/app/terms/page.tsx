@@ -209,14 +209,14 @@ export default function TermsPage() {
                   Consent is collected by an unchecked opt-in box in three places — the sign-up form, the phone verification screen, and profile settings — where users agree to receive automated SMS messages from Ovrlap containing one-time account verification codes.
                 </p>
                 <p>
-                  Consenting to SMS is optional and is not a condition of creating or using an Ovrlap account. Providing a phone number is also optional. Declining does not restrict access to any part of the service, and consent may be withdrawn at any time from profile settings or by replying STOP.
+                  Consenting to SMS is optional and is not a condition of creating or using an Ovrlap account. Providing a phone number is also optional. Declining does not restrict access to any part of the service, and consent may be withdrawn at any time from profile settings, or delivery stopped by replying STOP.
                 </p>
                 <div className="bg-slate-50 rounded-xl p-5 space-y-3 border border-slate-100">
                   {[
                     'Ovrlap sends no marketing or promotional text messages.',
                     'Message frequency varies — a message is sent only when the user requests a verification code.',
                     'Standard message and data rates may apply depending on your carrier.',
-                    'Users may withdraw consent from profile settings at any time, or reply STOP to opt out, START to resubscribe, or HELP for assistance. Customer care is available at support@ovrlap.app.',
+                    'Users may withdraw consent at any time from profile settings, which is the record Ovrlap acts on, or reply STOP to stop delivery at their carrier. STOP and HELP replies are handled by our messaging provider. Customer care is available at support@ovrlap.app.',
                     'Carriers are not liable for delayed or undelivered messages.',
                   ].map((item, i) => (
                     <p key={i} className="flex items-start gap-3 text-sm text-slate-600">

@@ -155,7 +155,7 @@ export default function PrivacyPage() {
                     'Providing a phone number and consenting to SMS are both optional and are not a condition of creating or using an Ovrlap account.',
                     'Message frequency varies — you receive a message only when you request a verification code.',
                     'Standard message and data rates may apply depending on your mobile carrier.',
-                    'You can withdraw consent at any time from your Ovrlap profile settings, or by replying STOP to any Ovrlap message. Reply START to resubscribe, or HELP for help. You can also email support@ovrlap.app.',
+                    'You can withdraw consent at any time from your Ovrlap profile settings, which is the setting Ovrlap records and acts on. You can also reply STOP to any Ovrlap message to stop delivery at your carrier. Replies to STOP and HELP are handled by our messaging provider. For help, email support@ovrlap.app.',
                     'We record the date, time, page and exact wording of your consent so that it can be produced on request.',
                   ].map((item, i) => (
                     <p key={i} className="flex items-start gap-3 text-sm text-slate-600">
