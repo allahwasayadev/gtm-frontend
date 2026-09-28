@@ -21,6 +21,9 @@ function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email');
+  // Set by signup when the verification email could not be delivered.
+  // Without this the page would claim a code was sent that never left the server.
+  const deliveryFailed = searchParams.get('sent') === '0';
   const { user, verifyEmail, resendVerificationCode, loading } = useAuth();
 
   const [email, setEmail] = useState(emailParam || '');
@@ -117,7 +120,9 @@ function VerifyEmailContent() {
             Almost there!
           </h1>
           <p className="text-indigo-200 text-lg mb-8 max-w-sm leading-relaxed">
-            We&apos;ve sent a verification code to your email. Enter it below to complete your registration.
+            {deliveryFailed
+              ? 'Your account is ready, but we could not send the verification email. Use Resend below to try again.'
+              : 'We\u2019ve sent a verification code to your email. Enter it below to complete your registration.'}
           </p>
         </div>
       </div>
@@ -152,8 +157,12 @@ function VerifyEmailContent() {
             <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/25">
               <Mail className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Check your email</h2>
-            <p className="text-slate-500">We sent a verification code to</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              {deliveryFailed ? 'We could not send your email' : 'Check your email'}
+            </h2>
+            <p className="text-slate-500">
+              {deliveryFailed ? 'No verification code could be sent to' : 'We sent a verification code to'}
+            </p>
             {email && (
               <p className="text-indigo-600 font-semibold">{email}</p>
             )}
@@ -162,7 +171,9 @@ function VerifyEmailContent() {
           {/* Form Card */}
           <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
             <div className="text-center mb-6 lg:hidden">
-              <p className="text-slate-500">We sent a verification code to</p>
+              <p className="text-slate-500">
+                {deliveryFailed ? 'No verification code could be sent to' : 'We sent a verification code to'}
+              </p>
               {email && (
                 <p className="text-indigo-600 font-semibold">{email}</p>
               )}

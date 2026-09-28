@@ -66,6 +66,12 @@ export interface VerifyPhoneVerificationCodeResponse {
 export interface AuthResponse {
   user: User;
   token: string;
+  /**
+   * Signup only: whether the verification email actually left the server.
+   * Absent on other auth responses and on older backends. When it is
+   * explicitly false the UI must not claim a code was sent.
+   */
+  emailVerificationSent?: boolean;
 }
 
 export interface SignupDto {

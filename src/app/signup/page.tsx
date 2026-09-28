@@ -118,7 +118,7 @@ function SignupContent() {
         : undefined;
       // Consent travels with the signup so the backend can record when, where
       // and to what wording the user agreed.
-      await signup(
+      const emailSent = await signup(
         formData.name,
         formData.email,
         formData.password,
@@ -127,7 +127,11 @@ function SignupContent() {
         phoneNumber,
         formData.smsConsent && Boolean(phoneNumber),
       );
-      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+      // Carry the delivery outcome through so the next screen does not claim a
+      // code was sent when it was not.
+      const q = new URLSearchParams({ email: formData.email });
+      if (!emailSent) q.set('sent', '0');
+      router.push(`/verify-email?${q.toString()}`);
     } catch {
       // Error is handled by AuthContext with toast
     } finally {

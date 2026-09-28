@@ -12,7 +12,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string, smsConsent?: boolean) => Promise<void>;
+  /** Resolves to whether the verification email was actually delivered. */
+  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string, smsConsent?: boolean) => Promise<boolean>;
   logout: () => void;
   updateUser: (updatedUser: User, newToken?: string) => void;
   deleteAccount: () => Promise<void>;
@@ -92,7 +93,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
 
-      toast.success('Account created! Please check your email for verification code.');
+      // The API tells us whether the verification email actually went out.
+      // Older responses omit the flag; treat that as sent so we do not warn
+      // spuriously, but never claim delivery when it explicitly reports false.
+      const emailSent = response.data.emailVerificationSent !== false;
+
+      if (emailSent) {
+        toast.success('Account created! Please check your email for verification code.');
+      } else {
+        toast.error(
+          'Account created, but we could not send the verification email. Use Resend on the next screen.',
+        );
+      }
+
+      return emailSent;
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Signup failed'));
       throw error;
