@@ -129,8 +129,9 @@ function SignupContent() {
       );
       // Carry the delivery outcome through so the next screen does not claim a
       // code was sent when it was not.
-      const q = new URLSearchParams({ email: formData.email });
-      if (!emailSent) q.set('sent', '0');
+      // Always state the outcome explicitly. An absent flag means "unknown",
+      // which the verification screen deliberately treats as neutral.
+      const q = new URLSearchParams({ email: formData.email, sent: emailSent ? '1' : '0' });
       router.push(`/verify-email?${q.toString()}`);
     } catch {
       // Error is handled by AuthContext with toast

@@ -7,6 +7,7 @@ import { CodeInput, LoadingScreen } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { Mail, ArrowLeftRight, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { isAxiosError } from 'axios';
 import { getErrorMessage } from '@/lib/error-utils';
 
 export default function VerifyEmailPage() {
@@ -21,10 +22,24 @@ function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email');
-  // Set by signup when the verification email could not be delivered.
-  // Without this the page would claim a code was sent that never left the server.
-  const deliveryFailed = searchParams.get('sent') === '0';
   const { user, verifyEmail, resendVerificationCode, loading } = useAuth();
+
+  /**
+   * What we actually know about the last delivery attempt.
+   *
+   * 'sent'    — signup or a resend confirmed the mail left the server.
+   * 'failed'  — it explicitly did not; say so and point at Resend.
+   * 'unknown' — nobody told us. This is the case when an unverified user
+   *             returns later through login: claiming "we sent a code" would
+   *             be a guess, so the copy stays neutral instead.
+   *
+   * It must be state, not a value derived from the query string, because a
+   * successful resend has to clear a previous failure.
+   */
+  const sentParam = searchParams.get('sent');
+  const [delivery, setDelivery] = useState<'sent' | 'failed' | 'unknown'>(
+    sentParam === '0' ? 'failed' : sentParam === '1' ? 'sent' : 'unknown',
+  );
 
   const [email, setEmail] = useState(emailParam || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,8 +102,18 @@ function VerifyEmailContent() {
 
     try {
       await resendVerificationCode(email);
+      // A confirmed resend clears any earlier failure.
+      setDelivery('sent');
       setResendCooldown(60);
     } catch (error: unknown) {
+      // Only a genuine delivery failure changes what we claim. The API answers
+      // 502 for that; 429 means the cooldown is still running and 400 means the
+      // address is already verified — neither says the earlier mail failed, so
+      // the message must not flip to "could not send" for those.
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      if (status !== undefined && status >= 500) {
+        setDelivery('failed');
+      }
       setError(getErrorMessage(error, 'Failed to resend code'));
     } finally {
       setIsResending(false);
@@ -120,9 +145,11 @@ function VerifyEmailContent() {
             Almost there!
           </h1>
           <p className="text-indigo-200 text-lg mb-8 max-w-sm leading-relaxed">
-            {deliveryFailed
+            {delivery === 'failed'
               ? 'Your account is ready, but we could not send the verification email. Use Resend below to try again.'
-              : 'We\u2019ve sent a verification code to your email. Enter it below to complete your registration.'}
+              : delivery === 'sent'
+                ? 'We\u2019ve sent a verification code to your email. Enter it below to complete your registration.'
+                : 'Enter the verification code from your email to finish setting up your account. If you do not have one, use Resend below.'}
           </p>
         </div>
       </div>
@@ -158,10 +185,18 @@ function VerifyEmailContent() {
               <Mail className="w-7 h-7 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
-              {deliveryFailed ? 'We could not send your email' : 'Check your email'}
+              {delivery === 'failed'
+                ? 'We could not send your email'
+                : delivery === 'sent'
+                  ? 'Check your email'
+                  : 'Verify your email'}
             </h2>
             <p className="text-slate-500">
-              {deliveryFailed ? 'No verification code could be sent to' : 'We sent a verification code to'}
+              {delivery === 'failed'
+                ? 'No verification code could be sent to'
+                : delivery === 'sent'
+                  ? 'We sent a verification code to'
+                  : 'Enter the verification code for'}
             </p>
             {email && (
               <p className="text-indigo-600 font-semibold">{email}</p>
@@ -172,7 +207,11 @@ function VerifyEmailContent() {
           <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
             <div className="text-center mb-6 lg:hidden">
               <p className="text-slate-500">
-                {deliveryFailed ? 'No verification code could be sent to' : 'We sent a verification code to'}
+                {delivery === 'failed'
+                ? 'No verification code could be sent to'
+                : delivery === 'sent'
+                  ? 'We sent a verification code to'
+                  : 'Enter the verification code for'}
               </p>
               {email && (
                 <p className="text-indigo-600 font-semibold">{email}</p>
