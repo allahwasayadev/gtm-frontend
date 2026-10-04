@@ -22,7 +22,8 @@ export interface UpdateProfileDto {
   email?: string;
   company?: string;
   roles?: UserRole[];
-  phoneNumber?: string;
+  /** Required: the activation code is sent here by SMS. */
+  phoneNumber: string;
 }
 
 export interface UpdateProfileResponse {
@@ -80,9 +81,10 @@ export interface SignupDto {
   password: string;
   company?: string;
   roles: UserRole[];
-  phoneNumber?: string;
-  /** A2P 10DLC consent. Optional — declining must not block account creation. */
-  smsConsent?: boolean;
+  /** Required: the activation code is sent here by SMS, and nowhere else. */
+  phoneNumber: string;
+  /** Required: SMS is the only activation channel. */
+  smsConsent: boolean;
 }
 
 export interface LoginDto {
@@ -90,21 +92,34 @@ export interface LoginDto {
   password: string;
 }
 
-export interface VerifyEmailDto {
+export interface VerifySignupPhoneDto {
   email: string;
   code: string;
 }
 
-export interface ResendVerificationDto {
+export interface ResendSignupPhoneDto {
   email: string;
+}
+
+/** Signup returns this instead of a session: the account is not active yet. */
+export interface SignupPendingResponse {
+  pendingVerification: true;
+  email: string;
+  /** e.g. "+1 •••• ••1498" — recognisable, not readable. */
+  phoneHint: string;
+  /** false when Twilio refused; the screen must offer resend, not claim success. */
+  smsSent: boolean;
+  expiresAt: string | null;
 }
 
 export interface ForgotPasswordDto {
-  email: string;
+  /** Email address OR mobile number. */
+  identifier: string;
 }
 
 export interface ResetPasswordDto {
-  token: string;
+  identifier: string;
+  code: string;
   newPassword: string;
 }
 
@@ -121,7 +136,4 @@ export interface CompleteOnboardingResponse {
   hasCompletedOnboarding: boolean;
 }
 
-export interface ValidateResetTokenResponse {
-  valid: boolean;
-  email?: string;
-}
+// ValidateResetTokenResponse removed with the emailed reset link.

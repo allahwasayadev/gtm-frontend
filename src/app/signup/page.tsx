@@ -86,16 +86,22 @@ function SignupContent() {
       newErrors.role = 'Please select your role';
     }
 
-    // Phone is optional: it is only needed for SMS verification, and SMS is
-    // never a condition of creating an account. Validate only if supplied.
+    // Phone is REQUIRED: the activation code is sent by SMS and there is no
+    // email or voice alternative, so an account cannot be created without one.
     const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
-    if (phoneDigits) {
+    if (!phoneDigits) {
+      newErrors.phone = 'A mobile number is required to verify your account';
+    } else {
       const fullPhone = `${formData.countryCode}${phoneDigits}`;
       if (!/^\+[1-9]\d{7,14}$/.test(fullPhone)) {
-        newErrors.phone = 'Enter a valid phone number';
+        newErrors.phone = 'Enter a valid mobile number';
       }
-    } else if (formData.smsConsent) {
-      newErrors.phone = 'Add a phone number to receive SMS verification codes';
+    }
+
+    // Consent is likewise required, because SMS is the only way to activate.
+    if (!formData.smsConsent) {
+      newErrors.smsConsent =
+        'You must agree to receive SMS verification codes to create an account';
     }
 
     setErrors(newErrors);
@@ -113,26 +119,28 @@ function SignupContent() {
     try {
       const selectedRole = formData.role as UserRole;
       const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
-      const phoneNumber = phoneDigits
-        ? `${formData.countryCode}${phoneDigits}`
-        : undefined;
-      // Consent travels with the signup so the backend can record when, where
-      // and to what wording the user agreed.
-      const emailSent = await signup(
+      const phoneNumber = `${formData.countryCode}${phoneDigits}`;
+
+      // Consent travels with the signup so the backend records when, where and
+      // to what wording the user agreed — before anything is sent.
+      const pending = await signup(
         formData.name,
         formData.email,
         formData.password,
         [selectedRole],
-        formData.company || undefined,
         phoneNumber,
-        formData.smsConsent && Boolean(phoneNumber),
+        formData.smsConsent,
+        formData.company || undefined,
       );
-      // Carry the delivery outcome through so the next screen does not claim a
-      // code was sent when it was not.
-      // Always state the outcome explicitly. An absent flag means "unknown",
-      // which the verification screen deliberately treats as neutral.
-      const q = new URLSearchParams({ email: formData.email, sent: emailSent ? '1' : '0' });
-      router.push(`/verify-email?${q.toString()}`);
+
+      // Carry the real delivery outcome and the masked number through, so the
+      // next screen never claims a code was sent when Twilio refused.
+      const q = new URLSearchParams({
+        email: pending.email,
+        phone: pending.phoneHint,
+        sent: pending.smsSent ? '1' : '0',
+      });
+      router.push(`/verify-phone?${q.toString()}`);
     } catch {
       // Error is handled by AuthContext with toast
     } finally {
@@ -400,6 +408,10 @@ function SignupContent() {
                   </div>
                 </div>
               </label>
+
+              {errors.smsConsent && (
+                <p className="-mt-2 text-sm text-red-600">{errors.smsConsent}</p>
+              )}
 
               <Button
                 type="submit"
