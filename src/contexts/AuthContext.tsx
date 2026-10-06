@@ -7,11 +7,17 @@ import type {
   User,
   UserRole,
   SignupPendingResponse,
+  PhoneVerificationRequired,
 } from '@/features/auth/types';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { getErrorMessage } from '@/lib/error-utils';
+import {
+  storeActivation,
+  readActivation,
+  clearActivation,
+} from '@/lib/activation';
 
 interface AuthContextType {
   user: User | null;
@@ -22,8 +28,9 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (updatedUser: User, newToken?: string) => void;
   deleteAccount: () => Promise<void>;
-  verifySignupPhone: (email: string, code: string) => Promise<void>;
-  resendSignupPhoneCode: (email: string) => Promise<void>;
+  verifyActivation: (code: string) => Promise<void>;
+  resendActivationCode: () => Promise<void>;
+  setActivationPhone: (phoneNumber: string) => Promise<void>;
   sendPhoneVerificationCode: (phoneNumber: string, smsConsent?: boolean) => Promise<{ code?: string }>;
   verifyPhoneCode: (code: string) => Promise<void>;
   requestPasswordReset: (identifier: string) => Promise<void>;
@@ -87,14 +94,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // An account whose phone is not verified has no session yet. Send the
       // user to finish activation rather than showing a dead-end error.
       if (isAxiosError(error) && error.response?.status === 403) {
-        const data = error.response.data as {
-          code?: string;
-          email?: string;
-        };
-        if (data?.code === 'PHONE_VERIFICATION_REQUIRED') {
+        const data = error.response.data as Partial<PhoneVerificationRequired>;
+        if (data?.code === 'PHONE_VERIFICATION_REQUIRED' && data.activationToken) {
+          // The token is a credential, so it goes to sessionStorage rather
+          // than into the URL where history and Referer would capture it.
+          storeActivation({
+            token: data.activationToken,
+            email: data.email ?? email,
+            phoneHint: data.phoneHint ?? null,
+            needsPhoneNumber: Boolean(data.needsPhoneNumber),
+            smsSent: false,
+          });
           toast.error('Verify your mobile number to finish setting up your account.');
-          const q = new URLSearchParams({ email: data.email ?? email });
-          router.push(`/verify-phone?${q.toString()}`);
+          router.push('/verify-phone');
           throw error;
         }
       }
@@ -127,6 +139,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...(company && { company }),
       });
 
+      storeActivation({
+        token: response.data.activationToken,
+        email: response.data.email,
+        phoneHint: response.data.phoneHint,
+        needsPhoneNumber: false,
+        smsSent: response.data.smsSent,
+      });
+
       if (response.data.smsSent) {
         toast.success('We sent a code to your mobile. Enter it to activate your account.');
       } else {
@@ -144,14 +164,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /** Activation: entering the SMS code is what creates the session. */
-  const verifySignupPhone = async (email: string, code: string) => {
+  const verifyActivation = async (code: string) => {
+    const state = readActivation();
+    if (!state) throw new Error('Activation expired. Please sign in again.');
     try {
-      const response = await authApi.verifySignupPhone({ email, code });
+      const response = await authApi.verifyActivation({
+        activationToken: state.token,
+        code,
+      });
       const { user, token } = response.data;
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
+      clearActivation();
 
       toast.success('Mobile number verified. Your account is active.');
     } catch (error: unknown) {
@@ -160,12 +186,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const resendSignupPhoneCode = async (email: string) => {
+  const resendActivationCode = async () => {
+    const state = readActivation();
+    if (!state) throw new Error('Activation expired. Please sign in again.');
     try {
-      await authApi.resendSignupPhone({ email });
+      const response = await authApi.resendActivation({
+        activationToken: state.token,
+      });
+      storeActivation({ ...state, smsSent: true, phoneHint: response.data.phoneHint });
       toast.success('New code sent to your mobile.');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to resend code'));
+      throw error;
+    }
+  };
+
+  /** Set or correct the number the code goes to. */
+  const setActivationPhone = async (phoneNumber: string) => {
+    const state = readActivation();
+    if (!state) throw new Error('Activation expired. Please sign in again.');
+    try {
+      const response = await authApi.setActivationPhone({
+        activationToken: state.token,
+        phoneNumber,
+      });
+      storeActivation({
+        ...state,
+        phoneHint: response.data.phoneHint,
+        needsPhoneNumber: false,
+        smsSent: true,
+      });
+      toast.success('Code sent to your mobile.');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Could not send the code'));
       throw error;
     }
   };
@@ -260,8 +313,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       updateUser,
       deleteAccount,
-      verifySignupPhone,
-      resendSignupPhoneCode,
+      verifyActivation,
+      resendActivationCode,
+      setActivationPhone,
       sendPhoneVerificationCode,
       verifyPhoneCode,
       requestPasswordReset,

@@ -5,8 +5,10 @@ import type {
   SignupDto,
   SignupPendingResponse,
   LoginDto,
-  VerifySignupPhoneDto,
-  ResendSignupPhoneDto,
+  ActivationTokenDto,
+  SetActivationPhoneDto,
+  VerifyActivationDto,
+  ActivationSendResponse,
   ForgotPasswordDto,
   ResetPasswordDto,
   MessageResponse,
@@ -23,11 +25,14 @@ export const authApi = {
   login: (data: LoginDto) => api.post<AuthResponse>('/auth/login', data),
   getProfile: () => api.get<User>('/auth/profile'),
 
-  // Activation by SMS. Unauthenticated, since signup issues no token.
-  verifySignupPhone: (data: VerifySignupPhoneDto) =>
-    api.post<AuthResponse>('/auth/phone/verify', data),
-  resendSignupPhone: (data: ResendSignupPhoneDto) =>
-    api.post<SendPhoneVerificationCodeResponse>('/auth/phone/resend', data),
+  // Activation. Authorised by the short-lived activation token from signup or
+  // from a password-correct login — never by an email address alone.
+  setActivationPhone: (data: SetActivationPhoneDto) =>
+    api.post<ActivationSendResponse>('/auth/activation/phone', data),
+  resendActivation: (data: ActivationTokenDto) =>
+    api.post<ActivationSendResponse>('/auth/activation/resend', data),
+  verifyActivation: (data: VerifyActivationDto) =>
+    api.post<AuthResponse>('/auth/activation/verify', data),
 
   // Phone verification from inside the app (profile settings).
   sendPhoneVerificationCode: (data: SendPhoneVerificationCodeDto) =>

@@ -92,13 +92,16 @@ export interface LoginDto {
   password: string;
 }
 
-export interface VerifySignupPhoneDto {
-  email: string;
-  code: string;
+export interface ActivationTokenDto {
+  activationToken: string;
 }
 
-export interface ResendSignupPhoneDto {
-  email: string;
+export interface SetActivationPhoneDto extends ActivationTokenDto {
+  phoneNumber: string;
+}
+
+export interface VerifyActivationDto extends ActivationTokenDto {
+  code: string;
 }
 
 /** Signup returns this instead of a session: the account is not active yet. */
@@ -109,6 +112,26 @@ export interface SignupPendingResponse {
   phoneHint: string;
   /** false when Twilio refused; the screen must offer resend, not claim success. */
   smsSent: boolean;
+  expiresAt: string | null;
+  /**
+   * Short-lived, scope-limited. Authorises activation only. Held in
+   * sessionStorage, never in the URL — it is a credential.
+   */
+  activationToken: string;
+}
+
+/** 403 body when a password-correct login hits an unverified phone. */
+export interface PhoneVerificationRequired {
+  code: 'PHONE_VERIFICATION_REQUIRED';
+  email: string;
+  phoneHint: string | null;
+  /** True for accounts predating this flow that have no number at all. */
+  needsPhoneNumber: boolean;
+  activationToken: string;
+}
+
+export interface ActivationSendResponse {
+  phoneHint: string;
   expiresAt: string | null;
 }
 

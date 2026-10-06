@@ -133,14 +133,9 @@ function SignupContent() {
         formData.company || undefined,
       );
 
-      // Carry the real delivery outcome and the masked number through, so the
-      // next screen never claims a code was sent when Twilio refused.
-      const q = new URLSearchParams({
-        email: pending.email,
-        phone: pending.phoneHint,
-        sent: pending.smsSent ? '1' : '0',
-      });
-      router.push(`/verify-phone?${q.toString()}`);
+      // State (including the activation token) is stored by the context in
+      // sessionStorage. Nothing goes in the URL: the token is a credential.
+      router.push('/verify-phone');
     } catch {
       // Error is handled by AuthContext with toast
     } finally {
