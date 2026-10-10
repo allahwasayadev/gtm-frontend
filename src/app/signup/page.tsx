@@ -373,10 +373,6 @@ function SignupContent() {
                   <p className="text-xs text-slate-600 leading-relaxed">
                     {SMS_CONSENT_TEXT}
                   </p>
-                  <p className="text-xs text-slate-500 mt-2">
-                    Required. Your account is activated by a code we text to this
-                    number, so we cannot create it without your agreement.
-                  </p>
                   <div className="flex gap-3 mt-2">
                     <Link
                       href="/terms"
