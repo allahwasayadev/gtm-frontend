@@ -3,26 +3,38 @@
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { authApi } from '@/features/auth/auth.api';
 import { usersApi } from '@/features/users/users.api';
-import type { User, UserRole } from '@/features/auth/types';
+import type {
+  User,
+  UserRole,
+  SignupPendingResponse,
+  PhoneVerificationRequired,
+} from '@/features/auth/types';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { isAxiosError } from 'axios';
 import { getErrorMessage } from '@/lib/error-utils';
+import {
+  storeActivation,
+  readActivation,
+  clearActivation,
+} from '@/lib/activation';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  /** Resolves to whether the verification email was actually delivered. */
-  signup: (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string, smsConsent?: boolean) => Promise<boolean>;
+  /** Resolves to the pending-verification state; no session is created. */
+  signup: (name: string, email: string, password: string, roles: UserRole[], phoneNumber: string, smsConsent: boolean, company?: string) => Promise<SignupPendingResponse>;
   logout: () => void;
   updateUser: (updatedUser: User, newToken?: string) => void;
   deleteAccount: () => Promise<void>;
-  verifyEmail: (email: string, code: string) => Promise<void>;
-  resendVerificationCode: (email: string) => Promise<void>;
+  verifyActivation: (code: string) => Promise<void>;
+  requestActivationCode: () => Promise<void>;
+  setActivationPhone: (phoneNumber: string) => Promise<void>;
   sendPhoneVerificationCode: (phoneNumber: string, smsConsent?: boolean) => Promise<{ code?: string }>;
   verifyPhoneCode: (code: string) => Promise<void>;
-  requestPasswordReset: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  requestPasswordReset: (identifier: string) => Promise<void>;
+  resetPassword: (identifier: string, code: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -79,62 +91,137 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.success('Welcome back!');
       return user;
     } catch (error: unknown) {
+      // An account whose phone is not verified has no session yet. Send the
+      // user to finish activation rather than showing a dead-end error.
+      if (isAxiosError(error) && error.response?.status === 403) {
+        const data = error.response.data as Partial<PhoneVerificationRequired>;
+        if (data?.code === 'PHONE_VERIFICATION_REQUIRED' && data.activationToken) {
+          // The token is a credential, so it goes to sessionStorage rather
+          // than into the URL where history and Referer would capture it.
+          storeActivation({
+            token: data.activationToken,
+            email: data.email ?? email,
+            phoneHint: data.phoneHint ?? null,
+            needsPhoneNumber: Boolean(data.needsPhoneNumber),
+            // Nothing texted yet. The screen shows the saved number and the
+            // consent wording, and sends only when the user asks.
+            codeSent: false,
+          });
+          toast.error('Verify your mobile number to finish setting up your account.');
+          router.push('/verify-phone');
+          throw error;
+        }
+      }
       toast.error(getErrorMessage(error, 'Login failed'));
       throw error;
     }
   };
 
-  const signup = async (name: string, email: string, password: string, roles: UserRole[], company?: string, phoneNumber?: string, smsConsent?: boolean) => {
+  /**
+   * Signup no longer logs anyone in. The account is inactive until the SMS
+   * code is entered, so there is no token to store here.
+   */
+  const signup = async (
+    name: string,
+    email: string,
+    password: string,
+    roles: UserRole[],
+    phoneNumber: string,
+    smsConsent: boolean,
+    company?: string,
+  ): Promise<SignupPendingResponse> => {
     try {
-      const response = await authApi.signup({ name, email, password, roles, ...(company && { company }), ...(phoneNumber && { phoneNumber }), ...(smsConsent !== undefined && { smsConsent }) });
-      const { user, token } = response.data;
+      const response = await authApi.signup({
+        name,
+        email,
+        password,
+        roles,
+        phoneNumber,
+        smsConsent,
+        ...(company && { company }),
+      });
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
+      storeActivation({
+        token: response.data.activationToken,
+        email: response.data.email,
+        phoneHint: response.data.phoneHint,
+        needsPhoneNumber: false,
+        codeSent: response.data.smsSent,
+      });
 
-      // The API tells us whether the verification email actually went out.
-      // Older responses omit the flag; treat that as sent so we do not warn
-      // spuriously, but never claim delivery when it explicitly reports false.
-      const emailSent = response.data.emailVerificationSent !== false;
-
-      if (emailSent) {
-        toast.success('Account created! Please check your email for verification code.');
+      if (response.data.smsSent) {
+        toast.success('We sent a code to your mobile. Enter it to activate your account.');
       } else {
+        // Never claim a delivery that did not happen.
         toast.error(
-          'Account created, but we could not send the verification email. Use Resend on the next screen.',
+          'Account created, but we could not send the code. Use Resend on the next screen.',
         );
       }
 
-      return emailSent;
+      return response.data;
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Signup failed'));
       throw error;
     }
   };
 
-  const verifyEmail = async (email: string, code: string) => {
+  /** Activation: entering the SMS code is what creates the session. */
+  const verifyActivation = async (code: string) => {
+    const state = readActivation();
+    if (!state) throw new Error('Activation expired. Please sign in again.');
     try {
-      const response = await authApi.verifyEmail({ email, code });
+      const response = await authApi.verifyActivation({
+        activationToken: state.token,
+        code,
+      });
       const { user, token } = response.data;
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
+      clearActivation();
 
-      toast.success('Email verified successfully!');
+      toast.success('Mobile number verified. Your account is active.');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Verification failed'));
       throw error;
     }
   };
 
-  const resendVerificationCode = async (email: string) => {
+  /** Sends the code to the number on file. First send for a migrating user. */
+  const requestActivationCode = async () => {
+    const state = readActivation();
+    if (!state) throw new Error('Activation expired. Please sign in again.');
     try {
-      await authApi.resendVerification({ email });
-      toast.success('New verification code sent!');
+      const response = await authApi.resendActivation({
+        activationToken: state.token,
+      });
+      storeActivation({ ...state, codeSent: true, phoneHint: response.data.phoneHint });
+      toast.success('New code sent to your mobile.');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to resend code'));
+      throw error;
+    }
+  };
+
+  /** Set or correct the number the code goes to. */
+  const setActivationPhone = async (phoneNumber: string) => {
+    const state = readActivation();
+    if (!state) throw new Error('Activation expired. Please sign in again.');
+    try {
+      const response = await authApi.setActivationPhone({
+        activationToken: state.token,
+        phoneNumber,
+      });
+      storeActivation({
+        ...state,
+        phoneHint: response.data.phoneHint,
+        needsPhoneNumber: false,
+        codeSent: true,
+      });
+      toast.success('Code sent to your mobile.');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Could not send the code'));
       throw error;
     }
   };
@@ -166,19 +253,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const requestPasswordReset = async (email: string) => {
+  const requestPasswordReset = async (identifier: string) => {
     try {
-      await authApi.forgotPassword({ email });
-      toast.success('If an account exists, a reset link has been sent.');
+      await authApi.forgotPassword({ identifier });
+      // Deliberately the same wording the API returns: it must not hint at
+      // whether the account exists or whether a code actually went out.
+      toast.success(
+        'If an account exists with a verified mobile number, a reset code has been sent to it.',
+      );
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to request password reset'));
       throw error;
     }
   };
 
-  const resetPassword = async (token: string, newPassword: string) => {
+  const resetPassword = async (identifier: string, code: string, newPassword: string) => {
     try {
-      await authApi.resetPassword({ token, newPassword });
+      await authApi.resetPassword({ identifier, code, newPassword });
       toast.success('Password reset successfully!');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to reset password'));
@@ -225,8 +316,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       updateUser,
       deleteAccount,
-      verifyEmail,
-      resendVerificationCode,
+      verifyActivation,
+      requestActivationCode,
+      setActivationPhone,
       sendPhoneVerificationCode,
       verifyPhoneCode,
       requestPasswordReset,
