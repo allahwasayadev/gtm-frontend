@@ -48,9 +48,16 @@ export default function VerifyPhonePage() {
     setReady(true);
   }, []);
 
+  // Only leave once activation is genuinely finished.
+  //
+  // An existing signed-in user still has `user` in localStorage while being
+  // unverified, so redirecting on its presence alone sent them to /dashboard,
+  // where the guard 403s, the interceptor sends them back here, and round it
+  // goes. Staying put while an activation is in progress breaks that loop.
   useEffect(() => {
-    if (user) router.replace('/dashboard');
-  }, [user, router]);
+    if (!ready) return;
+    if (user && !readActivation()) router.replace('/dashboard');
+  }, [user, ready, router]);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;

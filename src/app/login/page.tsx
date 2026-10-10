@@ -34,14 +34,11 @@ function LoginContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // No email gate: email verification has been removed and the route it
+    // pointed at no longer exists. Phone activation is enforced by the API on
+    // every guarded route, and AuthContext routes that 403 to /verify-phone.
     if (!loading && user) {
-      if (!user.emailVerified) {
-        router.push(`/verify-email?email=${encodeURIComponent(user.email)}`);
-      // Deliberately no phone gate on sign-in: phone verification is optional,
-      // so re-gating here would trap anyone who declined SMS.
-      } else {
-        router.push(redirectTo || '/dashboard');
-      }
+      router.push(redirectTo || '/dashboard');
     }
   }, [user, loading, router, redirectTo]);
 
@@ -49,13 +46,10 @@ function LoginContent() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await login(formData.email, formData.password);
-      if (!response?.emailVerified) {
-        router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
-      // No phone gate on sign-in — see the comment above.
-      } else {
-        router.push(redirectTo || '/dashboard');
-      }
+      await login(formData.email, formData.password);
+      // A login that returns at all is fully activated. An unverified phone
+      // throws 403, and AuthContext has already redirected to /verify-phone.
+      router.push(redirectTo || '/dashboard');
     } catch {
       // Error is handled by AuthContext with toast
     } finally {

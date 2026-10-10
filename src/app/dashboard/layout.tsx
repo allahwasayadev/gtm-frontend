@@ -1,27 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header, LoadingScreen } from '@/components/ui';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && user && !user.emailVerified) {
-      router.push(`/verify-email?email=${encodeURIComponent(user.email)}`);
-    }
-  }, [user, loading, router]);
-
+  // Email verification no longer exists: activation is by SMS, and the API
+  // enforces it on every guarded route. Gating on emailVerified here sent
+  // legacy users (18 of whom predate any of this) to /verify-email, a route
+  // that has been deleted — a dead end with no way forward.
   if (loading) {
     return <LoadingScreen message="Loading..." />;
-  }
-
-  // If user email is not verified, show loading while redirecting
-  if (user && !user.emailVerified) {
-    return <LoadingScreen message="Redirecting to verification..." />;
   }
 
   return (

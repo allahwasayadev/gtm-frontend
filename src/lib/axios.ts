@@ -32,9 +32,19 @@ api.interceptors.response.use(
       | { code?: string; email?: string; phoneHint?: string | null; needsPhoneNumber?: boolean }
       | undefined;
 
+    // Requests that already handle this 403 themselves, and must NOT be
+    // hijacked. /auth/login returns its own activation token in the body, so
+    // exchanging a session here would either use a stale token for the wrong
+    // account or fail and bounce a perfectly good sign-in back to /login.
+    // The activation endpoints are excluded for the obvious reason.
+    const url = error.config?.url ?? '';
+    const selfHandled =
+      url.includes('/auth/login') || url.includes('/auth/activation/');
+
     if (
       error.response?.status === 403 &&
       data?.code === 'PHONE_VERIFICATION_REQUIRED' &&
+      !selfHandled &&
       typeof window !== 'undefined' &&
       !window.location.pathname.startsWith('/verify-phone')
     ) {
