@@ -319,8 +319,10 @@ function SignupContent() {
               {/* Phone Number */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Phone Number{' '}
-                  <span className="font-normal text-slate-400">(optional)</span>
+                  Mobile Number <span className="text-red-500">*</span>
+                  <span className="block font-normal text-xs text-slate-500 mt-0.5">
+                    We text a code here to activate your account.
+                  </span>
                 </label>
                 <div className="flex gap-2">
                   <CountryCodeSelect
@@ -359,7 +361,7 @@ function SignupContent() {
                 )}
               </div>
 
-              {/* SMS Consent Checkbox (A2P 10DLC) — optional by design */}
+              {/* SMS consent (A2P 10DLC). REQUIRED: SMS is the only activation channel. */}
               <label className="flex items-start gap-3 bg-slate-50 rounded-xl p-4 border border-slate-100 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -372,8 +374,8 @@ function SignupContent() {
                     {SMS_CONSENT_TEXT}
                   </p>
                   <p className="text-xs text-slate-500 mt-2">
-                    Optional. You can create your account and use Ovrlap without
-                    agreeing to SMS, and you can change this later in your profile.
+                    Required. Your account is activated by a code we text to this
+                    number, so we cannot create it without your agreement.
                   </p>
                   <div className="flex gap-3 mt-2">
                     <Link
