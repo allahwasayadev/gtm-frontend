@@ -130,6 +130,13 @@ export interface PhoneVerificationRequired {
   activationToken: string;
 }
 
+export interface ActivationFromSessionResponse {
+  email: string;
+  phoneHint: string | null;
+  needsPhoneNumber: boolean;
+  activationToken: string;
+}
+
 export interface ActivationSendResponse {
   phoneHint: string;
   expiresAt: string | null;

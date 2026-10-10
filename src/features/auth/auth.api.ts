@@ -9,6 +9,7 @@ import type {
   SetActivationPhoneDto,
   VerifyActivationDto,
   ActivationSendResponse,
+  ActivationFromSessionResponse,
   ForgotPasswordDto,
   ResetPasswordDto,
   MessageResponse,
@@ -27,6 +28,9 @@ export const authApi = {
 
   // Activation. Authorised by the short-lived activation token from signup or
   // from a password-correct login — never by an email address alone.
+  // Migration path for sessions that are already active.
+  activationFromSession: () =>
+    api.post<ActivationFromSessionResponse>('/auth/activation/from-session'),
   setActivationPhone: (data: SetActivationPhoneDto) =>
     api.post<ActivationSendResponse>('/auth/activation/phone', data),
   resendActivation: (data: ActivationTokenDto) =>

@@ -29,7 +29,7 @@ interface AuthContextType {
   updateUser: (updatedUser: User, newToken?: string) => void;
   deleteAccount: () => Promise<void>;
   verifyActivation: (code: string) => Promise<void>;
-  resendActivationCode: () => Promise<void>;
+  requestActivationCode: () => Promise<void>;
   setActivationPhone: (phoneNumber: string) => Promise<void>;
   sendPhoneVerificationCode: (phoneNumber: string, smsConsent?: boolean) => Promise<{ code?: string }>;
   verifyPhoneCode: (code: string) => Promise<void>;
@@ -103,7 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: data.email ?? email,
             phoneHint: data.phoneHint ?? null,
             needsPhoneNumber: Boolean(data.needsPhoneNumber),
-            smsSent: false,
+            // Nothing texted yet. The screen shows the saved number and the
+            // consent wording, and sends only when the user asks.
+            codeSent: false,
           });
           toast.error('Verify your mobile number to finish setting up your account.');
           router.push('/verify-phone');
@@ -144,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: response.data.email,
         phoneHint: response.data.phoneHint,
         needsPhoneNumber: false,
-        smsSent: response.data.smsSent,
+        codeSent: response.data.smsSent,
       });
 
       if (response.data.smsSent) {
@@ -186,14 +188,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const resendActivationCode = async () => {
+  /** Sends the code to the number on file. First send for a migrating user. */
+  const requestActivationCode = async () => {
     const state = readActivation();
     if (!state) throw new Error('Activation expired. Please sign in again.');
     try {
       const response = await authApi.resendActivation({
         activationToken: state.token,
       });
-      storeActivation({ ...state, smsSent: true, phoneHint: response.data.phoneHint });
+      storeActivation({ ...state, codeSent: true, phoneHint: response.data.phoneHint });
       toast.success('New code sent to your mobile.');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to resend code'));
@@ -214,7 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...state,
         phoneHint: response.data.phoneHint,
         needsPhoneNumber: false,
-        smsSent: true,
+        codeSent: true,
       });
       toast.success('Code sent to your mobile.');
     } catch (error: unknown) {
@@ -314,7 +317,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateUser,
       deleteAccount,
       verifyActivation,
-      resendActivationCode,
+      requestActivationCode,
       setActivationPhone,
       sendPhoneVerificationCode,
       verifyPhoneCode,

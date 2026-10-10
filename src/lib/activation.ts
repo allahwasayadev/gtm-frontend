@@ -14,8 +14,15 @@ export interface ActivationState {
   phoneHint: string | null;
   /** Account has no number on file — ask for one before sending a code. */
   needsPhoneNumber: boolean;
-  /** False when Twilio refused, so the screen does not claim a code was sent. */
-  smsSent: boolean;
+  /**
+   * Has a code actually been sent for this attempt?
+   *
+   * False for a migrating user, whose number is already on file: the screen
+   * shows that number and the consent wording and waits for them to ask. We
+   * must never text an existing account — including the seeded demo ones —
+   * just because they opened the app.
+   */
+  codeSent: boolean;
 }
 
 export function storeActivation(state: ActivationState): void {

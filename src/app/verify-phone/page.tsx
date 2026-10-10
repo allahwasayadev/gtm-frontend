@@ -28,7 +28,7 @@ export default function VerifyPhonePage() {
   const {
     user,
     verifyActivation,
-    resendActivationCode,
+    requestActivationCode,
     setActivationPhone,
     loading,
   } = useAuth();
@@ -71,12 +71,12 @@ export default function VerifyPhonePage() {
     }
   };
 
-  const handleResend = async () => {
+  const handleRequestCode = async () => {
     if (resendCooldown > 0) return;
     setIsResending(true);
     setError('');
     try {
-      await resendActivationCode();
+      await requestActivationCode();
       setState(readActivation());
       setResendCooldown(60);
     } catch (err: unknown) {
@@ -139,9 +139,9 @@ export default function VerifyPhonePage() {
         <p className="text-indigo-200 text-lg max-w-sm leading-relaxed">
           {needsNumber
             ? 'Add a mobile number so we can text you a code. Your account is not active until it is verified.'
-            : state.smsSent
-              ? 'Enter the code we texted you. Your account is not active until this is done.'
-              : 'Your account is created, but we could not send the code. Try again below.'}
+            : !state.codeSent
+              ? 'Confirm the number we have for you, and we will text you a code. Nothing is sent until you ask.'
+              : 'Enter the code we texted you. Your account is not active until this is done.'}
         </p>
       </div>
 
@@ -159,16 +159,16 @@ export default function VerifyPhonePage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               {needsNumber
                 ? 'Add your mobile number'
-                : state.smsSent
-                  ? 'Check your phone'
-                  : 'We could not send your code'}
+                : !state.codeSent
+                  ? 'Confirm your mobile number'
+                  : 'Check your phone'}
             </h2>
             {!needsNumber && state.phoneHint && (
               <>
                 <p className="text-slate-500">
-                  {state.smsSent
+                  {state.codeSent
                     ? 'We sent a 6-digit code by text to'
-                    : 'No code could be sent to'}
+                    : 'We will text your code to'}
                 </p>
                 <p className="text-indigo-600 font-semibold">
                   {state.phoneHint}
@@ -206,6 +206,33 @@ export default function VerifyPhonePage() {
                   Text me a code
                 </Button>
               </form>
+            ) : !state.codeSent ? (
+              /* Number already on file. Show the consent wording and WAIT —
+                 an existing account must never be texted just for showing up. */
+              <div className="space-y-5">
+                <p className="text-xs text-slate-600 bg-slate-50 rounded-xl p-4 border border-slate-100 leading-relaxed">
+                  {SMS_CONSENT_TEXT}
+                </p>
+                {error && <p className="text-sm text-red-600">{error}</p>}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                  isLoading={isResending}
+                  onClick={handleRequestCode}
+                >
+                  Text me a code
+                </Button>
+                <div className="text-center pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setState({ ...state, needsPhoneNumber: true })}
+                    className="text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                  >
+                    Use a different number
+                  </button>
+                </div>
+              </div>
             ) : (
               <>
                 <label className="block text-sm font-medium text-slate-700 mb-3 text-center">
@@ -228,7 +255,7 @@ export default function VerifyPhonePage() {
                   </p>
                   <button
                     type="button"
-                    onClick={handleResend}
+                    onClick={handleRequestCode}
                     disabled={isResending || resendCooldown > 0}
                     className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 disabled:text-slate-400 disabled:cursor-not-allowed"
                   >
