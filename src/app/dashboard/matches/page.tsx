@@ -113,7 +113,7 @@ function MatchesContent() {
       // An empty list here would render "No Active Connections", which looks
       // like real data rather than a failure.
       setLoadFailed(true);
-      toast.error('Failed to load connections');
+      toast.error('We couldn\u2019t load your partners. Try again.');
       setConnections([]);
     } finally {
       setLoadingConnections(false);
@@ -127,7 +127,7 @@ function MatchesContent() {
       setAllMatches(response.data ?? EMPTY_ALL_MATCHES);
     } catch (error: unknown) {
       setLoadFailed(true);
-      toast.error(getErrorMessage(error, 'Failed to load all-partner matches'));
+      toast.error(getErrorMessage(error, 'We couldn\u2019t load your matches. Try again.'));
       setAllMatches(EMPTY_ALL_MATCHES);
     } finally {
       setLoadingAllPartners(false);
@@ -147,7 +147,7 @@ function MatchesContent() {
       setResolvedMatches(response.data.resolved || []);
       setSuggestedMatches(response.data.suggested || []);
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Failed to load partner matches'));
+      toast.error(getErrorMessage(error, 'We couldn\u2019t load this partner\u2019s matches. Try again.'));
       setResolvedMatches([]);
       setSuggestedMatches([]);
     } finally {
@@ -374,11 +374,11 @@ function MatchesContent() {
                 <AlertTriangle className="h-6 w-6" />
               </span>
               <h3 className="text-base font-semibold text-slate-900">
-                Couldn&apos;t load your matches
+                We couldn&apos;t load your matches
               </h3>
               <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">
-                This is a problem reaching Ovrlap, not an empty result. Your partners and
-                overlaps are still there.
+                Something went wrong on our side. Your partners and overlaps are safe &mdash;
+                try again in a moment.
               </p>
               <Button
                 variant="primary"

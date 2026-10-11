@@ -56,9 +56,12 @@ function MobileError({ onRetry }: { onRetry: () => void }) {
       <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
         <AlertTriangle className="h-5 w-5" />
       </span>
-      <h3 className="text-[15px] font-bold text-slate-900">Couldn&apos;t load your connections</h3>
+      <h3 className="text-[15px] font-bold text-slate-900">
+        We couldn&apos;t load your connections
+      </h3>
       <p className="mx-auto mt-1 max-w-[17rem] text-[13px] leading-snug text-slate-600">
-        This is a problem reaching Ovrlap, not an empty list. Your partners and requests are still there.
+        Something went wrong on our side. Your partners and requests are safe &mdash; try again
+        in a moment.
       </p>
       <Button variant="primary" className="mt-3.5 w-full" onClick={onRetry}>
         <RefreshCw className="mr-1.5 h-4 w-4" />
@@ -205,7 +208,7 @@ function ConnectionsPageInner() {
       // Leaving the lists empty here would render the "no partners yet" state,
       // which reads as real data. Flag the failure instead.
       setLoadFailed(true);
-      toast.error('Failed to load connections');
+      toast.error('We couldn\u2019t load your connections. Try again.');
     } finally {
       setLoading(false);
     }
