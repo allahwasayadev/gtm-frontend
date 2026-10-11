@@ -29,7 +29,14 @@ export function NotificationBell() {
   const [markingAllRead, setMarkingAllRead] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  // The panel is fixed on phones, so it needs the header's real bottom edge.
+  // Hard-coding 64px put it under the mobile nav row, which is 48px tall.
+  const [headerBottom, setHeaderBottom] = useState(112);
+  // Opening marks everything read server-side. Snapshot what was unread so the
+  // panel still shows which items are new for as long as it is open.
+  const [unreadAtOpen, setUnreadAtOpen] = useState<Set<string>>(new Set());
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const refetchUnreadCountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -188,6 +195,38 @@ export function NotificationBell() {
     };
   }, [isOpen]);
 
+  // Measure the header rather than assuming its height: it is 64px wide-screen
+  // and 112px once the mobile nav row is in it, and that changes on rotation.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const measure = () => {
+      const header = rootRef.current?.closest('header');
+      if (header) {
+        setHeaderBottom(Math.round(header.getBoundingClientRect().bottom));
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+    };
+  }, [isOpen]);
+
+  // Move focus into the panel on open and hand it back to the bell on close.
+  useEffect(() => {
+    if (!isOpen) return;
+    const bell = rootRef.current?.querySelector('button');
+    panelRef.current?.focus({ preventScroll: true });
+    return () => {
+      if (bell instanceof HTMLElement && document.body.contains(bell)) {
+        bell.focus({ preventScroll: true });
+      }
+    };
+  }, [isOpen]);
+
   const markAllRead = useCallback(async () => {
     setMarkingAllRead(true);
     try {
@@ -208,6 +247,13 @@ export function NotificationBell() {
 
   const handleBellClick = () => {
     const shouldOpen = !isOpen;
+
+    if (shouldOpen) {
+      setUnreadAtOpen(
+        new Set(notifications.filter((n) => !n.isRead).map((n) => n.id)),
+      );
+    }
+
     setIsOpen(shouldOpen);
 
     if (shouldOpen) {
@@ -237,12 +283,18 @@ export function NotificationBell() {
   );
 
   return (
-    <div ref={rootRef} className="relative">
+    <div
+      ref={rootRef}
+      className="relative"
+      style={{ '--hdr-bottom': `${headerBottom}px` } as React.CSSProperties}
+    >
       <button
         type="button"
         onClick={handleBellClick}
         className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700"
         aria-label="Notifications"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -253,8 +305,23 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-x-0 top-16 z-50 mx-3 sm:absolute sm:inset-x-auto sm:top-12 sm:right-0 sm:mx-0 sm:w-96 rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+        <>
+          {/* Phones only: a scrim so the panel reads as a layer over the page
+              and a tap anywhere outside closes it. */}
+          <div
+            aria-hidden="true"
+            onClick={() => setIsOpen(false)}
+            style={{ top: 'var(--hdr-bottom)' }}
+            className="fixed inset-x-0 bottom-0 z-[55] bg-slate-900/40 motion-safe:animate-[ovrlapFade_.15s_ease-out] lg:hidden"
+          />
+          <div
+            ref={panelRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Notifications"
+            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-slate-900">
                 Notifications
@@ -279,7 +346,7 @@ export function NotificationBell() {
           <div
             ref={listRef}
             onScroll={handleListScroll}
-            className="max-h-[60vh] sm:max-h-96 space-y-2 overflow-y-auto px-3 py-3"
+            className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3 lg:max-h-96 lg:flex-none"
           >
             {loading ? (
               <p className="px-1 py-4 text-center text-sm text-slate-500">
@@ -293,10 +360,10 @@ export function NotificationBell() {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`rounded-2xl border px-3 py-2.5 ${
-                    notification.isRead
-                      ? 'border-slate-200 bg-slate-50'
-                      : 'border-sky-200 bg-sky-50'
+                  className={`rounded-2xl border px-3 py-2.5 transition-colors ${
+                    unreadAtOpen.has(notification.id) || !notification.isRead
+                      ? 'border-indigo-200 bg-indigo-50/60'
+                      : 'border-slate-200 bg-slate-50'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -336,7 +403,7 @@ export function NotificationBell() {
             )}
           </div>
 
-          <div className="border-t border-slate-100 px-4 py-3">
+          <div className="shrink-0 border-t border-slate-100 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:pb-3">
             <Button
               type="button"
               variant="outline"
@@ -349,7 +416,8 @@ export function NotificationBell() {
               Mark All Read
             </Button>
           </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

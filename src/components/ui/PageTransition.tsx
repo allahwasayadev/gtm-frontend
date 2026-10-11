@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { ReactNode } from 'react';
 
 interface PageTransitionProps {
@@ -18,6 +18,12 @@ const pageVariants: Variants = {
 };
 
 export function PageTransition({ children, className = '' }: PageTransitionProps) {
+  const reduce = useReducedMotion();
+
+  if (reduce) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       initial="hidden"
@@ -86,6 +92,12 @@ interface FadeInProps {
 }
 
 export function FadeIn({ children, className = '', delay = 0, direction = 'up' }: FadeInProps) {
+  const reduce = useReducedMotion();
+
+  if (reduce) {
+    return <div className={className}>{children}</div>;
+  }
+
   const offsets = {
     up: { y: 20 },
     down: { y: -20 },

@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
+  AlertTriangle,
   ArrowLeftRight,
   Building2,
   Check,
@@ -87,6 +88,7 @@ function MatchesContent() {
   );
   const [partnerTypeFilter, setPartnerTypeFilter] =
     useState<PartnerTypeFilter>('ALL');
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const loadConnections = useCallback(async () => {
     try {
@@ -95,6 +97,7 @@ function MatchesContent() {
         (connection) => connection.status === 'accepted',
       );
       setConnections(acceptedConnections);
+      setLoadFailed(false);
 
       setSelectedConnectionId((current) => {
         const preferred = current || preselectedConnectionId;
@@ -107,7 +110,10 @@ function MatchesContent() {
         return '';
       });
     } catch {
-      toast.error('Failed to load connections');
+      // An empty list here would render "No Active Connections", which looks
+      // like real data rather than a failure.
+      setLoadFailed(true);
+      toast.error('We couldn\u2019t load your partners. Try again.');
       setConnections([]);
     } finally {
       setLoadingConnections(false);
@@ -120,7 +126,8 @@ function MatchesContent() {
       const response = await matchingApi.getAllMatches();
       setAllMatches(response.data ?? EMPTY_ALL_MATCHES);
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Failed to load all-partner matches'));
+      setLoadFailed(true);
+      toast.error(getErrorMessage(error, 'We couldn\u2019t load your matches. Try again.'));
       setAllMatches(EMPTY_ALL_MATCHES);
     } finally {
       setLoadingAllPartners(false);
@@ -140,7 +147,7 @@ function MatchesContent() {
       setResolvedMatches(response.data.resolved || []);
       setSuggestedMatches(response.data.suggested || []);
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Failed to load partner matches'));
+      toast.error(getErrorMessage(error, 'We couldn\u2019t load this partner\u2019s matches. Try again.'));
       setResolvedMatches([]);
       setSuggestedMatches([]);
     } finally {
@@ -342,15 +349,51 @@ function MatchesContent() {
   }
 
   return (
-    <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8">
-      <PageHeader
-        title="Account Matches"
-        description="View overlaps across all partners, then drill into any reseller"
-        backHref="/dashboard"
-      />
+    <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4 lg:py-8">
+      <div className="hidden lg:block">
+        <PageHeader
+          title="Account Matches"
+          description="View overlaps across all partners, then drill into any reseller"
+          backHref="/dashboard"
+        />
+      </div>
+      <div className="mb-3 lg:hidden">
+        <h1 className="text-xl leading-tight font-bold text-slate-900 tracking-tight">
+          Account Matches
+        </h1>
+        <p className="mt-1 text-[13px] leading-snug text-slate-600 max-[359px]:hidden">
+          Accounts you and a partner both work. Pick a partner to review their suggested matches.
+        </p>
+      </div>
 
       <PageTransition>
-        {connections.length === 0 ? (
+        {loadFailed ? (
+          <Card>
+            <div role="alert" className="px-5 py-8 text-center">
+              <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                <AlertTriangle className="h-6 w-6" />
+              </span>
+              <h3 className="text-base font-semibold text-slate-900">
+                We couldn&apos;t load your matches
+              </h3>
+              <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">
+                Something went wrong on our side. Your partners and overlaps are safe &mdash;
+                try again in a moment.
+              </p>
+              <Button
+                variant="primary"
+                className="mt-4"
+                onClick={() => {
+                  setLoadingConnections(true);
+                  void refreshCurrentView();
+                }}
+              >
+                <RefreshCw className="mr-1.5 h-4 w-4" />
+                Try again
+              </Button>
+            </div>
+          </Card>
+        ) : connections.length === 0 ? (
           <Card>
             <EmptyState
               icon={Users}
@@ -366,8 +409,16 @@ function MatchesContent() {
             />
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] gap-6">
-            <aside className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] gap-4 lg:gap-6">
+            <PartnerChips
+              className="lg:hidden"
+              allPartnersMode={allPartnersMode}
+              allPartnersCount={filteredAccounts.length}
+              items={partnerNavItems}
+              selectedConnectionId={selectedConnectionId}
+              onSelect={setSelectedConnectionId}
+            />
+            <aside className="hidden lg:block space-y-4">
               <Card className="p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
@@ -456,10 +507,10 @@ function MatchesContent() {
             </aside>
 
             <section className="space-y-4 min-w-0">
-              <Card className="p-4 sm:p-5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-900">
+              <Card padding="none" className="p-3 lg:p-5">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5 lg:gap-3">
+                  <div className="min-w-0">
+                    <h2 className="hidden lg:block text-lg font-semibold text-slate-900">
                       {allPartnersMode
                         ? partnerTypeFilter === 'RESELLER'
                           ? 'Reseller Overlaps (Account-Centric)'
@@ -468,7 +519,12 @@ function MatchesContent() {
                             : 'All Partners Overlap (Account-Centric)'
                         : `${selectedConnection?.otherUser.name ?? 'Partner'} Matches`}
                     </h2>
-                    <p className="text-sm text-slate-500 mt-0.5">
+                    <h2 className="lg:hidden text-[15px] font-bold leading-tight text-slate-900">
+                      {allPartnersMode
+                        ? 'Overlapping accounts'
+                        : selectedConnection?.otherUser.name ?? 'Partner matches'}
+                    </h2>
+                    <p className="hidden lg:block text-sm text-slate-500 mt-0.5">
                       {allPartnersMode
                         ? partnerTypeFilter === 'RESELLER'
                           ? 'Your accounts with overlaps across mapped resellers'
@@ -488,11 +544,13 @@ function MatchesContent() {
                         }
                         options={partnerTypeFilterOptions}
                         className="w-40"
+                        triggerClassName="min-h-11 lg:min-h-0"
                       />
                     )}
                     <Button
                       variant="outline"
                       size="sm"
+                      className="min-h-11 lg:min-h-0"
                       onClick={refreshCurrentView}
                     >
                       <RefreshCw className="w-4 h-4" />
@@ -510,6 +568,10 @@ function MatchesContent() {
                 </div>
               </Card>
 
+              {/* Keyed so switching partner cross-fades the panel instead of
+                  snapping. Fade only, never a slide, and motion-safe: drops it
+                  entirely under prefers-reduced-motion. */}
+              <div key={selectedConnectionId || 'all'} className="space-y-4 ovrlap-swap">
               {allPartnersMode ? (
                 <AllPartnersPanel
                   loading={loadingAllPartners}
@@ -528,11 +590,117 @@ function MatchesContent() {
                   onDecision={handleMatchDecision}
                 />
               )}
+              </div>
             </section>
           </div>
         )}
       </PageTransition>
     </main>
+  );
+}
+
+/**
+ * The partner picker on phones and tablets. The wide layout keeps its sidebar;
+ * this is the same set of destinations and the same live counts in a row that
+ * scrolls, with a fade on whichever edge still has chips behind it so the
+ * scrollability is visible rather than guessed at.
+ */
+function PartnerChips({
+  className = '',
+  allPartnersMode,
+  allPartnersCount,
+  items,
+  selectedConnectionId,
+  onSelect,
+}: {
+  className?: string;
+  allPartnersMode: boolean;
+  allPartnersCount: number;
+  items: Array<{ connection: Connection; matchCount: number }>;
+  selectedConnectionId: string;
+  onSelect: (connectionId: string) => void;
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: false, end: false });
+
+  const measureEdges = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setEdges({ start: el.scrollLeft > 4, end: max > 4 && el.scrollLeft < max - 4 });
+  }, []);
+
+  useEffect(() => {
+    measureEdges();
+    window.addEventListener('resize', measureEdges);
+    return () => window.removeEventListener('resize', measureEdges);
+  }, [measureEdges, items.length]);
+
+  // Keep the chosen partner on screen when it is picked from elsewhere, e.g.
+  // the Connections list linking in with ?connection=.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    const selected = el?.querySelector('[data-selected="true"]');
+    if (selected instanceof HTMLElement) {
+      selected.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+      measureEdges();
+    }
+  }, [selectedConnectionId, measureEdges]);
+
+  const chip = (key: string, selected: boolean, count: number, title: string, sub: string, onClick: () => void) => (
+    <button
+      key={key}
+      type="button"
+      data-selected={selected}
+      aria-pressed={selected}
+      onClick={onClick}
+      className={`flex min-h-[44px] w-[108px] shrink-0 snap-start flex-col items-start rounded-xl border px-2.5 py-2 text-left transition-colors ${
+        selected
+          ? 'border-indigo-400 bg-indigo-50 ring-1 ring-indigo-300'
+          : 'border-slate-200/80 bg-white'
+      }`}
+    >
+      <span className={`text-[17px] font-extrabold leading-none tracking-tight ${selected ? 'text-indigo-700' : 'text-slate-900'}`}>
+        {count}
+      </span>
+      <span className="mt-1 w-full truncate text-[11px] font-bold leading-tight text-slate-600">{title}</span>
+      <span className="w-full truncate text-[10.5px] leading-tight text-slate-500">{sub}</span>
+    </button>
+  );
+
+  return (
+    <div className={`relative ${className}`}>
+      <div
+        ref={scrollerRef}
+        onScroll={measureEdges}
+        role="group"
+        aria-label="Choose a partner"
+        className="flex snap-x gap-2 overflow-x-auto scrollbar-hide pb-0.5"
+      >
+        {chip('all', allPartnersMode, allPartnersCount, 'All partners', 'accounts', () => onSelect(''))}
+        {items.map(({ connection, matchCount }) =>
+          chip(
+            connection.id,
+            connection.id === selectedConnectionId,
+            matchCount,
+            connection.otherUser.name,
+            connection.otherUser.company || connection.otherUser.email,
+            () => onSelect(connection.id),
+          ),
+        )}
+      </div>
+      {edges.start && (
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-7 bg-linear-to-r from-slate-50 to-transparent" />
+      )}
+      {edges.end && (
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-7 bg-linear-to-l from-slate-50 to-transparent" />
+      )}
+      {edges.end && (
+        <span className="pointer-events-none absolute -bottom-4 right-0 text-[10.5px] font-bold text-slate-500">
+          scroll for more &rarr;
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -582,7 +750,7 @@ function AllPartnersPanel({
 
   return (
     <>
-      <Card className="p-4 sm:p-5">
+      <Card className="hidden lg:block p-4 sm:p-5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="text-sm text-slate-500">Matched Accounts</div>
@@ -615,7 +783,49 @@ function AllPartnersPanel({
         </div>
       </Card>
 
-      <Card className="p-0 overflow-hidden">
+      <Card padding="none" className="overflow-hidden lg:hidden">
+        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            Overlapping accounts &middot; {accounts.length}
+          </span>
+          <span className="text-[11px] text-slate-500">
+            {totalPartnerOverlaps} overlap{totalPartnerOverlaps !== 1 ? 's' : ''}
+          </span>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {accounts.map((account) => (
+            <div key={account.yourAccountId} className="px-3 py-2.5">
+              <div className="flex items-center gap-2.5">
+                <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-slate-800">
+                  {account.yourAccountName}
+                </span>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                  account.partners.length > 2
+                    ? 'bg-linear-to-r from-indigo-600 to-violet-600 text-white'
+                    : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                }`}>
+                  {account.partners.length}
+                </span>
+              </div>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {account.partners.map((partner) => (
+                  <button
+                    key={`${account.yourAccountId}-${partner.connectionId}`}
+                    type="button"
+                    onClick={() => onSelectConnection(partner.connectionId)}
+                    title={`Their list: ${partner.theirAccountName}`}
+                    className="inline-flex min-h-8 max-w-full items-center truncate rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600"
+                  >
+                    {partner.partnerName}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="p-0 overflow-hidden hidden lg:block">
         <div className="divide-y divide-slate-100">
           {accounts.map((account) => (
             <div key={account.yourAccountId} className="p-4 sm:p-5">

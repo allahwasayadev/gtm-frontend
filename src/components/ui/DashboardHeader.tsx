@@ -77,12 +77,12 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
       <div className="mx-auto lg:px-14 px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/dashboard" className="inline-flex items-center">
+          <Link href="/dashboard" className="inline-flex shrink-0 items-center">
             <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-12 w-auto object-contain" />
           </Link>
 
-          <nav className="hidden md:flex items-center">
-            <div className="flex items-center gap-3 rounded-full bg-slate-100/80 p-1">
+          <nav className="hidden lg:flex min-w-0 shrink items-center">
+            <div className="flex min-w-0 items-center gap-3 overflow-x-auto scrollbar-hide rounded-full bg-slate-100/80 p-1">
               {navItems.map(item => {
                 const active = isActive(item.href);
                 return (
@@ -101,7 +101,7 @@ export function Header() {
             </div>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {user ? (
               <>
                 <NotificationBell />
@@ -161,7 +161,7 @@ export function Header() {
           </div>
         </div>
 
-        <nav className="flex md:hidden items-center gap-1 pb-3 -mx-1 overflow-x-auto scrollbar-hide">
+        <nav className="flex lg:hidden items-center gap-1 pb-3 -mx-1 overflow-x-auto scrollbar-hide">
           {navItems.map(item => {
             const active = isActive(item.href);
             return (

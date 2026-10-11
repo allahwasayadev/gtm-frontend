@@ -92,6 +92,53 @@ body {
   }
 }
 
+/* ---- Shared mobile motion -------------------------------------------
+   One vocabulary for the dashboard, connections, matches and the
+   notification panel: a short rise-and-fade for things that appear, a
+   plain fade for scrims and for content swapping inside a container.
+   Everything here is opt-in via Tailwind's motion-safe:, and the block
+   at the end turns the rest off for prefers-reduced-motion.           */
+
+@keyframes ovrlapFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ovrlapPanelIn {
+  from { opacity: 0; transform: translateY(-8px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ovrlapRise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Swapping the body of a tabbed section: fade only, never a slide, so
+   nothing appears to move sideways under the user's thumb. */
+.ovrlap-swap {
+  animation: ovrlapFade 0.16s ease-out;
+}
+
+/* A row that is about to disappear after Accept/Decline/Revoke. */
+.ovrlap-leaving {
+  opacity: 0.45;
+  transform: scale(0.99);
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ovrlap-swap,
+  .ovrlap-leaving {
+    animation: none;
+    transition: none;
+  }
+  .ovrlap-leaving {
+    opacity: 0.45;
+    transform: none;
+  }
+}
+
 /* Premium card shadows */
 .shadow-card {
   box-shadow:
