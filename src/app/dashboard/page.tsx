@@ -236,9 +236,9 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4 sm:py-8">
-        <div className="mb-3 sm:mb-8">
-          <h1 className="text-xl max-sm:leading-tight sm:text-3xl font-bold text-slate-900 tracking-tight">
+      <main className="w-full px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4 md:py-8">
+        <div className="mb-3 md:mb-8">
+          <h1 className="text-xl max-md:leading-tight md:text-3xl font-bold text-slate-900 tracking-tight">
             {hasNoAccounts
               ? `Welcome to Ovrlap, ${firstName}`
               : `Welcome back, ${user.name}`}
@@ -246,7 +246,7 @@ export default function DashboardPage() {
           {/* Narrow screens get a line that says what the page is for; the
               existing subtitle is unchanged from sm up. */}
           <p
-            className={`mt-1 text-[13px] leading-snug text-slate-600 sm:hidden ${
+            className={`mt-1 text-[13px] leading-snug text-slate-600 md:hidden ${
               hasNoAccounts ? '' : 'max-[359px]:hidden'
             }`}
           >
@@ -254,14 +254,14 @@ export default function DashboardPage() {
               ? 'Upload your account list, then invite a partner. Ovrlap shows you which accounts you both work with.'
               : 'See where your accounts overlap with your partners’.'}
           </p>
-          <p className="mt-1 hidden sm:block text-base text-slate-500">
+          <p className="mt-1 hidden md:block text-base text-slate-500">
             Here&apos;s an overview of your account mapping activity
           </p>
         </div>
 
         <PageTransition>
           {loadingData ? (
-            <div className="grid grid-cols-3 sm:grid-cols-1 md:grid-cols-3 gap-2 sm:gap-6 mb-3 sm:mb-8">
+            <div className="grid grid-cols-3 gap-2 md:gap-6 mb-3 md:mb-8">
               <SkeletonCard />
               <SkeletonCard />
               <SkeletonCard />
@@ -269,7 +269,7 @@ export default function DashboardPage() {
           ) : (
             <>
             {/* Narrow screens: the same three metrics as one compact summary. */}
-            <div className="sm:hidden mb-3 grid grid-cols-3 bg-white rounded-xl border border-slate-200/60 shadow-card overflow-hidden">
+            <div className="md:hidden mb-3 grid grid-cols-3 bg-white rounded-xl border border-slate-200/60 shadow-card overflow-hidden">
               <div className="px-2 py-2.5">
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
@@ -322,7 +322,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+            <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
               <Card
                 className="border-t-4 border-t-indigo-500 rounded-none cursor-default"
               >
@@ -396,29 +396,29 @@ export default function DashboardPage() {
           )}
 
           <FadeIn delay={0.15}>
-            <p className="sm:hidden mb-1.5 px-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <p className="md:hidden mb-1.5 px-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Quick actions
             </p>
-            <div className="grid grid-cols-4 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-8">
+            <div className="grid grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-8">
               {activeList ? (
                 <Link
                   href={`/dashboard/lists/${activeList.id}`}
                   className="group"
                   data-tour="upload-list"
                 >
-                  <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                      <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+                  <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
+                    <div className="w-7 h-7 md:w-10 md:h-10 bg-indigo-100 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                      <FileText className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     </div>
-                    <div className="max-sm:w-full sm:flex-1 min-w-0">
-                      <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
+                    <div className="max-md:w-full md:flex-1 min-w-0">
+                      <div className="font-semibold text-slate-900 text-[11.5px] max-md:leading-tight md:text-sm">
                         View List
                       </div>
-                      <div className="hidden sm:block text-xs text-slate-500">
+                      <div className="hidden md:block text-xs text-slate-500">
                         {activeList.name}
                       </div>
                     </div>
-                    <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
+                    <ChevronRight className="hidden md:block w-5 h-5 text-slate-400 shrink-0" />
                   </div>
                 </Link>
               ) : (
@@ -427,56 +427,56 @@ export default function DashboardPage() {
                   className="group"
                   data-tour="upload-list"
                 >
-                  <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                      <CloudUpload className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+                  <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
+                    <div className="w-7 h-7 md:w-10 md:h-10 bg-indigo-100 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                      <CloudUpload className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     </div>
-                    <div className="max-sm:w-full sm:flex-1 min-w-0">
-                      <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
+                    <div className="max-md:w-full md:flex-1 min-w-0">
+                      <div className="font-semibold text-slate-900 text-[11.5px] max-md:leading-tight md:text-sm">
                         Upload List
                       </div>
-                      <div className="hidden sm:block text-xs text-slate-500">
+                      <div className="hidden md:block text-xs text-slate-500">
                         Add account list
                       </div>
                     </div>
-                    <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
+                    <ChevronRight className="hidden md:block w-5 h-5 text-slate-400 shrink-0" />
                   </div>
                 </Link>
               )}
               <button
                 onClick={() => setShowInviteModal(true)}
-                className="group text-left max-sm:h-full"
+                className="group text-left max-md:h-full"
                 data-tour="invite-partner"
               >
-                <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-violet-200 transition-all duration-200">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 bg-violet-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
+                <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-violet-200 transition-all duration-200">
+                  <div className="w-7 h-7 md:w-10 md:h-10 bg-violet-100 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <Mail className="w-4 h-4 md:w-5 md:h-5 text-violet-600" />
                   </div>
-                  <div className="max-sm:w-full sm:flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
+                  <div className="max-md:w-full md:flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-[11.5px] max-md:leading-tight md:text-sm">
                       Invite Partner
                     </div>
-                    <div className="hidden sm:block text-xs text-slate-500">
+                    <div className="hidden md:block text-xs text-slate-500">
                       Send email invite
                     </div>
                   </div>
-                  <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronRight className="hidden md:block w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </button>
               <Link href="/dashboard/connections" className="group">
-                <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-emerald-200 transition-all duration-200">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+                <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-emerald-200 transition-all duration-200">
+                  <div className="w-7 h-7 md:w-10 md:h-10 bg-emerald-100 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <Users className="w-4 h-4 md:w-5 md:h-5 text-emerald-600" />
                   </div>
-                  <div className="max-sm:w-full sm:flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
+                  <div className="max-md:w-full md:flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-[11.5px] max-md:leading-tight md:text-sm">
                       Connections
                     </div>
-                    <div className="hidden sm:block text-xs text-slate-500">
+                    <div className="hidden md:block text-xs text-slate-500">
                       Manage partners
                     </div>
                   </div>
-                  <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronRight className="hidden md:block w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </Link>
               <Link
@@ -484,34 +484,34 @@ export default function DashboardPage() {
                 className="group"
                 data-tour="view-matches"
               >
-                <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-sky-200 transition-all duration-200">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 bg-sky-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <ClipboardCheck className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
+                <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-sky-200 transition-all duration-200">
+                  <div className="w-7 h-7 md:w-10 md:h-10 bg-sky-100 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <ClipboardCheck className="w-4 h-4 md:w-5 md:h-5 text-sky-600" />
                   </div>
-                  <div className="max-sm:w-full sm:flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
+                  <div className="max-md:w-full md:flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-[11.5px] max-md:leading-tight md:text-sm">
                       View Matches
                     </div>
-                    <div className="hidden sm:block text-xs text-slate-500">
+                    <div className="hidden md:block text-xs text-slate-500">
                       Account overlaps
                     </div>
                   </div>
-                  <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronRight className="hidden md:block w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </Link>
             </div>
           </FadeIn>
 
           <FadeIn delay={0.2}>
-            <Card padding="none" className="p-3 sm:p-6 mb-4 sm:mb-8">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 mb-3 pb-3 sm:mb-6 sm:pb-6 border-b border-slate-100">
-                <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 bg-linear-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
-                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <Card padding="none" className="p-3 md:p-6 mb-4 md:mb-8">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-3 pb-3 md:mb-6 md:pb-6 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 md:gap-4 min-w-0">
+                  <div className="w-9 h-9 md:w-11 md:h-11 bg-linear-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                    <FileText className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 sm:gap-2.5 flex-nowrap sm:flex-wrap max-sm:min-w-0">
-                      <h3 className="text-[15px] max-sm:leading-tight sm:text-lg font-semibold text-slate-900 truncate">
+                    <div className="flex items-center gap-2 md:gap-2.5 flex-nowrap md:flex-wrap max-md:min-w-0">
+                      <h3 className="text-[15px] max-md:leading-tight md:text-lg font-semibold text-slate-900 truncate">
                         {companyFilter
                           ? `Accounts overlapping between ${user.name} and ${companyFilter}`
                           : `${user.name} Accounts`}
@@ -527,15 +527,15 @@ export default function DashboardPage() {
                           </Badge>
                         ))}
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    <p className="text-xs md:text-sm text-slate-500 mt-1">
                       {activeList
                         ? `${activeAccounts.length} account${activeAccounts.length !== 1 ? 's' : ''}`
                         : 'Upload an account list to get started'}
                       {matchedAccountsCount > 0 && (
                         <span className="ml-1.5 text-indigo-500">
                           {'\u2022'}{' '}
-                          <span className="sm:hidden">Tap</span>
-                          <span className="hidden sm:inline">Hover</span>{' '}
+                          <span className="md:hidden">Tap</span>
+                          <span className="hidden md:inline">Hover</span>{' '}
                           match count to see partners
                         </span>
                       )}
@@ -547,7 +547,7 @@ export default function DashboardPage() {
                     dropdowns. Hidden entirely when there is nothing to filter
                     or edit, which is also when the empty state is showing. */}
                 {!hasNoAccounts && (
-                  <div className="flex sm:hidden items-center gap-2">
+                  <div className="flex md:hidden items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setShowFilterSheet(true)}
@@ -582,14 +582,14 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                <div className="hidden sm:flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+                <div className="hidden md:flex flex-col md:flex-row items-stretch md:items-center gap-2.5 shrink-0">
                   <Dropdown
                     aria-label="Company filter"
                     value={companyFilter}
                     onChange={setCompanyFilter}
                     options={companyFilterOptions}
                     placeholder="All companies"
-                    className="sm:w-44"
+                    className="md:w-44"
                   />
                   <Dropdown
                     aria-label="Match display filter"
@@ -598,7 +598,7 @@ export default function DashboardPage() {
                       setMatchViewFilter(value as MatchViewFilter)
                     }
                     options={matchViewOptions}
-                    className="sm:w-48"
+                    className="md:w-48"
                   />
                   <div className="flex gap-2">
                     {activeList && (
@@ -698,7 +698,7 @@ export default function DashboardPage() {
                 <>
                   {/* Phones: the same words, laid out so the primary action
                       stays on the first screen instead of below the fold. */}
-                  <div className="sm:hidden border-2 border-dashed border-slate-200 rounded-xl p-3">
+                  <div className="md:hidden border-2 border-dashed border-slate-200 rounded-xl p-3">
                     <div className="flex items-start gap-3 mb-2">
                       <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
                         <FileText className="w-5 h-5 text-indigo-600" />
@@ -719,7 +719,7 @@ export default function DashboardPage() {
                     </Link>
                   </div>
 
-                  <div className="hidden sm:block border-2 border-dashed border-slate-200 rounded-xl">
+                  <div className="hidden md:block border-2 border-dashed border-slate-200 rounded-xl">
                     <EmptyState
                       icon={FileText}
                       title="No accounts yet"
@@ -741,15 +741,15 @@ export default function DashboardPage() {
                       <tr className="bg-linear-to-r from-slate-50 via-slate-50/80 to-indigo-50/40">
                         <th
                           scope="col"
-                          className="px-2 sm:px-4 py-2 sm:py-3.5 text-left w-9 sm:w-14"
+                          className="px-2 md:px-4 py-2 md:py-3.5 text-left w-9 md:w-14"
                         >
-                          <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-200/60 text-slate-500">
+                          <div className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-lg bg-slate-200/60 text-slate-500">
                             <span className="text-[10px] font-bold">#</span>
                           </div>
                         </th>
                         <th
                           scope="col"
-                          className="px-3 sm:px-5 py-2 sm:py-3.5 text-left"
+                          className="px-3 md:px-5 py-2 md:py-3.5 text-left"
                         >
                           <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
@@ -760,7 +760,7 @@ export default function DashboardPage() {
                         </th>
                         <th
                           scope="col"
-                          className="px-3 sm:px-4 py-2 sm:py-3.5 text-right w-24 sm:w-32"
+                          className="px-3 md:px-4 py-2 md:py-3.5 text-right w-24 md:w-32"
                         >
                           <div className="flex items-center justify-end gap-2">
                             <span className="text-xs font-semibold text-slate-600 tracking-wide">
@@ -786,9 +786,9 @@ export default function DashboardPage() {
                                 : 'bg-white hover:bg-slate-50/80'
                             }`}
                           >
-                            <td className="px-2 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap">
+                            <td className="px-2 md:px-4 py-2.5 md:py-3 whitespace-nowrap">
                               <span
-                                className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors ${
+                                className={`inline-flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-lg text-[11px] md:text-xs font-semibold transition-colors ${
                                   isTopMatch
                                     ? 'bg-indigo-100 text-indigo-600'
                                     : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200/80 group-hover:text-slate-500'
@@ -797,30 +797,30 @@ export default function DashboardPage() {
                                 {index + 1}
                               </span>
                             </td>
-                            <td className="px-3 sm:px-5 py-2.5 sm:py-3">
-                              <div className="flex items-center gap-2 sm:gap-3 max-sm:min-w-0">
-                                <div className="min-w-0 max-sm:flex-1">
+                            <td className="px-3 md:px-5 py-2.5 md:py-3">
+                              <div className="flex items-center gap-2 md:gap-3 max-md:min-w-0">
+                                <div className="min-w-0 max-md:flex-1">
                                   <span
-                                    className={`max-sm:block max-sm:truncate font-medium text-sm sm:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}
+                                    className={`max-md:block max-md:truncate font-medium text-sm md:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}
                                   >
                                     {account.accountName}
                                   </span>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-right">
+                            <td className="px-3 md:px-4 py-2.5 md:py-3 text-right">
                               {partners.length > 0 ? (
                                 <AccountMatchTooltip partners={partners}>
                                   {isTopMatch ? (
-                                    <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-white text-[10px] sm:text-xs font-bold cursor-pointer transition-all whitespace-nowrap bg-linear-to-r from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 hover:scale-105">
-                                      <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0">
+                                    <span className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3.5 py-1 md:py-1.5 rounded-full text-white text-[10px] md:text-xs font-bold cursor-pointer transition-all whitespace-nowrap bg-linear-to-r from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 hover:scale-105">
+                                      <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2 shrink-0">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-white" />
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-white" />
                                       </span>
                                       {partners.length} match{partners.length === 1 ? '' : 'es'}
                                     </span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold cursor-pointer transition-colors whitespace-nowrap bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80 hover:bg-emerald-100 hover:ring-emerald-300">
+                                    <span className="inline-flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold cursor-pointer transition-colors whitespace-nowrap bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80 hover:bg-emerald-100 hover:ring-emerald-300">
                                       {partners.length} match{partners.length === 1 ? '' : 'es'}
                                     </span>
                                   )}
@@ -832,9 +832,9 @@ export default function DashboardPage() {
                       })}
                     </tbody>
                   </table>
-                  <div className="bg-slate-50/60 px-3 sm:px-5 py-2.5 border-t border-slate-100">
+                  <div className="bg-slate-50/60 px-3 md:px-5 py-2.5 border-t border-slate-100">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs sm:text-sm text-slate-500">
+                      <p className="text-xs md:text-sm text-slate-500">
                         <span className="font-semibold text-slate-700">
                           {activeAccounts.length}
                         </span>{' '}

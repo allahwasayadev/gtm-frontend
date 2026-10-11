@@ -312,7 +312,7 @@ export function NotificationBell() {
             aria-hidden="true"
             onClick={() => setIsOpen(false)}
             style={{ top: 'var(--hdr-bottom)' }}
-            className="fixed inset-x-0 bottom-0 z-[55] bg-slate-900/40 motion-safe:animate-[ovrlapFade_.15s_ease-out] sm:hidden"
+            className="fixed inset-x-0 bottom-0 z-[55] bg-slate-900/40 motion-safe:animate-[ovrlapFade_.15s_ease-out] lg:hidden"
           />
           <div
             ref={panelRef}
@@ -320,7 +320,7 @@ export function NotificationBell() {
             role="dialog"
             aria-modal="true"
             aria-label="Notifications"
-            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:z-50 sm:mx-0 sm:max-h-none sm:w-96 rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
+            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
           <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-slate-900">
@@ -346,7 +346,7 @@ export function NotificationBell() {
           <div
             ref={listRef}
             onScroll={handleListScroll}
-            className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3 sm:max-h-96 sm:flex-none"
+            className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3 lg:max-h-96 lg:flex-none"
           >
             {loading ? (
               <p className="px-1 py-4 text-center text-sm text-slate-500">
@@ -403,7 +403,7 @@ export function NotificationBell() {
             )}
           </div>
 
-          <div className="shrink-0 border-t border-slate-100 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-3">
+          <div className="shrink-0 border-t border-slate-100 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:pb-3">
             <Button
               type="button"
               variant="outline"

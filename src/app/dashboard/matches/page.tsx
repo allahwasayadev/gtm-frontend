@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
+  AlertTriangle,
   ArrowLeftRight,
   Building2,
   Check,
@@ -87,6 +88,7 @@ function MatchesContent() {
   );
   const [partnerTypeFilter, setPartnerTypeFilter] =
     useState<PartnerTypeFilter>('ALL');
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const loadConnections = useCallback(async () => {
     try {
@@ -95,6 +97,7 @@ function MatchesContent() {
         (connection) => connection.status === 'accepted',
       );
       setConnections(acceptedConnections);
+      setLoadFailed(false);
 
       setSelectedConnectionId((current) => {
         const preferred = current || preselectedConnectionId;
@@ -107,6 +110,9 @@ function MatchesContent() {
         return '';
       });
     } catch {
+      // An empty list here would render "No Active Connections", which looks
+      // like real data rather than a failure.
+      setLoadFailed(true);
       toast.error('Failed to load connections');
       setConnections([]);
     } finally {
@@ -120,6 +126,7 @@ function MatchesContent() {
       const response = await matchingApi.getAllMatches();
       setAllMatches(response.data ?? EMPTY_ALL_MATCHES);
     } catch (error: unknown) {
+      setLoadFailed(true);
       toast.error(getErrorMessage(error, 'Failed to load all-partner matches'));
       setAllMatches(EMPTY_ALL_MATCHES);
     } finally {
@@ -360,7 +367,33 @@ function MatchesContent() {
       </div>
 
       <PageTransition>
-        {connections.length === 0 ? (
+        {loadFailed ? (
+          <Card>
+            <div role="alert" className="px-5 py-8 text-center">
+              <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                <AlertTriangle className="h-6 w-6" />
+              </span>
+              <h3 className="text-base font-semibold text-slate-900">
+                Couldn&apos;t load your matches
+              </h3>
+              <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">
+                This is a problem reaching Ovrlap, not an empty result. Your partners and
+                overlaps are still there.
+              </p>
+              <Button
+                variant="primary"
+                className="mt-4"
+                onClick={() => {
+                  setLoadingConnections(true);
+                  void refreshCurrentView();
+                }}
+              >
+                <RefreshCw className="mr-1.5 h-4 w-4" />
+                Try again
+              </Button>
+            </div>
+          </Card>
+        ) : connections.length === 0 ? (
           <Card>
             <EmptyState
               icon={Users}
