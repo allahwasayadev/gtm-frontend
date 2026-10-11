@@ -533,6 +533,10 @@ function MatchesContent() {
                 </div>
               </Card>
 
+              {/* Keyed so switching partner cross-fades the panel instead of
+                  snapping. Fade only, never a slide, and motion-safe: drops it
+                  entirely under prefers-reduced-motion. */}
+              <div key={selectedConnectionId || 'all'} className="space-y-4 ovrlap-swap">
               {allPartnersMode ? (
                 <AllPartnersPanel
                   loading={loadingAllPartners}
@@ -551,6 +555,7 @@ function MatchesContent() {
                   onDecision={handleMatchDecision}
                 />
               )}
+              </div>
             </section>
           </div>
         )}

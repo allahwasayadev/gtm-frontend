@@ -312,7 +312,7 @@ function ConnectionsPageInner() {
             Phones: one segmented list instead of four stacked cards. Every
             group, count and action from the wide layout below is present.
            ------------------------------------------------------------------ */}
-        <div className="sm:hidden">
+        <PageTransition className="sm:hidden">
           <h1 className="text-xl leading-tight font-bold text-slate-900 tracking-tight">
             Connections
           </h1>
@@ -372,7 +372,7 @@ function ConnectionsPageInner() {
             })}
           </div>
 
-          <div key={activeTab} className="mt-3 motion-safe:ovrlap-swap">
+          <div key={activeTab} className="mt-3 ovrlap-swap">
             {loading ? (
               <div className="space-y-2.5">
                 {[1, 2, 3].map((i) => (
@@ -570,7 +570,7 @@ function ConnectionsPageInner() {
               </div>
             )}
           </div>
-        </div>
+        </PageTransition>
 
         <div className="hidden sm:block">
         <PageTransition>
