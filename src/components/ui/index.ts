@@ -11,6 +11,7 @@ export { Skeleton, SkeletonCard, SkeletonListItem, SkeletonTable, SkeletonMatchC
 export { PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen } from './PageTransition';
 export { AccountMatchTooltip } from './AccountMatchTooltip';
 export { InviteModal } from './InviteModal';
+export { FilterSheet } from './FilterSheet';
 export { ConfirmationModal } from './ConfirmationModal';
 export { OnboardingTour, useOnboardingTour } from './OnboardingTour';
 export { CodeInput } from './CodeInput';

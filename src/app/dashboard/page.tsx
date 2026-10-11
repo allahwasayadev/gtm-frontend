@@ -27,6 +27,7 @@ import {
   LoadingScreen,
   AccountMatchTooltip,
   InviteModal,
+  FilterSheet,
   OnboardingTour,
   useOnboardingTour,
 } from '@/components/ui';
@@ -38,9 +39,10 @@ import {
   CloudUpload,
   Mail,
   ClipboardCheck,
-  ArrowRight,
   ChevronRight,
-  Shield,
+  Pencil,
+  Plus,
+  SlidersHorizontal,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -63,6 +65,7 @@ export default function DashboardPage() {
   const [matchesMap, setMatchesMap] = useState<AccountMatchesMap>({});
   const [loadingData, setLoadingData] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [matchViewFilter, setMatchViewFilter] =
     useState<MatchViewFilter>('ALL');
   const [companyFilter, setCompanyFilter] = useState<string>('');
@@ -199,9 +202,17 @@ export default function DashboardPage() {
     );
   }, [companyFilter, filteredMatchesMap, activeAccounts]);
 
+  // The same condition the account table uses for its empty state. Guarded on
+  // loadingData so a fresh load does not flash the new-user greeting.
+  const hasNoAccounts =
+    !loadingData && (!activeList || activeAccounts.length === 0);
+  const activeFilterCount = (companyFilter ? 1 : 0) + (matchViewFilter !== 'ALL' ? 1 : 0);
+
   if (loading || !user) {
     return <LoadingScreen message="Loading your dashboard..." />;
   }
+
+  const firstName = user.name?.trim().split(/\s+/)[0] || user.name;
 
   const handleOnboardingClose = async () => {
     if (user.hasCompletedOnboarding) {
@@ -225,47 +236,93 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Welcome back, {user.name}
+      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4 sm:py-8">
+        <div className="mb-3 sm:mb-8">
+          <h1 className="text-xl max-sm:leading-tight sm:text-3xl font-bold text-slate-900 tracking-tight">
+            {hasNoAccounts
+              ? `Welcome to Ovrlap, ${firstName}`
+              : `Welcome back, ${user.name}`}
           </h1>
-          <p className="mt-1 text-sm sm:text-base text-slate-500">
+          {/* Narrow screens get a line that says what the page is for; the
+              existing subtitle is unchanged from sm up. */}
+          <p
+            className={`mt-1 text-[13px] leading-snug text-slate-600 sm:hidden ${
+              hasNoAccounts ? '' : 'max-[359px]:hidden'
+            }`}
+          >
+            {hasNoAccounts
+              ? 'Upload your account list, then invite a partner. Ovrlap shows you which accounts you both work with.'
+              : 'See where your accounts overlap with your partners’.'}
+          </p>
+          <p className="mt-1 hidden sm:block text-base text-slate-500">
             Here&apos;s an overview of your account mapping activity
           </p>
         </div>
 
-        {!user.phoneNumber?.trim() && (
-          <Link
-            href="/dashboard/profile"
-            className="block mb-6 group"
-          >
-            <div className="flex items-start sm:items-center gap-3 p-4 rounded-xl border border-amber-200/80 bg-amber-50/80 hover:bg-amber-50 transition-colors">
-              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                <Shield className="w-5 h-5 text-amber-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-amber-800">
-                  Add a phone number to secure your account
-                </p>
-                <p className="text-xs text-amber-700/90 mt-0.5">
-                  Help protect your account and recover it if you get locked out.
-                </p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-amber-600 shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-            </div>
-          </Link>
-        )}
-
         <PageTransition>
           {loadingData ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+            <div className="grid grid-cols-3 sm:grid-cols-1 md:grid-cols-3 gap-2 sm:gap-6 mb-3 sm:mb-8">
               <SkeletonCard />
               <SkeletonCard />
               <SkeletonCard />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+            <>
+            {/* Narrow screens: the same three metrics as one compact summary. */}
+            <div className="sm:hidden mb-3 grid grid-cols-3 bg-white rounded-xl border border-slate-200/60 shadow-card overflow-hidden">
+              <div className="px-2 py-2.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                  <span className="text-xl font-extrabold tracking-tight text-slate-900 leading-none">
+                    {activeList ? 1 : 0}
+                  </span>
+                </div>
+                <p className="mt-1 text-[11.5px] font-semibold text-slate-600 leading-tight">
+                  Account List
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500 leading-tight min-h-[24px]">
+                  {activeList?.status === 'active'
+                    ? 'Published'
+                    : activeList
+                      ? 'Draft'
+                      : 'No list yet'}
+                </p>
+              </div>
+              <div className="px-2 py-2.5 border-l border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="text-xl font-extrabold tracking-tight text-slate-900 leading-none">
+                    {activeConnections.length}
+                  </span>
+                </div>
+                <p className="mt-1 text-[11.5px] font-semibold text-slate-600 leading-tight">
+                  Active Connections
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500 leading-tight min-h-[24px]">
+                  {activeConnections.length === 0
+                    ? 'Send your first invite'
+                    : 'Collaboration partners'}
+                </p>
+              </div>
+              <div className="px-2 py-2.5 border-l border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                  <span className="text-xl font-extrabold tracking-tight text-slate-900 leading-none">
+                    {pendingReceived.length}
+                  </span>
+                </div>
+                <p className="mt-1 text-[11.5px] font-semibold text-slate-600 leading-tight">
+                  Pending Requests
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500 leading-tight min-h-[24px]">
+                  {pendingReceived.length === 0
+                    ? 'All caught up'
+                    : 'Awaiting response'}
+                </p>
+              </div>
+            </div>
+
+            <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
               <Card
                 className="border-t-4 border-t-indigo-500 rounded-none cursor-default"
               >
@@ -280,7 +337,7 @@ export default function DashboardPage() {
                     <p className="text-4xl font-extrabold tracking-tight text-slate-900">
                       {activeList ? 1 : 0}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {activeList?.status === 'active'
                         ? 'Published'
                         : activeList
@@ -304,7 +361,7 @@ export default function DashboardPage() {
                     <p className="text-4xl font-extrabold tracking-tight text-slate-900">
                       {activeConnections.length}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {activeConnections.length === 0
                         ? 'Send your first invite'
                         : 'Collaboration partners'}
@@ -326,7 +383,7 @@ export default function DashboardPage() {
                     <p className="text-4xl font-extrabold tracking-tight text-slate-900">
                       {pendingReceived.length}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {pendingReceived.length === 0
                         ? 'All caught up'
                         : 'Awaiting response'}
@@ -335,29 +392,33 @@ export default function DashboardPage() {
                 </div>
               </Card>
             </div>
+            </>
           )}
 
           <FadeIn delay={0.15}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <p className="sm:hidden mb-1.5 px-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Quick actions
+            </p>
+            <div className="grid grid-cols-4 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-8">
               {activeList ? (
                 <Link
                   href={`/dashboard/lists/${activeList.id}`}
                   className="group"
                   data-tour="upload-list"
                 >
-                  <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                      <FileText className="w-5 h-5 text-indigo-600" />
+                  <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                      <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-slate-900 text-sm">
+                    <div className="max-sm:w-full sm:flex-1 min-w-0">
+                      <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
                         View List
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="hidden sm:block text-xs text-slate-500">
                         {activeList.name}
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+                    <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
                   </div>
                 </Link>
               ) : (
@@ -366,56 +427,56 @@ export default function DashboardPage() {
                   className="group"
                   data-tour="upload-list"
                 >
-                  <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                      <CloudUpload className="w-5 h-5 text-indigo-600" />
+                  <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-indigo-200 transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                      <CloudUpload className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-slate-900 text-sm">
+                    <div className="max-sm:w-full sm:flex-1 min-w-0">
+                      <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
                         Upload List
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="hidden sm:block text-xs text-slate-500">
                         Add account list
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+                    <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
                   </div>
                 </Link>
               )}
               <button
                 onClick={() => setShowInviteModal(true)}
-                className="group text-left"
+                className="group text-left max-sm:h-full"
                 data-tour="invite-partner"
               >
-                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-violet-200 transition-all duration-200">
-                  <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <Mail className="w-5 h-5 text-violet-600" />
+                <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-violet-200 transition-all duration-200">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 bg-violet-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm">
+                  <div className="max-sm:w-full sm:flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
                       Invite Partner
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="hidden sm:block text-xs text-slate-500">
                       Send email invite
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </button>
               <Link href="/dashboard/connections" className="group">
-                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-emerald-200 transition-all duration-200">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <Users className="w-5 h-5 text-emerald-600" />
+                <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-emerald-200 transition-all duration-200">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm">
+                  <div className="max-sm:w-full sm:flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
                       Connections
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="hidden sm:block text-xs text-slate-500">
                       Manage partners
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </Link>
               <Link
@@ -423,34 +484,34 @@ export default function DashboardPage() {
                 className="group"
                 data-tour="view-matches"
               >
-                <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-sky-200 transition-all duration-200">
-                  <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <ClipboardCheck className="w-5 h-5 text-sky-600" />
+                <div className="max-sm:h-full flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 px-1 py-2.5 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-slate-200/60 shadow-card hover:shadow-card-hover hover:border-sky-200 transition-all duration-200">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 bg-sky-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <ClipboardCheck className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm">
+                  <div className="max-sm:w-full sm:flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-[11.5px] max-sm:leading-tight sm:text-sm">
                       View Matches
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="hidden sm:block text-xs text-slate-500">
                       Account overlaps
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronRight className="hidden sm:block w-5 h-5 text-slate-400 shrink-0" />
                 </div>
               </Link>
             </div>
           </FadeIn>
 
           <FadeIn delay={0.2}>
-            <Card className="mb-8">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-11 h-11 bg-linear-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
-                    <FileText className="w-5 h-5 text-white" />
+            <Card padding="none" className="p-3 sm:p-6 mb-4 sm:mb-8">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 mb-3 pb-3 sm:mb-6 sm:pb-6 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 bg-linear-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <h3 className="text-base sm:text-lg font-semibold text-slate-900 truncate">
+                    <div className="flex items-center gap-2 sm:gap-2.5 flex-nowrap sm:flex-wrap max-sm:min-w-0">
+                      <h3 className="text-[15px] max-sm:leading-tight sm:text-lg font-semibold text-slate-900 truncate">
                         {companyFilter
                           ? `Accounts overlapping between ${user.name} and ${companyFilter}`
                           : `${user.name} Accounts`}
@@ -472,13 +533,56 @@ export default function DashboardPage() {
                         : 'Upload an account list to get started'}
                       {matchedAccountsCount > 0 && (
                         <span className="ml-1.5 text-indigo-500">
-                          {'\u2022'} Hover match count to see partners
+                          {'\u2022'}{' '}
+                          <span className="sm:hidden">Tap</span>
+                          <span className="hidden sm:inline">Hover</span>{' '}
+                          match count to see partners
                         </span>
                       )}
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+                {/* Phones: both filters move into a sheet so the controls fit
+                    one row. Nothing is dropped — the sheet holds the same two
+                    dropdowns. Hidden entirely when there is nothing to filter
+                    or edit, which is also when the empty state is showing. */}
+                {!hasNoAccounts && (
+                  <div className="flex sm:hidden items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowFilterSheet(true)}
+                      className="flex-1 h-9 px-3 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white text-[13px] font-semibold text-slate-700"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <SlidersHorizontal className="w-3.5 h-3.5" />
+                        Filters
+                      </span>
+                      {activeFilterCount > 0 && (
+                        <span className="bg-indigo-50 text-indigo-700 text-[11px] rounded-full px-1.5 py-px">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </button>
+                    {activeList && (
+                      <Link
+                        href={`/dashboard/lists/${activeList.id}`}
+                        aria-label="Edit list"
+                        className="h-9 px-3 max-[359px]:w-10 max-[359px]:px-0 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-[13px] font-semibold text-slate-700"
+                      >
+                        <Pencil className="w-4 h-4 min-[360px]:hidden" />
+                        <span className="max-[359px]:hidden">Edit List</span>
+                      </Link>
+                    )}
+                    <Link href="/dashboard/upload">
+                      <span className="h-9 px-3 flex items-center gap-1.5 rounded-lg bg-indigo-600 text-white text-[13px] font-semibold">
+                        <Plus className="w-3.5 h-3.5" />
+                        Upload
+                      </span>
+                    </Link>
+                  </div>
+                )}
+
+                <div className="hidden sm:flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
                   <Dropdown
                     aria-label="Company filter"
                     value={companyFilter}
@@ -591,20 +695,45 @@ export default function DashboardPage() {
                   </div>
                 )
               ) : !activeList || activeAccounts.length === 0 ? (
-                <div className="border-2 border-dashed border-slate-200 rounded-xl">
-                  <EmptyState
-                    icon={FileText}
-                    title="No accounts yet"
-                    description="Get started by uploading your first account list"
-                    action={
-                      <Link href="/dashboard/upload">
-                        <Button variant="primary" size="lg">
-                          Upload Your First List
-                        </Button>
-                      </Link>
-                    }
-                  />
-                </div>
+                <>
+                  {/* Phones: the same words, laid out so the primary action
+                      stays on the first screen instead of below the fold. */}
+                  <div className="sm:hidden border-2 border-dashed border-slate-200 rounded-xl p-3">
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5 text-indigo-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-[15px] font-semibold text-slate-900 leading-tight">
+                          No accounts yet
+                        </h3>
+                        <p className="mt-0.5 text-[13px] text-slate-500 leading-snug">
+                          Get started by uploading your first account list
+                        </p>
+                      </div>
+                    </div>
+                    <Link href="/dashboard/upload" className="block">
+                      <Button variant="primary" className="w-full">
+                        Upload Your First List
+                      </Button>
+                    </Link>
+                  </div>
+
+                  <div className="hidden sm:block border-2 border-dashed border-slate-200 rounded-xl">
+                    <EmptyState
+                      icon={FileText}
+                      title="No accounts yet"
+                      description="Get started by uploading your first account list"
+                      action={
+                        <Link href="/dashboard/upload">
+                          <Button variant="primary" size="lg">
+                            Upload Your First List
+                          </Button>
+                        </Link>
+                      }
+                    />
+                  </div>
+                </>
               ) : (
                 <div className="overflow-hidden rounded-xl border mx-auto w-full max-w-440 border-slate-200/60">
                   <table className="w-full min-w-0">
@@ -612,15 +741,15 @@ export default function DashboardPage() {
                       <tr className="bg-linear-to-r from-slate-50 via-slate-50/80 to-indigo-50/40">
                         <th
                           scope="col"
-                          className="hidden sm:table-cell px-4 py-3.5 text-left w-14"
+                          className="px-2 sm:px-4 py-2 sm:py-3.5 text-left w-9 sm:w-14"
                         >
-                          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-200/60 text-slate-500">
+                          <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-200/60 text-slate-500">
                             <span className="text-[10px] font-bold">#</span>
                           </div>
                         </th>
                         <th
                           scope="col"
-                          className="px-3 sm:px-5 py-3.5 text-left"
+                          className="px-3 sm:px-5 py-2 sm:py-3.5 text-left"
                         >
                           <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
@@ -631,7 +760,7 @@ export default function DashboardPage() {
                         </th>
                         <th
                           scope="col"
-                          className="px-3 sm:px-4 py-3.5 text-right w-24 sm:w-32"
+                          className="px-3 sm:px-4 py-2 sm:py-3.5 text-right w-24 sm:w-32"
                         >
                           <div className="flex items-center justify-end gap-2">
                             <span className="text-xs font-semibold text-slate-600 tracking-wide">
@@ -657,9 +786,9 @@ export default function DashboardPage() {
                                 : 'bg-white hover:bg-slate-50/80'
                             }`}
                           >
-                            <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap">
+                            <td className="px-2 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap">
                               <span
-                                className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-semibold transition-colors ${
+                                className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors ${
                                   isTopMatch
                                     ? 'bg-indigo-100 text-indigo-600'
                                     : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200/80 group-hover:text-slate-500'
@@ -668,18 +797,18 @@ export default function DashboardPage() {
                                 {index + 1}
                               </span>
                             </td>
-                            <td className="px-3 sm:px-5 py-3">
-                              <div className="flex items-center gap-2 sm:gap-3">
-                                <div className="min-w-0">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3">
+                              <div className="flex items-center gap-2 sm:gap-3 max-sm:min-w-0">
+                                <div className="min-w-0 max-sm:flex-1">
                                   <span
-                                    className={`font-medium text-sm sm:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}
+                                    className={`max-sm:block max-sm:truncate font-medium text-sm sm:text-base ${isTopMatch ? 'text-slate-900' : 'text-slate-800'}`}
                                   >
                                     {account.accountName}
                                   </span>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-3 sm:px-4 py-3 text-right">
+                            <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-right">
                               {partners.length > 0 ? (
                                 <AccountMatchTooltip partners={partners}>
                                   {isTopMatch ? (
@@ -688,11 +817,11 @@ export default function DashboardPage() {
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
                                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-white" />
                                       </span>
-                                      {partners.length} matches
+                                      {partners.length} match{partners.length === 1 ? '' : 'es'}
                                     </span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold cursor-pointer transition-colors whitespace-nowrap bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80 hover:bg-emerald-100 hover:ring-emerald-300">
-                                      {partners.length} matches
+                                      {partners.length} match{partners.length === 1 ? '' : 'es'}
                                     </span>
                                   )}
                                 </AccountMatchTooltip>
@@ -729,6 +858,24 @@ export default function DashboardPage() {
       <InviteModal
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
+      />
+
+      <FilterSheet
+        isOpen={showFilterSheet}
+        onClose={() => setShowFilterSheet(false)}
+        companyFilter={companyFilter}
+        onCompanyFilterChange={setCompanyFilter}
+        companyOptions={companyFilterOptions}
+        matchViewFilter={matchViewFilter}
+        onMatchViewFilterChange={(value) =>
+          setMatchViewFilter(value as MatchViewFilter)
+        }
+        matchViewOptions={matchViewOptions}
+        onClear={() => {
+          setCompanyFilter('');
+          setMatchViewFilter('ALL');
+        }}
+        activeCount={activeFilterCount}
       />
 
       <OnboardingTour
