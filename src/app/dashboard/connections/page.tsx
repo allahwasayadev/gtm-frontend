@@ -467,13 +467,13 @@ function ConnectionsPageInner() {
                         </span>
                       </div>
                       <div className="flex gap-2 px-3 pb-3 pt-2.5">
-                        <Button onClick={() => handleAcceptConnection(connection.id)} variant="success" size="sm" className="flex-1">
+                        <Button onClick={() => handleAcceptConnection(connection.id)} variant="success" size="sm" className="min-h-11 flex-1">
                           <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
                           Accept
                         </Button>
                         <Button
                           onClick={() => handleDeleteConnection(connection.id, connection.otherUser.name, 'decline')}
-                          variant="outline" size="sm" className="flex-1"
+                          variant="outline" size="sm" className="min-h-11 flex-1"
                         >
                           Decline
                         </Button>
@@ -509,7 +509,7 @@ function ConnectionsPageInner() {
                         </span>
                         <Button
                           onClick={() => handleDeleteConnection(connection.id, connection.otherUser.name, 'cancel')}
-                          variant="outline" size="sm" className="shrink-0 text-xs"
+                          variant="outline" size="sm" className="min-h-11 shrink-0 text-xs"
                         >
                           Cancel
                         </Button>
@@ -558,7 +558,7 @@ function ConnectionsPageInner() {
                                 toast.error('Failed to revoke invite');
                               }
                             }}
-                            variant="outline" size="sm" className="shrink-0 text-xs"
+                            variant="outline" size="sm" className="min-h-11 shrink-0 text-xs"
                           >
                             Revoke
                           </Button>

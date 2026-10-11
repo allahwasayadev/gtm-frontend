@@ -511,11 +511,13 @@ function MatchesContent() {
                         }
                         options={partnerTypeFilterOptions}
                         className="w-40"
+                        triggerClassName="min-h-11 lg:min-h-0"
                       />
                     )}
                     <Button
                       variant="outline"
                       size="sm"
+                      className="min-h-11 lg:min-h-0"
                       onClick={refreshCurrentView}
                     >
                       <RefreshCw className="w-4 h-4" />
@@ -619,7 +621,7 @@ function PartnerChips({
       data-selected={selected}
       aria-pressed={selected}
       onClick={onClick}
-      className={`flex min-h-11 w-[108px] shrink-0 snap-start flex-col items-start rounded-xl border px-2.5 py-2 text-left transition-colors ${
+      className={`flex min-h-[44px] w-[108px] shrink-0 snap-start flex-col items-start rounded-xl border px-2.5 py-2 text-left transition-colors ${
         selected
           ? 'border-indigo-400 bg-indigo-50 ring-1 ring-indigo-300'
           : 'border-slate-200/80 bg-white'
@@ -779,7 +781,7 @@ function AllPartnersPanel({
                     type="button"
                     onClick={() => onSelectConnection(partner.connectionId)}
                     title={`Their list: ${partner.theirAccountName}`}
-                    className="max-w-full truncate rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600"
+                    className="inline-flex min-h-8 max-w-full items-center truncate rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600"
                   >
                     {partner.partnerName}
                   </button>

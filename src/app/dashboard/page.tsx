@@ -551,7 +551,7 @@ export default function DashboardPage() {
                     <button
                       type="button"
                       onClick={() => setShowFilterSheet(true)}
-                      className="flex-1 h-9 px-3 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white text-[13px] font-semibold text-slate-700"
+                      className="flex-1 h-11 px-3 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white text-[13px] font-semibold text-slate-700"
                     >
                       <span className="flex items-center gap-1.5">
                         <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -567,14 +567,14 @@ export default function DashboardPage() {
                       <Link
                         href={`/dashboard/lists/${activeList.id}`}
                         aria-label="Edit list"
-                        className="h-9 px-3 max-[359px]:w-10 max-[359px]:px-0 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-[13px] font-semibold text-slate-700"
+                        className="h-11 px-3 max-[359px]:w-11 max-[359px]:px-0 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-[13px] font-semibold text-slate-700"
                       >
                         <Pencil className="w-4 h-4 min-[360px]:hidden" />
                         <span className="max-[359px]:hidden">Edit List</span>
                       </Link>
                     )}
                     <Link href="/dashboard/upload">
-                      <span className="h-9 px-3 flex items-center gap-1.5 rounded-lg bg-indigo-600 text-white text-[13px] font-semibold">
+                      <span className="h-11 px-3 flex items-center gap-1.5 rounded-lg bg-indigo-600 text-white text-[13px] font-semibold">
                         <Plus className="w-3.5 h-3.5" />
                         Upload
                       </span>
