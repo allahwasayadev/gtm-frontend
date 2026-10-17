@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input } from '@/components/ui';
+import { normalizeResetIdentifier } from '@/lib/phone';
 
 /**
  * Step 1 of reset: identify the account.
@@ -28,7 +29,12 @@ export default function ForgotPasswordPage() {
     if (!identifier.trim()) return;
     setIsSubmitting(true);
     try {
-      await requestPasswordReset(identifier.trim());
+      // This field takes an email address OR a number, so it keeps no +1
+      // prefix of its own. But ten digits is now the only way a US user has
+      // ever entered their number, so that is canonicalised to +1XXXXXXXXXX
+      // before it goes — otherwise it would not match the stored number.
+      // Anything else is sent exactly as typed, never trimmed to fit.
+      await requestPasswordReset(normalizeResetIdentifier(identifier));
       setSubmitted(true);
     } catch {
       // Handled by the context toast. Still show the neutral screen: a visible
@@ -79,7 +85,9 @@ export default function ForgotPasswordPage() {
                 className="w-full mt-6"
                 onClick={() =>
                   router.push(
-                    `/reset-password?identifier=${encodeURIComponent(identifier.trim())}`,
+                    `/reset-password?identifier=${encodeURIComponent(
+                      normalizeResetIdentifier(identifier),
+                    )}`,
                   )
                 }
               >
@@ -96,7 +104,7 @@ export default function ForgotPasswordPage() {
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="you@example.com or +1 555 123 4567"
+                  placeholder="you@example.com or (201) 555-0123"
                   autoComplete="username"
                 />
               </div>

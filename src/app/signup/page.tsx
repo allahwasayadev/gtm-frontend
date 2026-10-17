@@ -4,11 +4,12 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import type { UserRole } from '@/features/auth/types';
-import { Button, Input, Dropdown, LoadingScreen, CountryCodeSelect } from '@/components/ui';
+import { Button, Input, Dropdown, LoadingScreen, UsPhoneInput } from '@/components/ui';
 import { motion } from 'framer-motion';
-import { User, Building2, Mail, Lock, ArrowRight, Check, Phone } from 'lucide-react';
+import { User, Building2, Mail, Lock, ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
+import { toUsE164, usPhoneValidationError, US_DIAL_CODE } from '@/lib/phone';
 
 
 const features = [
@@ -38,8 +39,8 @@ function SignupContent() {
     password: string;
     confirmPassword: string;
     role: UserRole | null;
-    countryCode: string;
-    phoneLocal: string;
+    /** The ten national digits. +1 is fixed by the field and added on submit. */
+    phoneDigits: string;
     smsConsent: boolean;
   }>({
     name: '',
@@ -48,8 +49,7 @@ function SignupContent() {
     password: '',
     confirmPassword: '',
     role: null,
-    countryCode: '+1',
-    phoneLocal: '',
+    phoneDigits: '',
     smsConsent: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,14 +88,10 @@ function SignupContent() {
 
     // Phone is REQUIRED: the activation code is sent by SMS and there is no
     // email or voice alternative, so an account cannot be created without one.
-    const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
-    if (!phoneDigits) {
-      newErrors.phone = 'A mobile number is required to verify your account';
-    } else {
-      const fullPhone = `${formData.countryCode}${phoneDigits}`;
-      if (!/^\+[1-9]\d{7,14}$/.test(fullPhone)) {
-        newErrors.phone = 'Enter a valid mobile number';
-      }
+    // US only, so the field owns the +1 and we validate the ten digits.
+    const phoneError = usPhoneValidationError(formData.phoneDigits);
+    if (phoneError) {
+      newErrors.phone = phoneError;
     }
 
     // Consent is likewise required, because SMS is the only way to activate.
@@ -118,8 +114,8 @@ function SignupContent() {
     setIsSubmitting(true);
     try {
       const selectedRole = formData.role as UserRole;
-      const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
-      const phoneNumber = `${formData.countryCode}${phoneDigits}`;
+      // Canonical E.164. validateForm() has already established it is there.
+      const phoneNumber = toUsE164(formData.phoneDigits) as string;
 
       // Consent travels with the signup so the backend records when, where and
       // to what wording the user agreed — before anything is sent.
@@ -316,49 +312,21 @@ function SignupContent() {
                 autoComplete="new-password"
               />
 
-              {/* Phone Number */}
+              {/* Phone Number — US only, so no country picker: a fixed +1
+                  and the ten remaining digits. */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Mobile Number <span className="text-red-500">*</span>
-                  <span className="block font-normal text-xs text-slate-500 mt-0.5">
-                    We text a code here to activate your account.
-                  </span>
-                </label>
-                <div className="flex gap-2">
-                  <CountryCodeSelect
-                    value={formData.countryCode}
-                    onChange={(code) => {
-                      setFormData({ ...formData, countryCode: code });
-                      setErrors({ ...errors, phone: '' });
-                    }}
-                  />
-                  <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <Phone className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      maxLength={15}
-                      value={formData.phoneLocal}
-                      onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, '').slice(0, 15);
-                        setFormData({ ...formData, phoneLocal: digits });
-                        setErrors({ ...errors, phone: '' });
-                      }}
-                      placeholder="5551234567"
-                      className={`block w-full pl-10 pr-4 py-2.5 text-sm text-slate-900 bg-white border rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-white focus:shadow-sm transition-all ${
-                        errors.phone
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                          : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20'
-                      }`}
-                      autoComplete="tel-national"
-                    />
-                  </div>
-                </div>
-                {errors.phone && (
-                  <p className="mt-1.5 text-sm text-red-600">{errors.phone}</p>
-                )}
+                <UsPhoneInput
+                  id="signup-phone"
+                  label="Mobile Number"
+                  required
+                  value={formData.phoneDigits}
+                  onChange={(digits) => {
+                    setFormData({ ...formData, phoneDigits: digits });
+                    setErrors({ ...errors, phone: '' });
+                  }}
+                  error={errors.phone}
+                  helperText={`We text a code to this ${US_DIAL_CODE} number to activate your account.`}
+                />
               </div>
 
               {/* SMS consent (A2P 10DLC). REQUIRED: SMS is the only activation channel. */}

@@ -8,6 +8,8 @@ import { Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, LoadingScreen } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
+import { normalizeResetIdentifier } from '@/lib/phone';
+import { toOtpDigits } from '@/lib/otp';
 
 export default function ResetPasswordPage() {
   return (
@@ -58,7 +60,13 @@ function ResetPasswordContent() {
 
     setIsSubmitting(true);
     try {
-      await resetPassword(identifier.trim(), code.trim(), newPassword);
+      // Same canonicalisation as the screen before it, so a user who typed
+      // ten digits there and ten digits here reaches the same account.
+      await resetPassword(
+        normalizeResetIdentifier(identifier),
+        code.trim(),
+        newPassword,
+      );
       router.push('/login');
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Invalid or expired code.'));
@@ -97,7 +105,7 @@ function ResetPasswordContent() {
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="you@example.com or +1 555 123 4567"
+                placeholder="you@example.com or (201) 555-0123"
                 autoComplete="username"
               />
             </div>
@@ -106,12 +114,17 @@ function ResetPasswordContent() {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 6-digit code
               </label>
+              {/* No maxLength: it counts characters, so a pasted "123 456"
+                  would arrive as "123 45". toOtpDigits caps the digits
+                  instead, which also lets the OS fill it in one go. This form
+                  still needs a new password, so it never self-submits. */}
               <Input
                 type="text"
                 inputMode="numeric"
-                maxLength={6}
+                pattern="\d*"
+                enterKeyHint="next"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => setCode(toOtpDigits(e.target.value))}
                 placeholder="123456"
                 autoComplete="one-time-code"
               />

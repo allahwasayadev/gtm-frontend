@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { CodeInput, LoadingScreen, Button, Input } from '@/components/ui';
+import { CodeInput, LoadingScreen, Button, UsPhoneInput } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { Smartphone, ArrowLeftRight, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { getErrorMessage } from '@/lib/error-utils';
 import { readActivation, type ActivationState } from '@/lib/activation';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
+import { toUsE164, usPhoneValidationError, US_DIAL_CODE } from '@/lib/phone';
 
 /**
  * Account activation.
@@ -36,7 +37,9 @@ export default function VerifyPhonePage() {
   const [state, setState] = useState<ActivationState | null>(null);
   const [ready, setReady] = useState(false);
 
-  const [phoneInput, setPhoneInput] = useState('');
+  /** The ten national digits. The field owns the +1. */
+  const [phoneDigits, setPhoneDigits] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -95,10 +98,20 @@ export default function VerifyPhonePage() {
 
   const handleSetPhone = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Same rule as signup: ten US digits, canonicalised to +1XXXXXXXXXX
+    // before it leaves the browser. An account reaching activation without a
+    // number on file is the legacy path, and it gets the same field.
+    const validationError = usPhoneValidationError(phoneDigits);
+    if (validationError) {
+      setPhoneError(validationError);
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
     try {
-      await setActivationPhone(phoneInput.trim());
+      await setActivationPhone(toUsE164(phoneDigits) as string);
       setState(readActivation());
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Could not send the code'));
@@ -187,18 +200,20 @@ export default function VerifyPhonePage() {
           <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
             {needsNumber ? (
               <form onSubmit={handleSetPhone} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Mobile number
-                  </label>
-                  <Input
-                    type="tel"
-                    value={phoneInput}
-                    onChange={(e) => setPhoneInput(e.target.value)}
-                    placeholder="+1 555 123 4567"
-                    autoComplete="tel"
-                  />
-                </div>
+                <UsPhoneInput
+                  id="activation-phone"
+                  label="Mobile number"
+                  required
+                  autoFocus
+                  value={phoneDigits}
+                  onChange={(digits) => {
+                    setPhoneDigits(digits);
+                    setPhoneError('');
+                    setError('');
+                  }}
+                  error={phoneError}
+                  helperText={`We text a code to this ${US_DIAL_CODE} number.`}
+                />
                 <p className="text-xs text-slate-600 bg-slate-50 rounded-xl p-4 border border-slate-100 leading-relaxed">
                   {SMS_CONSENT_TEXT}
                 </p>
@@ -247,11 +262,17 @@ export default function VerifyPhonePage() {
                 </label>
                 <CodeInput
                   onComplete={handleComplete}
+                  onChange={() => error && setError('')}
                   disabled={isSubmitting}
+                  describedBy={error ? 'activation-code-error' : undefined}
                 />
 
                 {error && (
-                  <p className="text-sm text-red-600 text-center mt-4">
+                  <p
+                    id="activation-code-error"
+                    role="alert"
+                    className="text-sm text-red-600 text-center mt-4"
+                  >
                     {error}
                   </p>
                 )}

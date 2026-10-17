@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -23,9 +23,18 @@ import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
 import {
-  Button, ConfirmationModal, FadeIn, Input, LoadingScreen, PageTransition,
+  Button, CodeInput, ConfirmationModal, FadeIn, Input, LoadingScreen,
+  PageTransition, UsPhoneInput,
 } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
+import {
+  isAnyE164,
+  isUsE164,
+  toUsE164,
+  usNationalDigitsFromE164,
+  usPhoneValidationError,
+  US_DIAL_CODE,
+} from '@/lib/phone';
 
 type ProfileFormState = {
   name: string;
@@ -41,8 +50,23 @@ function normalizePhoneForCompare(phoneNumber: string): string {
 }
 
 function isValidPhoneNumber(phoneNumber: string): boolean {
-  const normalized = normalizePhoneForCompare(phoneNumber);
-  return /^\+[1-9]\d{7,14}$/.test(normalized);
+  return isAnyE164(phoneNumber);
+}
+
+/**
+ * Which phone field this account gets.
+ *
+ * A US number, or none yet, gets the +1 field everyone else sees — same
+ * component, same validation, same canonical E.164 on the way out.
+ *
+ * An account already holding a non-US number keeps the plain international
+ * field. Pushing that number through a +1 field would either refuse to show
+ * it or quietly rewrite it, and this screen is where someone would discover
+ * their own number had been changed under them.
+ */
+function usesUsPhoneField(storedPhoneNumber: string): boolean {
+  const stored = normalizePhoneForCompare(storedPhoneNumber);
+  return !stored || isUsE164(stored);
 }
 
 export default function ProfilePage() {
@@ -64,6 +88,27 @@ export default function ProfilePage() {
   const [smsConsent, setSmsConsent] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [verifyCodeInput, setVerifyCodeInput] = useState('');
+  /**
+   * The ten national digits, for the +1 field. Kept beside formData.phoneNumber
+   * rather than replacing it: an account already holding a non-US number uses
+   * the international field, and that number must pass through untouched.
+   */
+  const [phoneDigits, setPhoneDigits] = useState('');
+  /**
+   * Remounts the code field to clear it. The field owns its own digits — that
+   * is what lets one input serve as six boxes — so a resend or a fresh send
+   * clears it by identity rather than by reaching into it.
+   */
+  const [verifyCodeResetKey, setVerifyCodeResetKey] = useState(0);
+  /**
+   * One verification in flight at a time, held in a ref.
+   *
+   * Two things can start one: the code field, the moment six digits land, and
+   * the Verify button. `isVerifyingPhoneCode` is state, so it is not visible
+   * to a second handler that runs before React re-renders — a ref is, and the
+   * cost of losing that race is two attempts burnt out of five on one code.
+   */
+  const verifyInFlightRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [modalAnimate, setModalAnimate] = useState(false);
 
@@ -95,15 +140,52 @@ export default function ProfilePage() {
         company: user.company || '',
         role: businessRole,
       });
+      setPhoneDigits(usNationalDigitsFromE164(user.phoneNumber || ''));
       setIsEmailEditingEnabled(false);
       setVerifyCodeInput('');
     }
   }, [user, loading, router]);
 
+  const useUsPhoneField = usesUsPhoneField(user?.phoneNumber || '');
+
+  /**
+   * What this screen will submit and verify — canonical E.164 once the entry
+   * is complete, and '' until then, so a half-typed number can never be sent
+   * anywhere.
+   */
+  const enteredPhoneNumber = useUsPhoneField
+    ? (toUsE164(phoneDigits) ?? '')
+    : normalizePhoneForCompare(formData.phoneNumber);
+
+  /** Why the entry is not usable yet, or null. '' entry is not an error here. */
+  const phoneEntryError = useUsPhoneField
+    ? phoneDigits
+      ? usPhoneValidationError(phoneDigits)
+      : null
+    : formData.phoneNumber.trim() && !isValidPhoneNumber(formData.phoneNumber)
+      ? `Use E.164 format (example: ${US_DIAL_CODE}5551234567)`
+      : null;
+
   const normalizedUserPhone = normalizePhoneForCompare(user?.phoneNumber || '');
-  const normalizedFormPhone = normalizePhoneForCompare(formData.phoneNumber);
-  const hasPhoneNumber = Boolean(formData.phoneNumber.trim());
-  const alreadyConsented = Boolean(user?.smsConsent);
+  const normalizedFormPhone = enteredPhoneNumber;
+  const hasPhoneNumber = useUsPhoneField
+    ? phoneDigits.length > 0
+    : Boolean(formData.phoneNumber.trim());
+
+  /**
+   * Is the consent on record good for the number in the field?
+   *
+   * Consent belongs to a NUMBER, not to an account — the API records it per
+   * number and refuses to text one it has no consent for. So a user who is
+   * changing their number has no consent for the new one, however long they
+   * have had consent for the old one, and must be asked again before
+   * anything is sent there. Without this the screen hid the checkbox, the
+   * send was refused, and the error named a gate the user could not see.
+   */
+  const alreadyConsented =
+    Boolean(user?.smsConsent) &&
+    normalizedUserPhone !== '' &&
+    enteredPhoneNumber === normalizedUserPhone;
   const isPhoneVerifiedForCurrentPhone = Boolean(
     user?.isPhoneVerified
       && normalizedUserPhone
@@ -124,8 +206,8 @@ export default function ProfilePage() {
       newErrors.email = 'Email is invalid';
     }
 
-    if (formData.phoneNumber.trim() && !isValidPhoneNumber(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Use E.164 format (example: +15551234567)';
+    if (phoneEntryError) {
+      newErrors.phoneNumber = phoneEntryError;
     }
 
     if (user && formData.email !== user.email && !isPhoneVerifiedForCurrentPhone) {
@@ -139,13 +221,20 @@ export default function ProfilePage() {
   const handleSendPhoneVerificationCode = async (triggeredByEmailUpdate = false) => {
     if (!user) return;
 
-    if (!formData.phoneNumber.trim()) {
+    if (!hasPhoneNumber) {
       setErrors((prev) => ({ ...prev, phoneNumber: 'Phone number is required' }));
       return;
     }
 
-    if (!isValidPhoneNumber(formData.phoneNumber)) {
-      setErrors((prev) => ({ ...prev, phoneNumber: 'Use E.164 format (example: +15551234567)' }));
+    // Only ever a complete, canonical number goes to the API — and so only
+    // ever a number a code can actually reach.
+    if (phoneEntryError || !enteredPhoneNumber) {
+      setErrors((prev) => ({
+        ...prev,
+        phoneNumber:
+          phoneEntryError ??
+          `Use E.164 format (example: ${US_DIAL_CODE}5551234567)`,
+      }));
       return;
     }
 
@@ -168,7 +257,7 @@ export default function ProfilePage() {
     setIsSendingPhoneCode(true);
     try {
       const response = await usersApi.sendPhoneVerificationCode({
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: enteredPhoneNumber,
         ...(smsConsent && { smsConsent: true }),
       });
       const result = response.data;
@@ -177,6 +266,7 @@ export default function ProfilePage() {
         ...prev,
         phoneNumber: result.phoneNumber,
       }));
+      setPhoneDigits(usNationalDigitsFromE164(result.phoneNumber));
 
       updateUser(
         {
@@ -195,6 +285,8 @@ export default function ProfilePage() {
 
       setShowVerifyPhoneModal(true);
       setIsEmailEditingEnabled(false);
+      setVerifyCodeInput('');
+      setVerifyCodeResetKey((k) => k + 1);
       toast.success('Verification code sent to your phone.');
       if (result.code) {
         console.log('[Phone verification] Code sent to', result.phoneNumber, ':', result.code);
@@ -224,10 +316,17 @@ export default function ProfilePage() {
     }
   };
 
-  const handleVerifyPhoneCode = async () => {
-    if (!user) return;
+  /**
+   * Verify the code. Called by the field itself once six digits land, and by
+   * the button for anyone who prefers it — `isVerifyingPhoneCode` is what
+   * stops those two paths submitting the same code twice.
+   */
+  const handleVerifyPhoneCode = async (submittedCode?: string) => {
+    if (!user || verifyInFlightRef.current) return;
 
-    if (!/^\d{6}$/.test(verifyCodeInput.trim())) {
+    const code = (submittedCode ?? verifyCodeInput).trim();
+
+    if (!/^\d{6}$/.test(code)) {
       setErrors((prev) => ({
         ...prev,
         verifyCode: 'Enter the 6-digit code from the SMS',
@@ -235,11 +334,12 @@ export default function ProfilePage() {
       return;
     }
 
+    verifyInFlightRef.current = true;
     setIsVerifyingPhoneCode(true);
     setErrors((prev) => ({ ...prev, verifyCode: '' }));
     try {
       const response = await usersApi.verifyPhoneVerificationCode({
-        code: verifyCodeInput.trim(),
+        code,
       });
       const result = response.data;
 
@@ -252,6 +352,7 @@ export default function ProfilePage() {
         undefined,
       );
       setFormData((prev) => ({ ...prev, phoneNumber: result.phoneNumber }));
+      setPhoneDigits(usNationalDigitsFromE164(result.phoneNumber));
       setIsEmailEditingEnabled(true);
       setShowVerifyPhoneModal(false);
       setVerifyCodeInput('');
@@ -259,6 +360,7 @@ export default function ProfilePage() {
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to verify code'));
     } finally {
+      verifyInFlightRef.current = false;
       setIsVerifyingPhoneCode(false);
     }
   };
@@ -285,7 +387,7 @@ export default function ProfilePage() {
       const response = await usersApi.updateProfile({
         name: formData.name,
         email: formData.email,
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: enteredPhoneNumber,
         company: formData.company,
         roles: [formData.role],
       });
@@ -493,29 +595,57 @@ export default function ProfilePage() {
                           </div>
                         ) : (
                           <>
-                            <Input
-                              label="Phone Number"
-                              icon={Phone}
-                              type="tel"
-                              value={formData.phoneNumber}
-                              onChange={(e) => {
-                                const nextPhone = e.target.value;
-                                setFormData((prev) => ({ ...prev, phoneNumber: nextPhone }));
-                                setErrors((prev) => ({ ...prev, phoneNumber: '' }));
-                                setIsEmailEditingEnabled(false);
-                                setShowVerifyPhoneModal(false);
-                                setVerifyCodeInput('');
-                                setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                              }}
-                              placeholder="+15551234567"
-                              helperText={
-                                hasPhoneNumber
-                                  ? 'Required to unlock email updates. Use E.164 format.'
-                                  : 'Add a phone number for account recovery and to unlock email updates. Use E.164 format.'
-                              }
-                              error={errors.phoneNumber}
-                              autoComplete="tel"
-                            />
+                            {useUsPhoneField ? (
+                              <UsPhoneInput
+                                id="profile-phone"
+                                label="Phone Number"
+                                value={phoneDigits}
+                                onChange={(digits) => {
+                                  setPhoneDigits(digits);
+                                  setErrors((prev) => ({
+                                    ...prev,
+                                    phoneNumber: '',
+                                    verifyCode: '',
+                                  }));
+                                  setIsEmailEditingEnabled(false);
+                                  setShowVerifyPhoneModal(false);
+                                  setVerifyCodeInput('');
+                                }}
+                                error={errors.phoneNumber}
+                                helperText={
+                                  hasPhoneNumber
+                                    ? 'Required to unlock email updates. Changing it means verifying the new number.'
+                                    : 'Add a mobile number for account recovery and to unlock email updates.'
+                                }
+                              />
+                            ) : (
+                              /* This account holds a number outside +1. It keeps
+                                 the international field so the number it already
+                                 has is never rewritten to fit a US-only one. */
+                              <Input
+                                label="Phone Number"
+                                icon={Phone}
+                                type="tel"
+                                value={formData.phoneNumber}
+                                onChange={(e) => {
+                                  const nextPhone = e.target.value;
+                                  setFormData((prev) => ({ ...prev, phoneNumber: nextPhone }));
+                                  setErrors((prev) => ({ ...prev, phoneNumber: '' }));
+                                  setIsEmailEditingEnabled(false);
+                                  setShowVerifyPhoneModal(false);
+                                  setVerifyCodeInput('');
+                                  setErrors((prev) => ({ ...prev, verifyCode: '' }));
+                                }}
+                                placeholder={`${US_DIAL_CODE}5551234567`}
+                                helperText={
+                                  hasPhoneNumber
+                                    ? 'Required to unlock email updates. Use E.164 format, including the country code.'
+                                    : 'Add a phone number for account recovery and to unlock email updates. Use E.164 format.'
+                                }
+                                error={errors.phoneNumber}
+                                autoComplete="tel"
+                              />
+                            )}
                             {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
                               <label className="mt-3 flex items-start gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100 cursor-pointer select-none">
                                 <input
@@ -805,27 +935,31 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     Enter 6-digit code
                   </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={verifyCodeInput}
-                    onChange={(e) => {
-                      const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 6);
-                      setVerifyCodeInput(digitsOnly);
+                  {/* Same field as activation, so the phone offers the code
+                      here too. It submits on its own once six digits land; the
+                      button below stays for anyone who would rather press it. */}
+                  <CodeInput
+                    key={verifyCodeResetKey}
+                    onChange={(code) => {
+                      setVerifyCodeInput(code);
                       setErrors((prev) => ({ ...prev, verifyCode: '' }));
                     }}
-                    placeholder="000000"
-                    className={`block w-full px-4 py-3.5 text-center text-2xl font-semibold tracking-[0.4em] rounded-xl border transition-all placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
-                      errors.verifyCode
-                        ? 'border-red-300 focus:ring-red-500/30 focus:border-red-500'
-                        : 'border-slate-200 focus:ring-indigo-500/30 focus:border-indigo-400'
-                    }`}
-                    autoComplete="one-time-code"
-                    autoFocus
+                    onComplete={(code) => {
+                      void handleVerifyPhoneCode(code);
+                    }}
+                    disabled={isVerifyingPhoneCode}
+                    describedBy={
+                      errors.verifyCode ? 'profile-verify-code-error' : undefined
+                    }
                   />
                   {errors.verifyCode && (
-                    <p className="mt-2 text-sm text-red-600">{errors.verifyCode}</p>
+                    <p
+                      id="profile-verify-code-error"
+                      role="alert"
+                      className="mt-2 text-sm text-red-600"
+                    >
+                      {errors.verifyCode}
+                    </p>
                   )}
                   <p className="mt-3 text-sm text-slate-500 flex items-center justify-between">
                     <span>Code expires in 10 minutes</span>
@@ -861,7 +995,7 @@ export default function ProfilePage() {
                       variant="primary"
                       size="lg"
                       className="flex-1"
-                      onClick={handleVerifyPhoneCode}
+                      onClick={() => void handleVerifyPhoneCode()}
                       isLoading={isVerifyingPhoneCode}
                     >
                       Verify

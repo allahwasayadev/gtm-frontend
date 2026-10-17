@@ -1,5 +1,14 @@
 'use client';
 
+/**
+ * International dial-code picker.
+ *
+ * No longer used by signup, activation or profile: those are US-only and show
+ * a fixed +1 instead (see UsPhoneInput). Kept, with its export, because the
+ * list and the picker are the whole of what adding a second country would
+ * need — deleting them would make that a rewrite rather than a reconnection.
+ */
+
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 

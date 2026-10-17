@@ -17,3 +17,4 @@ export { ConfirmationModal } from './ConfirmationModal';
 export { OnboardingTour, useOnboardingTour } from './OnboardingTour';
 export { CodeInput } from './CodeInput';
 export { CountryCodeSelect, COUNTRY_CODES } from './CountryCodeSelect';
+export { UsPhoneInput } from './UsPhoneInput';
