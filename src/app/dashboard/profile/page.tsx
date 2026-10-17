@@ -27,6 +27,7 @@ import {
   PageTransition, UsPhoneInput,
 } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
+import { rearmWebOtp } from '@/lib/web-otp';
 import {
   isAnyE164,
   isUsE164,
@@ -255,6 +256,9 @@ export default function ProfilePage() {
     }
 
     setIsSendingPhoneCode(true);
+    // Before the request: the message can arrive before the modal opens, and
+    // re-arming abandons any request bound to a superseded message.
+    rearmWebOtp();
     try {
       const response = await usersApi.sendPhoneVerificationCode({
         phoneNumber: enteredPhoneNumber,
@@ -282,6 +286,7 @@ export default function ProfilePage() {
         toast.success(result.message);
         return;
       }
+
 
       setShowVerifyPhoneModal(true);
       setIsEmailEditingEnabled(false);

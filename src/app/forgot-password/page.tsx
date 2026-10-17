@@ -8,6 +8,7 @@ import { KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input } from '@/components/ui';
 import { normalizeResetIdentifier } from '@/lib/phone';
+import { rearmWebOtp } from '@/lib/web-otp';
 
 /**
  * Step 1 of reset: identify the account.
@@ -28,6 +29,9 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     if (!identifier.trim()) return;
     setIsSubmitting(true);
+    // The reset code is texted by this request, and the next screen is a
+    // client-side navigation away, so a code collected here survives to it.
+    rearmWebOtp();
     try {
       // This field takes an email address OR a number, so it keeps no +1
       // prefix of its own. But ten digits is now the only way a US user has

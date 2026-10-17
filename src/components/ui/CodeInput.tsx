@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isOtpComplete, shouldSubmitOtp, toOtpDigits } from '@/lib/otp';
+import { cancelWebOtp } from '@/lib/web-otp';
+import { useWebOtpCode } from '@/lib/use-web-otp';
 
 interface CodeInputProps {
   length?: number;
@@ -34,9 +36,13 @@ interface CodeInputProps {
  * events. Everything the separate boxes did still works, natively rather than
  * by hand: typing, pasting, backspace, select-all and the caret.
  *
- * Whether the suggestion appears is still the device's call — OS version,
- * keyboard, and the message arriving while the field is focused. The markup
- * is the half we control.
+ * iOS Safari reads that attribute. Android Chrome does not: it fills a code
+ * only when the page asks through WebOTP and the message is bound to this
+ * origin — see lib/web-otp.ts. Both are wired up here.
+ *
+ * Neither is a guarantee. Whether a suggestion appears depends on the device,
+ * the OS and browser version, and the message itself. What the page controls
+ * is asking correctly, which it now does on both platforms.
  */
 export function CodeInput({
   length = 6,
@@ -70,6 +76,9 @@ export function CodeInput({
 
       if (shouldSubmitOtp(previous, next, length)) {
         if (submittedRef.current === next) return;
+        // Entered by hand, or already filled: stop listening now, before any
+        // render, so a code arriving a moment later cannot overwrite this one.
+        cancelWebOtp();
         submittedRef.current = next;
         onComplete(next);
         return;
@@ -106,6 +115,25 @@ export function CodeInput({
   useEffect(() => {
     if (!disabled) inputRef.current?.focus();
   }, [disabled]);
+
+  // Android Chrome. Asked for only while the field is live, abandoned on
+  // unmount, on navigation, on a resend, and the moment a code is entered by
+  // hand. A filled code goes through commit(), so it obeys the same
+  // submit-once rule as a keystroke or a paste and cannot double-verify.
+  // Android Chrome. The request itself is armed by whichever screen asked for
+  // the message — see lib/web-otp.ts — because it can arrive before this
+  // field exists; this only collects the result.
+  //
+  // Not subscribed once a full code is present: a wrong-code response
+  // re-enables the field, and re-subscribing then would let a late arrival
+  // overwrite what the user had typed.
+  //
+  // A collected code goes through commit(), so it obeys the same submit-once
+  // rule as a keystroke or a paste and cannot double-verify.
+  useWebOtpCode({
+    enabled: !disabled && !isOtpComplete(code, length),
+    onCode: (filled: string) => commit(toOtpDigits(filled, length)),
+  });
 
   const activeIndex = Math.min(code.length, length - 1);
 
