@@ -196,24 +196,14 @@ function SignupContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          {/* Mobile/Tablet Logo + Title */}
-          <div className="text-center mb-8 lg:hidden">
-            <Link href="/" className="inline-block group">
-              <motion.div
-                className="flex justify-center mb-4"
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.06 }}
-              >
-                <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-14 w-auto" />
-              </motion.div>
+          {/* One heading, same as the sign-in page: the logo only appears
+              below lg, where the brand panel is not on screen to carry it. */}
+          <div className="mb-8 text-center lg:text-left">
+            <Link href="/" className="mb-4 inline-block lg:hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-14 w-auto" />
             </Link>
-            <p className="text-ink-3">Create your account to get started</p>
-          </div>
-
-          {/* Desktop Heading */}
-          <div className="hidden lg:block mb-8">
-            <h2 className="text-2xl font-bold text-ink mb-2">Get started</h2>
+            <h2 className="mb-2 text-2xl font-bold text-ink">Get started</h2>
             <p className="text-ink-3">Create your account in seconds</p>
           </div>
 
