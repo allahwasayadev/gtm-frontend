@@ -12,6 +12,7 @@ export { PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen } from 
 export { AccountMatchTooltip } from './AccountMatchTooltip';
 export { InviteModal } from './InviteModal';
 export { FilterSheet } from './FilterSheet';
+export { Modal } from './Modal';
 export { ConfirmationModal } from './ConfirmationModal';
 export { OnboardingTour, useOnboardingTour } from './OnboardingTour';
 export { CodeInput } from './CodeInput';

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Button } from './Button';
+import { Modal } from './Modal';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -15,6 +15,13 @@ interface ConfirmationModalProps {
   onClose: () => void;
 }
 
+/**
+ * Confirmation dialog.
+ *
+ * Cancel comes first and holds initial focus, so the destructive action is
+ * never the thing a stray Enter lands on. The props and the two outcomes are
+ * unchanged; only the composition and the focus handling are Harbour's.
+ */
 export function ConfirmationModal({
   isOpen,
   title,
@@ -26,60 +33,21 @@ export function ConfirmationModal({
   onConfirm,
   onClose,
 }: ConfirmationModalProps) {
-  const [animateIn, setAnimateIn] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setAnimateIn(false);
-      return;
-    }
-
-    const id = requestAnimationFrame(() => setAnimateIn(true));
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleEscape);
-    return () => {
-      cancelAnimationFrame(id);
-      window.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-      <div
-        className={`absolute inset-0 bg-slate-900/55 backdrop-blur-sm transition-opacity duration-300 ${
-          animateIn ? 'opacity-100' : 'opacity-0'
-        }`}
-        onClick={onClose}
-      />
-      <div
-        className={`relative w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/70 transition-all duration-300 ease-out ${
-          animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
-        }`}
-        style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
-      >
-        <div className="px-6 py-5 border-b border-slate-100">
-          <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-          <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-            {description}
-          </p>
-        </div>
-        <div className="px-6 py-4 flex items-center justify-end gap-2.5">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      description={description}
+      footer={
+        <>
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={onClose}
             disabled={isLoading}
+            data-autofocus
           >
             {cancelLabel}
           </Button>
@@ -92,8 +60,8 @@ export function ConfirmationModal({
           >
             {confirmLabel}
           </Button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    />
   );
 }

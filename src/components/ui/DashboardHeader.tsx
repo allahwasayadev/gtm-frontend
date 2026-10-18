@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, useId, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,12 +9,23 @@ import { getUserInitials } from '@/lib/user-initials';
 import { NotificationBell } from './NotificationBell';
 import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info, UsersRound, Shield, Scale } from 'lucide-react';
 
+/**
+ * Harbour top navigation.
+ *
+ * Which items appear, where they point and who sees them is unchanged: the
+ * three public items on their own when signed out; Dashboard, Connections and
+ * Matches added when signed in; Upload inserted only while the account has no
+ * list; Users inserted before About only for an Admin. The account menu, the
+ * bell and the sign-out action behave as before.
+ */
 export function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasLists, setHasLists] = useState<boolean | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
 
@@ -24,8 +35,13 @@ export function Header() {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) closeMenu();
     };
+    // Escape closes the menu and hands focus back to the control that opened
+    // it, so keyboard users are not dropped at the top of the document.
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMenu();
+      if (e.key === 'Escape') {
+        closeMenu();
+        triggerRef.current?.focus();
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -74,26 +90,28 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-hairline bg-surface">
       <div className="mx-auto lg:px-14 px-4 sm:px-6">
-        <div className="flex h-16 items-center justify-between">
-          <Link href="/dashboard" className="inline-flex shrink-0 items-center">
+        <div className="flex h-16 items-center justify-between gap-2">
+          <Link href={user ? '/dashboard' : '/'} className="inline-flex shrink-0 items-center rounded-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-12 w-auto object-contain" />
           </Link>
 
-          <nav className="hidden lg:flex min-w-0 shrink items-center">
-            <div className="flex min-w-0 items-center gap-3 overflow-x-auto scrollbar-hide rounded-full bg-slate-100/80 p-1">
+          <nav aria-label="Primary" className="hidden lg:flex min-w-0 shrink items-center">
+            <div className="flex min-w-0 items-center gap-1 overflow-x-auto scrollbar-hide rounded-md bg-sunken p-1">
               {navItems.map(item => {
                 const active = isActive(item.href);
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                      active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    aria-current={active ? 'page' : undefined}
+                    className={`relative flex min-h-[44px] items-center gap-2 rounded-sm px-4 text-sm font-bold whitespace-nowrap transition-colors ${
+                      active ? 'bg-surface text-ink shadow-e1' : 'text-ink-2 hover:text-ink hover:bg-surface/60'
                     }`}
                   >
-                    <item.icon className={`h-4 w-4 ${active ? 'text-indigo-600' : ''}`} />
+                    <item.icon className={`h-4 w-4 shrink-0 ${active ? 'text-accent' : ''}`} aria-hidden="true" />
                     {item.name}
                   </Link>
                 );
@@ -108,39 +126,48 @@ export function Header() {
 
                 <div ref={menuRef} className="relative">
                   <button
+                    ref={triggerRef}
                     type="button"
                     onClick={() => setIsMenuOpen(prev => !prev)}
-                    className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-all ${isMenuOpen ? 'bg-slate-100' : 'hover:bg-slate-100'}`}
+                    aria-expanded={isMenuOpen}
+                    aria-haspopup="menu"
+                    aria-controls={isMenuOpen ? menuId : undefined}
+                    className={`flex min-h-[44px] items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-colors ${isMenuOpen ? 'bg-surface-2' : 'hover:bg-surface-2'}`}
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 to-violet-500 text-sm font-semibold text-white shadow-sm">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white">
                       {getUserInitials(user?.name, 1)}
-                    </div>
-                    <span className="hidden sm:block text-sm font-medium text-slate-700 max-w-24 truncate">
+                    </span>
+                    <span className="hidden sm:block text-sm font-bold text-ink max-w-24 truncate">
                       {user?.name || 'User'}
                     </span>
-                    <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-4 w-4 shrink-0 text-ink-3 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                   </button>
 
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200/80 bg-white py-1 shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
-                      <div className="border-b border-slate-100 px-4 py-3">
-                        <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
-                        <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
-                        {user?.company && <p className="text-xs text-indigo-600 font-medium mt-1">{user.company}</p>}
+                    <div
+                      id={menuId}
+                      className="ovrlap-panel absolute right-0 mt-2 flex w-[min(16rem,calc(100vw-2rem))] max-h-[calc(100vh-5rem)] origin-top-right flex-col overflow-hidden rounded-lg border border-hairline bg-surface shadow-e3"
+                    >
+                      <div className="shrink-0 border-b border-hairline px-4 py-3">
+                        <p className="text-sm font-bold text-ink truncate">{user?.name}</p>
+                        <p className="text-xs text-ink-3 truncate mt-0.5">{user?.email}</p>
+                        {user?.company && <p className="text-xs text-accent-ink font-bold mt-1 truncate">{user.company}</p>}
                       </div>
-                      <div className="py-1">
-                        <Link href="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                          <User className="h-4 w-4 text-slate-400" />
+                      {/* The menu is bounded and scrolls inside itself, so no action
+                          is lost on a short or landscape screen. */}
+                      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1">
+                        <Link href="/dashboard/profile" onClick={closeMenu} className="flex min-h-[44px] items-center gap-3 px-4 text-sm text-ink hover:bg-surface-2 transition-colors">
+                          <User className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
                           Your Profile
                         </Link>
-                        <Link href="/dashboard/connections" onClick={closeMenu} className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                          <Settings className="h-4 w-4 text-slate-400" />
+                        <Link href="/dashboard/connections" onClick={closeMenu} className="flex min-h-[44px] items-center gap-3 px-4 text-sm text-ink hover:bg-surface-2 transition-colors">
+                          <Settings className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
                           Settings
                         </Link>
                       </div>
-                      <div className="border-t border-slate-100 py-1">
-                        <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                          <LogOut className="h-4 w-4" />
+                      <div className="shrink-0 border-t border-hairline py-1">
+                        <button type="button" onClick={handleLogout} className="flex min-h-[44px] w-full items-center gap-3 px-4 text-sm text-danger hover:bg-danger-soft transition-colors">
+                          <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
                           Sign out
                         </button>
                       </div>
@@ -150,10 +177,10 @@ export function Header() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                <Link href="/login" className="flex min-h-[44px] items-center rounded-sm px-4 text-sm font-bold text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors">
                   Log in
                 </Link>
-                <Link href="/signup" className="rounded-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                <Link href="/signup" className="flex min-h-[44px] items-center rounded-sm px-4 text-sm font-bold text-white bg-accent hover:bg-accent-hover transition-colors shadow-e1">
                   Sign up
                 </Link>
               </div>
@@ -161,18 +188,19 @@ export function Header() {
           </div>
         </div>
 
-        <nav className="flex lg:hidden items-center gap-1 pb-3 -mx-1 overflow-x-auto scrollbar-hide">
+        <nav aria-label="Primary" className="flex lg:hidden items-center gap-1 pb-3 -mx-1 overflow-x-auto scrollbar-hide">
           {navItems.map(item => {
             const active = isActive(item.href);
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-all ${
-                  active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                aria-current={active ? 'page' : undefined}
+                className={`flex min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-sm px-3 text-sm font-bold transition-colors ${
+                  active ? 'bg-accent-soft text-accent-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
                 }`}
               >
-                <item.icon className={`h-4 w-4 ${active ? 'text-indigo-600' : ''}`} />
+                <item.icon className={`h-4 w-4 shrink-0 ${active ? 'text-accent' : ''}`} aria-hidden="true" />
                 {item.name}
               </Link>
             );
@@ -194,15 +222,19 @@ export function PageHeader({ title, description, backHref, actions }: PageHeader
   return (
     <div className="mb-6 sm:mb-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-2 min-w-0">
           {backHref && (
-            <Link href={backHref} className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
-              <ArrowLeft className="h-5 w-5" />
+            <Link
+              href={backHref}
+              aria-label="Go back"
+              className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:bg-surface-2 hover:text-ink transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
             </Link>
           )}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">{title}</h1>
-            {description && <p className="mt-1 text-sm sm:text-base text-slate-500">{description}</p>}
+          <div className="min-w-0 pt-1.5">
+            <h1 className="text-[22px] sm:text-[32px] font-black tracking-[-0.02em] text-ink leading-tight">{title}</h1>
+            {description && <p className="mt-1 text-[15px] text-ink-2">{description}</p>}
           </div>
         </div>
         {actions && <div className="flex items-center gap-2 sm:gap-3">{actions}</div>}
