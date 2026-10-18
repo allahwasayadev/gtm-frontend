@@ -45,6 +45,13 @@ export function Dropdown({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const listboxId = useId();
   const labelId = `${listboxId}-label`;
+  /* The native keydown that opened the listbox.
+     Opening is synchronous, so the effect below installs the document handler
+     while that very same key event is still being dispatched. The new handler
+     then saw the Enter or Space that opened the list and treated it as a
+     selection, which closed it again immediately. Holding the event lets the
+     handler recognise and ignore exactly that one. */
+  const openingEvent = useRef<KeyboardEvent | null>(null);
   const optionId = (i: number) => `${listboxId}-option-${i}`;
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -172,6 +179,11 @@ export function Dropdown({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!containerRef.current?.contains(document.activeElement)) return;
+      if (event === openingEvent.current) {
+        // The key that opened us, still in flight. It is not a selection.
+        openingEvent.current = null;
+        return;
+      }
 
       switch (event.key) {
         case 'ArrowDown': {
@@ -237,8 +249,21 @@ export function Dropdown({
    */
   const handleTriggerKeyDown = (event: React.KeyboardEvent) => {
     if (isOpen) return;
-    if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    /*
+     * Enter and Space are deliberately NOT handled here.
+     *
+     * The trigger is a real <button>, so the browser already activates it on
+     * those keys and that activation runs `toggle` through onClick. Opening it
+     * from here as well meant two things happened for one key press: the
+     * handler opened the list and the button's own activation immediately
+     * toggled it shut again. After a selection it was worse — the list closed,
+     * then the activation reopened it.
+     *
+     * The arrow keys have no default activation, so they do open from here.
+     */
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
+      openingEvent.current = event.nativeEvent;
       open();
     }
   };
