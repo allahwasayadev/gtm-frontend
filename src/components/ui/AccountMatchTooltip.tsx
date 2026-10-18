@@ -48,7 +48,41 @@ export function AccountMatchTooltip({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const isTouchRef = useRef(false);
+  const closeTimer = useRef<number | null>(null);
   const panelId = useId();
+
+  /*
+   * The trigger and the portaled panel are one interaction region.
+   *
+   * Closing on the trigger's own mouseleave made the panel unreadable with a
+   * pointer: moving towards it left the trigger, so it vanished before it
+   * could be read or scrolled. Leaving either element now starts a short
+   * grace period, and entering the other cancels it, so the gap between them
+   * can be crossed. A real leave still closes, promptly.
+   */
+  const cancelClose = useCallback(() => {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  }, []);
+
+  const open = useCallback(() => {
+    cancelClose();
+    setIsOpen(true);
+  }, [cancelClose]);
+
+  const closeSoon = useCallback(() => {
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => setIsOpen(false), 140);
+  }, [cancelClose]);
+
+  const closeNow = useCallback(() => {
+    cancelClose();
+    setIsOpen(false);
+  }, [cancelClose]);
+
+  useEffect(() => cancelClose, [cancelClose]);
 
   const place = useCallback(() => {
     const trigger = triggerRef.current;
@@ -110,11 +144,11 @@ export function AccountMatchTooltip({
       const target = e.target as Node;
       if (triggerRef.current?.contains(target)) return;
       if (panelRef.current?.contains(target)) return;
-      setIsOpen(false);
+      closeNow();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsOpen(false);
+        closeNow();
         triggerRef.current?.focus();
       }
     };
@@ -137,7 +171,7 @@ export function AccountMatchTooltip({
       window.removeEventListener('resize', onViewportChange);
       window.removeEventListener('scroll', onViewportChange, true);
     };
-  }, [isOpen, place]);
+  }, [isOpen, place, closeNow]);
 
   if (!partners || partners.length === 0) {
     return <>{children}</>;
@@ -158,11 +192,12 @@ export function AccountMatchTooltip({
         aria-label={label}
         className="inline-flex items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         onTouchStart={() => { isTouchRef.current = true; }}
-        onMouseEnter={() => { if (!isTouchRef.current) setIsOpen(true); }}
-        onMouseLeave={() => { if (!isTouchRef.current) setIsOpen(false); }}
-        onFocus={() => { if (!isTouchRef.current) setIsOpen(true); }}
+        onMouseEnter={() => { if (!isTouchRef.current) open(); }}
+        onMouseLeave={() => { if (!isTouchRef.current) closeSoon(); }}
+        onFocus={() => { if (!isTouchRef.current) open(); }}
+        onBlur={() => { if (!isTouchRef.current) closeSoon(); }}
         onClick={() => {
-          setIsOpen((v) => !v);
+          if (isOpen) closeNow(); else open();
           if (isTouchRef.current) {
             window.setTimeout(() => { isTouchRef.current = false; }, 400);
           }
@@ -182,7 +217,15 @@ export function AccountMatchTooltip({
             // Starts off-screen and hidden; the layout effect measures it and
             // puts it in place before the first paint the user sees.
             style={{ width: PANEL_WIDTH, top: -9999, left: -9999, visibility: 'hidden' }}
-            className="ovrlap-panel fixed z-50 flex flex-col overflow-hidden rounded-lg border border-hairline bg-surface shadow-e3"
+            tabIndex={-1}
+            onMouseEnter={() => { if (!isTouchRef.current) open(); }}
+            onMouseLeave={() => { if (!isTouchRef.current) closeSoon(); }}
+            onFocus={open}
+            onBlur={(e) => {
+              // Only a focus move out of the panel entirely counts as leaving.
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) closeSoon();
+            }}
+            className="ovrlap-panel fixed z-50 flex flex-col overflow-hidden rounded-lg border border-hairline bg-surface shadow-e3 focus:outline-none"
           >
             <div className="flex shrink-0 items-center gap-2 border-b border-hairline bg-sunken px-4 py-2.5">
               <span className="flex h-6 w-6 items-center justify-center rounded-xs bg-accent-soft">

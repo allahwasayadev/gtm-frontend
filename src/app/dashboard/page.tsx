@@ -729,7 +729,10 @@ export default function DashboardPage() {
                             </td>
                             <td className="px-3 md:px-4 py-2.5 md:py-3 text-right">
                               {partners.length > 0 ? (
-                                <AccountMatchTooltip partners={partners}>
+                                <AccountMatchTooltip
+                                  partners={partners}
+                                  accountName={account.accountName}
+                                >
                                   {isTopMatch ? (
                                     <span className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3.5 py-1.5 rounded-full text-white text-xs font-bold whitespace-nowrap bg-accent shadow-e1 transition-colors hover:bg-accent-hover">
                                       <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2 shrink-0">
