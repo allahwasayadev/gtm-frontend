@@ -8,6 +8,20 @@ interface CodeInputProps {
   disabled?: boolean;
 }
 
+/**
+ * Six-box verification code entry.
+ *
+ * The behaviour here is the deployed behaviour and is deliberately unchanged:
+ * `length` separate single-character inputs, auto-advance on entry, backspace
+ * steps back out of an empty box, paste distributes digits across the boxes,
+ * and `onComplete` fires as soon as every box is filled. The props are the
+ * same three the rest of the app passes.
+ *
+ * A separate, already-authorised branch (`phone-plus1-otp-autofill`) replaces
+ * this with one real input behind presentational cells so platform SMS
+ * autofill can reach it. That rewrite belongs to that branch; this one is
+ * restyled only, so the two can be merged without fighting over behaviour.
+ */
 export function CodeInput({ length = 6, onComplete, disabled = false }: CodeInputProps) {
   const [values, setValues] = useState<string[]>(Array(length).fill(''));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -68,9 +82,14 @@ export function CodeInput({ length = 6, onComplete, disabled = false }: CodeInpu
           onPaste={handlePaste}
           disabled={disabled}
           autoFocus={index === 0}
-          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-slate-200 rounded-xl
-                     focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none
-                     disabled:bg-slate-50 disabled:text-slate-400 transition-all"
+          aria-label={`Digit ${index + 1} of ${length}`}
+          className="w-11 h-[52px] sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold tabular
+                     text-ink bg-surface border-2 border-control rounded-sm
+                     focus:border-accent focus:outline-none
+                     focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
+                     disabled:bg-sunken disabled:text-disabled-outline disabled:border-disabled-border
+                     disabled:cursor-not-allowed
+                     transition-colors duration-150"
         />
       ))}
     </div>

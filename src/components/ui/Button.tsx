@@ -7,38 +7,65 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
 }
 
+/**
+ * Harbour button.
+ *
+ * Every size is at least 44px high, which is the target rule for the whole
+ * system; `sm` gets there with narrower padding rather than less height.
+ *
+ * Disabled is a flat fill, a still-readable label and `cursor-not-allowed`
+ * — not an opacity fade. A faded label is harder to read precisely when the
+ * user is trying to work out why the control will not respond.
+ *
+ * While loading, the label stays put and a spinner joins it. Swapping the
+ * label for "Loading…" changed the button's width mid-action, which moved
+ * whatever sat next to it.
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', isLoading, disabled, className = '', children, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none';
+    const baseStyles =
+      'inline-flex items-center justify-center font-bold transition-colors duration-150 ' +
+      'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ' +
+      'disabled:cursor-not-allowed disabled:shadow-none active:translate-y-px disabled:active:translate-y-0';
 
     const variants = {
-      primary: 'bg-linear-to-r from-indigo-600 to-indigo-500 text-white hover:from-indigo-700 hover:to-indigo-600 focus:ring-indigo-500/30 active:from-indigo-800 active:to-indigo-700 shadow-sm hover:shadow-md',
-      secondary: 'bg-sky-500 text-white hover:bg-sky-600 focus:ring-sky-400/30 active:bg-sky-700 shadow-sm',
-      success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500/30 active:bg-emerald-800 shadow-sm',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500/30 active:bg-red-800 shadow-sm',
-      outline: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 focus:ring-indigo-500/20 active:bg-slate-100',
-      ghost: 'bg-transparent text-slate-700 hover:bg-slate-100 focus:ring-slate-300/30 active:bg-slate-200'
+      primary:
+        'bg-accent text-white shadow-e1 hover:bg-accent-hover active:bg-accent-pressed ' +
+        'disabled:bg-disabled-fill disabled:text-disabled-ink',
+      secondary:
+        'bg-accent-soft text-accent-ink hover:bg-[#cfe0dd] active:bg-[#c3d8d4] ' +
+        'disabled:bg-disabled-fill disabled:text-disabled-ink',
+      success:
+        'bg-ok text-white shadow-e1 hover:bg-[#115a3f] active:bg-[#0e4b35] ' +
+        'disabled:bg-disabled-fill disabled:text-disabled-ink',
+      danger:
+        'bg-transparent text-danger border border-danger hover:bg-danger hover:text-white ' +
+        'active:bg-danger-pressed active:border-danger-pressed active:text-white ' +
+        'focus-visible:outline-danger disabled:bg-transparent disabled:text-disabled-danger disabled:border-disabled-border',
+      outline:
+        'bg-surface text-ink border border-control hover:bg-surface-2 active:bg-sunken ' +
+        'disabled:bg-surface disabled:text-disabled-outline disabled:border-disabled-border',
+      ghost:
+        'bg-transparent text-ink-2 hover:bg-surface-2 hover:text-ink active:bg-sunken ' +
+        'disabled:bg-transparent disabled:text-disabled-outline',
     };
 
     const sizes = {
-      sm: 'px-3 py-1.5 text-sm rounded-lg gap-1.5',
-      md: 'px-4 py-2 text-sm rounded-lg gap-2',
-      lg: 'px-5 py-2.5 text-base rounded-xl gap-2'
+      sm: 'min-h-[44px] px-3.5 text-sm rounded-sm gap-1.5',
+      md: 'min-h-[44px] px-4 text-[15px] rounded-sm gap-2',
+      lg: 'min-h-[48px] px-5 text-base rounded-md gap-2',
     };
 
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
+        aria-busy={isLoading || undefined}
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
         {...props}
       >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Loading...
-          </>
-        ) : children}
+        {isLoading && <Loader2 className="w-4 h-4 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
+        {children}
       </button>
     );
   }

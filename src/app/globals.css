@@ -1,103 +1,142 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+/* ═══════════════════════════════════════════════════════════════════════
+   Harbour — the approved Ovrlap design system.
 
-  /* Brand Colors */
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-light: #eef2ff;
-  --secondary: #0ea5e9;
-  --secondary-hover: #0284c7;
+   Warm cream canvas, warm surfaces, deep teal accent, Lato at the three
+   weights the app already ships (400/700/900). Every value here comes from
+   design-review/full-ux-redesign/design/tokens.json, where each pairing was
+   checked for contrast rather than estimated.
 
-  /* Semantic Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+   These are real Tailwind theme tokens, so components use bg-surface,
+   text-ink-2, border-hairline and so on. There is no wildcard override
+   layer papering over unmigrated controls.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* --- surfaces, warm and in order from the page outwards --- */
+  --color-canvas: #f5f2ec;
+  --color-surface: #fcfaf6;
+  --color-surface-2: #efebe3;
+  --color-sunken: #f3efe8;
+
+  /* --- lines. hairline divides, control outlines a field --- */
+  --color-hairline: #e2dcd1;
+  --color-control: #8c8475;
+
+  /* --- ink. ink on surface is 16.47:1, ink-3 is the quietest at 5.73:1 --- */
+  --color-ink: #191c1b;
+  --color-ink-2: #4e5a57;
+  --color-ink-3: #5a6663;
+
+  /* --- accent. white on accent is 8.14:1 --- */
+  --color-accent: #0e5955;
+  --color-accent-hover: #0c4e4a;
+  --color-accent-pressed: #0a4541;
+  --color-accent-soft: #d9e8e5;
+  --color-accent-ink: #0b4340;
+
+  /* --- status. each paired with its own soft fill --- */
+  --color-ok: #15694a;
+  --color-ok-soft: #d9ede2;
+  --color-warn: #8a5411;
+  --color-warn-soft: #f6e7cf;
+  --color-warn-bg: #fbf2e3;
+  --color-danger: #a32a1c;
+  --color-danger-hover: #8e2318;
+  --color-danger-pressed: #7a1d14;
+  --color-danger-soft: #f7e0db;
+
+  /* --- disabled. flat fill and cursor carry the signal; the label stays
+         readable at 4.5:1 rather than being faded out --- */
+  --color-disabled-fill: #ded9cf;
+  --color-disabled-ink: #565d5b;
+  --color-disabled-outline: #655f52;
+  --color-disabled-danger: #73544e;
+  --color-disabled-border: #d9d3c7;
+
+  /* --- a row the user has not read yet --- */
+  --color-unread: #f4f8f7;
+
+  /* --- radii --- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* --- elevation, warm-tinted so shadows sit in the same light as the
+         cream canvas rather than greying it --- */
+  --shadow-e1: 0 1px 2px rgba(40, 34, 24, 0.05);
+  --shadow-e2: 0 2px 4px rgba(40, 34, 24, 0.05), 0 8px 20px rgba(40, 34, 24, 0.06);
+  --shadow-e3: 0 12px 32px rgba(40, 34, 24, 0.14);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-canvas);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
+/* Counts, totals and anything that can tick over keep their columns. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- scrollbars, in the warm neutrals rather than slate ---- */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: var(--color-sunken);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #cfc8bb;
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-control);
 }
 
-/* Hide scrollbar for mobile nav */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-/* Focus Styles */
+/* ---- focus. One ring, the accent, everywhere ---- */
 :focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-/* Skeleton shimmer */
-@keyframes shimmer {
-  0% {
-    background-position: -400px 0;
-  }
-  100% {
-    background-position: 400px 0;
-  }
+::selection {
+  background-color: rgba(14, 89, 85, 0.16);
+  color: var(--color-ink);
 }
 
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    #f1f5f9 0%,
-    #f8fafc 40%,
-    #f1f5f9 80%
-  );
-  background-size: 800px 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
+/* ---- elevation utilities, so cards do not hand-roll box-shadow ---- */
+.shadow-card {
+  box-shadow: var(--shadow-e1);
+}
+.shadow-card-hover {
+  box-shadow: var(--shadow-e2);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-shimmer {
-    animation: none;
-    background: #f1f5f9;
-  }
-}
-
-/* ---- Shared mobile motion -------------------------------------------
-   One vocabulary for the dashboard, connections, matches and the
-   notification panel: a short rise-and-fade for things that appear, a
-   plain fade for scrims and for content swapping inside a container.
-   Everything here is opt-in via Tailwind's motion-safe:, and the block
-   at the end turns the rest off for prefers-reduced-motion.           */
+/* ---- Motion ---------------------------------------------------------
+   One vocabulary across the dashboard, connections, matches, overlays and
+   toasts: a short rise-and-fade for things that appear, a plain fade for
+   scrims and for content swapping inside a container. Nothing animates a
+   layout height, and nothing gates input on an animation finishing.
+   -------------------------------------------------------------------- */
 
 @keyframes ovrlapFade {
   from { opacity: 0; }
@@ -105,12 +144,22 @@ body {
 }
 
 @keyframes ovrlapPanelIn {
-  from { opacity: 0; transform: translateY(-8px) scale(.985); }
+  from { opacity: 0; transform: translateY(-8px) scale(0.985); }
   to { opacity: 1; transform: none; }
 }
 
 @keyframes ovrlapRise {
   from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ovrlapSheetIn {
+  from { transform: translateY(14px); }
+  to { transform: none; }
+}
+
+@keyframes ovrlapDrop {
+  from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: none; }
 }
 
@@ -127,6 +176,43 @@ body {
   transition: opacity 0.18s ease-out, transform 0.18s ease-out;
 }
 
+.ovrlap-scrim {
+  animation: ovrlapFade 0.14s ease-out;
+}
+.ovrlap-panel {
+  animation: ovrlapPanelIn 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.ovrlap-rise {
+  animation: ovrlapRise 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.ovrlap-sheet {
+  animation: ovrlapSheetIn 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.ovrlap-toast {
+  animation: ovrlapDrop 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* One pass, not a perpetual shimmer. Skeleton geometry matches the content
+   it stands in for, so nothing jumps when the real rows arrive. */
+@keyframes ovrlapShimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-2) 0%,
+    var(--color-sunken) 40%,
+    var(--color-surface-2) 80%
+  );
+  background-size: 800px 100%;
+  animation: ovrlapShimmer 1.6s ease-in-out infinite;
+}
+
+/* Reduced motion: no translation, no scale, no shimmer. Overlays still
+   resolve through a very short fade so their arrival is perceivable
+   rather than a hard cut; nothing is delayed and nothing is gated. */
 @media (prefers-reduced-motion: reduce) {
   .ovrlap-swap,
   .ovrlap-leaving {
@@ -137,51 +223,21 @@ body {
     opacity: 0.45;
     transform: none;
   }
-}
-
-/* Premium card shadows */
-.shadow-card {
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.02),
-    0 1px 2px rgba(0, 0, 0, 0.03),
-    0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-.shadow-card-hover {
-  box-shadow:
-    0 0 0 1px rgba(79, 70, 229, 0.08),
-    0 2px 4px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(79, 70, 229, 0.08);
-}
-
-/* Subtle dot-grid background */
-.bg-grid {
-  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-/* Gradient text utility */
-.text-gradient {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Glass effect for header */
-@supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
-  .supports-backdrop-blur\:bg-white\/80 {
-    background-color: rgba(255, 255, 255, 0.8);
+  .ovrlap-scrim,
+  .ovrlap-panel,
+  .ovrlap-rise,
+  .ovrlap-sheet,
+  .ovrlap-toast {
+    animation-name: ovrlapFade;
+    animation-duration: 0.08s;
+    animation-timing-function: linear;
+  }
+  .skeleton-shimmer {
+    animation: none;
+    background: var(--color-surface-2);
   }
 }
 
-/* Smooth transitions */
 * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Selection styling */
-::selection {
-  background-color: rgba(79, 70, 229, 0.15);
-  color: #1e1b4b;
 }

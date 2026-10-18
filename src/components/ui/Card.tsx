@@ -5,23 +5,28 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
 }
 
+/**
+ * Harbour card. A warm surface on the cream canvas, separated by a hairline
+ * rather than by a heavy shadow — the shadow only lifts it a little, and the
+ * hover state belongs to cards that are actually links.
+ */
 export function Card({ hover = false, padding = 'md', className = '', children, ...props }: CardProps) {
   const paddingStyles = {
     none: '',
     sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8'
+    md: 'p-5 sm:p-6',
+    lg: 'p-6 sm:p-8',
   };
 
   const hoverStyles = hover
-    ? 'hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer'
+    ? 'hover:border-accent hover:shadow-e2 cursor-pointer'
     : '';
 
   return (
     <div
       className={`
-        bg-white rounded-2xl border border-slate-200/60 shadow-card
-        transition-all duration-200
+        bg-surface rounded-lg border border-hairline shadow-e1
+        transition-[border-color,box-shadow] duration-150
         ${paddingStyles[padding]}
         ${hoverStyles}
         ${className}
@@ -35,7 +40,7 @@ export function Card({ hover = false, padding = 'md', className = '', children, 
 
 export function CardHeader({ className = '', children }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`border-b border-slate-100 pb-4 mb-4 ${className}`}>
+    <div className={`border-b border-hairline pb-4 mb-4 ${className}`}>
       {children}
     </div>
   );
@@ -43,7 +48,7 @@ export function CardHeader({ className = '', children }: HTMLAttributes<HTMLDivE
 
 export function CardTitle({ className = '', children }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={`text-lg font-semibold text-slate-900 ${className}`}>
+    <h3 className={`text-[17px] font-bold text-ink ${className}`}>
       {children}
     </h3>
   );
@@ -51,7 +56,7 @@ export function CardTitle({ className = '', children }: HTMLAttributes<HTMLHeadi
 
 export function CardDescription({ className = '', children }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={`text-sm text-slate-500 mt-1 ${className}`}>
+    <p className={`text-[12.5px] text-ink-3 mt-1 ${className}`}>
       {children}
     </p>
   );

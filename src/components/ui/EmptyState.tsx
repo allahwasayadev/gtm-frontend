@@ -7,14 +7,19 @@ interface EmptyStateProps {
   action?: React.ReactNode;
 }
 
+/**
+ * Harbour empty state. The icon sits in a soft accent disc rather than a grey
+ * one, so an empty section reads as a place with something to do in it rather
+ * than as a section that failed to load.
+ */
 export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="text-center py-12 sm:py-16 px-4">
-      <div className="w-16 h-16 bg-linear-to-br from-slate-100 to-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Icon className="w-8 h-8 text-slate-400" />
+      <div className="w-16 h-16 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-4">
+        <Icon className="w-7 h-7 text-accent-ink" aria-hidden="true" />
       </div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-1.5">{title}</h3>
-      <p className="text-sm text-slate-500 max-w-sm mx-auto mb-6">{description}</p>
+      <h3 className="text-[17px] font-bold text-ink mb-1.5">{title}</h3>
+      <p className="text-[15px] text-ink-2 max-w-sm mx-auto mb-6 leading-relaxed">{description}</p>
       {action && <div>{action}</div>}
     </div>
   );
