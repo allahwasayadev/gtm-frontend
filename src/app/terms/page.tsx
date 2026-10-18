@@ -100,7 +100,7 @@ export default function TermsPage() {
             >
               {/* Agreement Notice */}
               <motion.div
-                className=" to-white rounded-lg p-8 sm:p-10 shadow-card border border-warn/60"
+                className="bg-warn-bg rounded-lg p-8 sm:p-10 shadow-e1 border border-warn-soft"
                 variants={sectionVariants}
               >
                 <p className="text-lg text-ink-2 leading-relaxed">

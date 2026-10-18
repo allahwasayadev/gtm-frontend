@@ -615,24 +615,23 @@ function ConnectionsPageInner() {
           {pendingReceived.length > 0 && (
             <FadeIn>
               <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden mb-6">
-                {/* Amber Gradient Header */}
-                <div className=" to-orange-400 px-5 md:px-6 py-4 relative overflow-hidden">
-                  <div className="absolute -top-6 -right-6 w-20 h-20 bg-surface/10 rounded-full" />
-                  <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-surface/5 rounded-full" />
-                  <div className="relative flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-md flex items-center justify-center shadow-e2">
-                        <Bell className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-base font-bold text-white">Pending Requests</h2>
-                        <p className="text-warn-soft text-xs md:text-sm">Awaiting your response</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-surface/20 backdrop-blur-sm text-white text-sm font-bold">
-                      {pendingReceived.length}
+                {/* A quiet section header on the card's own surface. The
+                    previous full-bleed coloured band competed with the rows it
+                    introduced, and its warning tone is carried by the icon and
+                    the count chip instead. */}
+                <div className="flex items-center justify-between gap-3 border-b border-hairline bg-sunken px-5 py-3.5 md:px-6">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-warn-soft">
+                      <Bell className="h-[18px] w-[18px] text-warn" aria-hidden="true" />
                     </span>
+                    <div className="min-w-0">
+                      <h2 className="text-[15px] font-bold text-ink">Pending Requests</h2>
+                      <p className="text-xs text-ink-3 md:text-[12.5px]">Awaiting your response</p>
+                    </div>
                   </div>
+                  <span className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-warn-soft px-2 text-xs font-bold tabular text-warn">
+                    {pendingReceived.length}
+                  </span>
                 </div>
 
                 {/* Pending Rows */}
@@ -676,26 +675,21 @@ function ConnectionsPageInner() {
 
           {/* Active Connections — Main Card */}
           <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-visible mb-6">
-            {/* Gradient Header */}
-            <div className="bg-accent px-5 md:px-6 py-5 relative overflow-hidden">
-              <div className="absolute -top-8 -right-8 w-28 h-28 bg-surface/10 rounded-full" />
-              <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-surface/5 rounded-full" />
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-md flex items-center justify-center shadow-e2">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-base md:text-lg font-bold text-white">Active Connections</h2>
-                    <p className="text-accent-soft text-xs md:text-sm">Your collaboration partners</p>
-                  </div>
+                <div className="flex items-center justify-between gap-3 border-b border-hairline bg-sunken px-5 py-3.5 md:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-accent-soft">
+                  <Users className="h-[18px] w-[18px] text-accent-ink" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-[15px] font-bold text-ink md:text-[17px]">Active Connections</h2>
+                  <p className="text-xs text-ink-3 md:text-[12.5px]">Your collaboration partners</p>
                 </div>
-                {!loading && activeAccepted.length > 0 && (
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-surface/20 backdrop-blur-sm text-white text-sm font-bold">
-                    {activeAccepted.length}
-                  </span>
-                )}
               </div>
+              {!loading && activeAccepted.length > 0 && (
+                <span className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft px-2 text-xs font-bold tabular text-accent-ink">
+                  {activeAccepted.length}
+                </span>
+              )}
             </div>
 
             {/* Body */}

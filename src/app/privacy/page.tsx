@@ -99,7 +99,7 @@ export default function PrivacyPage() {
             >
               {/* Introduction */}
               <motion.div
-                className=" to-white rounded-lg p-8 sm:p-10 shadow-card border border-accent-soft/60"
+                className="bg-surface rounded-lg p-8 sm:p-10 shadow-e1 border border-accent-soft"
                 variants={sectionVariants}
               >
                 <p className="text-lg text-ink-2 leading-relaxed">
