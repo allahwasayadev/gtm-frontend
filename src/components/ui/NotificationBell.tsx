@@ -8,6 +8,7 @@ import { apiBaseUrl } from '@/lib/axios';
 import { notificationsApi } from '@/features/notifications/notifications.api';
 import type { AppNotification } from '@/features/notifications/types';
 import { Button } from './Button';
+import { useOverlayBehaviour } from '@/lib/useOverlayBehaviour';
 const NOTIFICATIONS_PAGE_SIZE = 25;
 
 function formatTimestamp(value: string) {
@@ -28,6 +29,14 @@ export function NotificationBell() {
   const [hasMore, setHasMore] = useState(true);
   const [markingAllRead, setMarkingAllRead] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  /* A failed load used to clear the list, so a network error was indistinguishable
+     from an empty inbox. The panel says which one it is now. */
+  const [loadFailed, setLoadFailed] = useState(false);
+  /* The panel is two different things: a scrim-backed sheet over the page below
+     lg, and an ordinary popover beside the bell above it. Declaring aria-modal
+     on both was a promise the desktop popover does not keep — nothing traps
+     focus there, and nothing should. The semantics follow the layout. */
+  const [isModalLayout, setIsModalLayout] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   // The panel is fixed on phones, so it needs the header's real bottom edge.
   // Hard-coding 64px put it under the mobile nav row, which is 48px tall.
@@ -39,6 +48,20 @@ export function NotificationBell() {
   const panelRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const refetchUnreadCountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023.98px)');
+    const sync = () => setIsModalLayout(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  const closePanel = useCallback(() => setIsOpen(false), []);
+
+  /* Only the phone sheet is modal, so only it takes the trap, the scroll lock
+     and a place on the overlay stack. The desktop popover stays modeless. */
+  useOverlayBehaviour(isOpen && isModalLayout, closePanel, panelRef);
 
   const refetchUnreadCount = useCallback(async () => {
     try {
@@ -62,12 +85,16 @@ export function NotificationBell() {
       setNotifications(notificationsResponse.data);
       setUnreadCount(unreadCountResponse.data.count);
       setHasMore(notificationsResponse.data.length === NOTIFICATIONS_PAGE_SIZE);
+      setLoadFailed(false);
     } catch {
       if (!silent) {
+        // Keep nothing stale on a first load, and say plainly that it failed.
         setNotifications([]);
         setUnreadCount(0);
         setHasMore(false);
+        setLoadFailed(true);
       }
+      // A silent refresh leaves the list it already has on screen.
     } finally {
       if (!silent) {
         setLoading(false);
@@ -179,6 +206,9 @@ export function NotificationBell() {
     };
 
     const handleEscape = (event: KeyboardEvent) => {
+      // In the modal layout the shared overlay behaviour owns Escape, so that
+      // a dropdown opened inside the panel gets it first.
+      if (isModalLayout) return;
       if (event.key === 'Escape') {
         setIsOpen(false);
       }
@@ -318,7 +348,7 @@ export function NotificationBell() {
             ref={panelRef}
             tabIndex={-1}
             role="dialog"
-            aria-modal="true"
+            aria-modal={isModalLayout ? true : undefined}
             aria-label="Notifications"
             className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-lg border border-hairline bg-surface shadow-e2 ring-1 ring-black/5">
           <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
@@ -352,6 +382,24 @@ export function NotificationBell() {
               <p className="px-1 py-4 text-center text-sm text-ink-3">
                 Loading notifications...
               </p>
+            ) : loadFailed ? (
+              <div className="px-1 py-5 text-center" role="alert">
+                <p className="text-sm font-semibold text-ink">
+                  We couldn&rsquo;t load your notifications
+                </p>
+                <p className="mt-1 text-sm text-ink-3">
+                  The request didn&rsquo;t complete.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => void loadNotifications()}
+                >
+                  Try again
+                </Button>
+              </div>
             ) : notifications.length === 0 ? (
               <p className="px-1 py-4 text-center text-sm text-ink-3">
                 You have no notifications yet.
