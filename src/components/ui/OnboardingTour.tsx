@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useLayoutEffect, useId } from 'react';
+import { useState, useEffect, useCallback, useLayoutEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import { CloudUpload, BarChart3, Mail, ChevronRight } from 'lucide-react';
 import { Button } from './Button';
+import { useOverlayBehaviour } from '@/lib/useOverlayBehaviour';
 
 interface TourStep {
   id: string;
@@ -62,38 +63,54 @@ interface OnboardingTourProps {
   onAction: (stepId: string) => void;
 }
 
-const TOOLTIP_WIDTH = 360;
+const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_EST_HEIGHT = 300;
+const GUTTER = 16;
 
+/**
+ * The panel used to be a fixed 360px. On a 320px phone the clamp then computed
+ * `left = 320 - 360 - 16`, i.e. -56, and pushed a third of the panel off the
+ * side of the screen. The width is a budget now, not a constant: it is whatever
+ * fits between the gutters, and the height is capped so a short or landscape
+ * viewport scrolls inside the panel instead of overflowing the screen.
+ */
 function getTooltipPosition(rect: DOMRect | null): React.CSSProperties {
+  const vw = typeof window === 'undefined' ? TOOLTIP_MAX_WIDTH + GUTTER * 2 : window.innerWidth;
+  const vh = typeof window === 'undefined' ? 800 : window.innerHeight;
+  const width = Math.min(TOOLTIP_MAX_WIDTH, vw - GUTTER * 2);
+
   if (!rect) {
     return {
       position: 'fixed' as const,
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: `${TOOLTIP_WIDTH}px`,
+      width: `${width}px`,
+      maxHeight: `${vh - GUTTER * 2}px`,
     };
   }
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  let left = rect.left + rect.width / 2 - TOOLTIP_WIDTH / 2;
+
+  let left = rect.left + rect.width / 2 - width / 2;
   let top = rect.bottom + 20;
 
-  if (left < 16) left = 16;
-  if (left + TOOLTIP_WIDTH > vw - 16) left = vw - TOOLTIP_WIDTH - 16;
+  if (left + width > vw - GUTTER) left = vw - width - GUTTER;
+  if (left < GUTTER) left = GUTTER;
   if (top + TOOLTIP_EST_HEIGHT > vh) top = rect.top - 20 - TOOLTIP_EST_HEIGHT;
+  // Never above the top gutter either, which short landscape viewports hit.
+  if (top < GUTTER) top = GUTTER;
 
   return {
     position: 'fixed' as const,
     top: `${top}px`,
     left: `${left}px`,
-    width: `${TOOLTIP_WIDTH}px`,
+    width: `${width}px`,
+    maxHeight: `${vh - top - GUTTER}px`,
   };
 }
 
 export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>(() =>
     getTooltipPosition(null)
@@ -103,6 +120,11 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
   const handleClose = useCallback(() => {
     void onClose();
   }, [onClose]);
+
+  /* The tour is a dialog over a spotlit page, so it takes the same guarantees
+     as every other overlay: Escape through the shared stack, a focus trap,
+     focus returned on close, and the page behind it locked. */
+  useOverlayBehaviour(isOpen, handleClose, panelRef);
 
   useLayoutEffect(() => {
     if (!isOpen || typeof document === 'undefined') return;
@@ -139,8 +161,9 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
-      else if (e.key === 'ArrowRight' && currentStep < tourSteps.length - 1) {
+      /* Escape belongs to the shared overlay behaviour, which only reacts while
+         this is the frontmost layer. */
+      if (e.key === 'ArrowRight' && currentStep < tourSteps.length - 1) {
         setCurrentStep((s) => s + 1);
       } else if (e.key === 'ArrowLeft' && currentStep > 0) {
         setCurrentStep((s) => s - 1);
@@ -214,7 +237,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
               left: spotlightRect.left,
               width: spotlightRect.width,
               height: spotlightRect.height,
-              boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.4), 0 0 24px 8px rgba(99, 102, 241, 0.2)',
+              boxShadow: '0 0 0 4px rgba(14, 89, 85, 0.45), 0 0 24px 8px rgba(14, 89, 85, 0.22)',
             }}
             aria-hidden
           />
@@ -223,17 +246,20 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
+            ref={panelRef}
             initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             style={tooltipStyle}
-            className="z-10"
+            className="z-10 flex flex-col focus:outline-none"
             role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
             aria-labelledby="onboarding-title"
             aria-describedby="onboarding-body"
           >
-            <div className="bg-surface rounded-lg shadow-2xl shadow-black/20 overflow-hidden">
+            <div className="flex min-h-0 flex-col bg-surface rounded-lg shadow-e3 overflow-hidden">
               <div className="px-6 pt-5 pb-4 border-b border-hairline">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
