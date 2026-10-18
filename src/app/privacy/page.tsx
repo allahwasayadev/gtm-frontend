@@ -56,7 +56,6 @@ export default function PrivacyPage() {
         <main className="w-full flex-1">
           {/* Hero Section */}
           <section className="relative overflow-hidden">
-            <div className="absolute inset-0 via-white" />
             <div className="relative px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-16 sm:py-24">
               <motion.div
                 className="max-w-4xl mx-auto text-center"

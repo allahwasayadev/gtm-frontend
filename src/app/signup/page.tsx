@@ -189,7 +189,7 @@ function SignupContent() {
       </div>
 
       {/* Form Panel */}
-      <div className="flex-1 min-h-screen lg:h-screen via-white lg:bg-sunken/80 flex items-center lg:items-start justify-center p-4 sm:p-8 lg:overflow-y-auto">
+      <div className="flex-1 min-h-screen lg:h-screen bg-canvas lg:bg-sunken/80 flex items-center lg:items-start justify-center p-4 sm:p-8 lg:overflow-y-auto">
         <motion.div
           className="w-full max-w-md lg:py-8"
           initial={{ opacity: 0, y: 24 }}

@@ -104,7 +104,7 @@ function InviteAcceptContent() {
   const redirectPath = `/invite/accept?token=${token}`;
 
   return (
-    <div className="min-h-screen via-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-canvas flex items-center justify-center p-4">
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 24 }}

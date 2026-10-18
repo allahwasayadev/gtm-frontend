@@ -20,6 +20,8 @@ import toast from 'react-hot-toast';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
+import { authApi } from '@/features/auth/auth.api';
+import type { User as AuthUser } from '@/features/auth/types';  // `User` is a lucide icon here
 import {
   Button, CodeInput, ConfirmationModal, FadeIn, Input, LoadingScreen,
   PageTransition, UsPhoneInput, ButtonLink, Modal } from '@/components/ui';
@@ -383,6 +385,33 @@ export default function ProfilePage() {
       });
       const { token, ...updatedUser } = response.data;
 
+      /* updateUser replaces the stored user rather than merging, and the update
+         response does not carry the SMS consent fields, so they have to be
+         carried across here or saving an unrelated field clears them locally.
+         Consent belongs to the number that was consented to: it is only carried
+         when the number is unchanged, and anything the server did return wins. */
+      const samePhone = (updatedUser.phoneNumber ?? null) === (user?.phoneNumber ?? null);
+      let carried: Pick<AuthUser, 'smsConsent' | 'smsConsentAt' | 'smsOptedOut'> = {
+        smsConsent: user?.smsConsent,
+        smsConsentAt: user?.smsConsentAt,
+        smsOptedOut: user?.smsOptedOut,
+      };
+      if (!samePhone) {
+        /* The number changed, so the old consent no longer describes it. Ask the
+           authoritative profile rather than guessing; if that call fails, leave
+           the fields unset, which reads as "no consent on record". */
+        try {
+          const fresh = (await authApi.getProfile()).data;
+          carried = {
+            smsConsent: fresh.smsConsent,
+            smsConsentAt: fresh.smsConsentAt,
+            smsOptedOut: fresh.smsOptedOut,
+          };
+        } catch {
+          carried = { smsConsent: undefined, smsConsentAt: undefined, smsOptedOut: undefined };
+        }
+      }
+
       updateUser(
         {
           id: updatedUser.id,
@@ -394,14 +423,13 @@ export default function ProfilePage() {
           emailVerified: user?.emailVerified ?? false,
           phoneNumber: updatedUser.phoneNumber ?? null,
           isPhoneVerified: updatedUser.isPhoneVerified,
+          ...carried,
           createdAt: updatedUser.createdAt,
         },
         token,
       );
 
       setIsEmailEditingEnabled(false);
-      if (!updatedUser.isPhoneVerified) {
-      } 
       toast.success('Profile updated successfully!');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to update profile'));
@@ -509,7 +537,7 @@ export default function ProfilePage() {
 
                       <div className="w-full">
                         <div className="flex items-center justify-between gap-3 mb-1.5">
-                          <label className="block text-sm font-medium text-ink-2">
+                          <label htmlFor="profile-email" className="block text-sm font-medium text-ink-2">
                             Email Address
                             <span className="text-danger ml-1">*</span>
                           </label>
@@ -527,6 +555,7 @@ export default function ProfilePage() {
                             error wiring and disabled treatment as everywhere
                             else. The lock behaviour is unchanged. */}
                         <Input
+                          id="profile-email"
                           icon={Mail}
                           type="email"
                           required
@@ -547,7 +576,9 @@ export default function ProfilePage() {
                               ? 'Phone verified. You can edit your email now.'
                               : !hasPhoneNumber
                                 ? 'Add a phone number to your account to unlock email updates.'
-                                : 'Email editing is locked until your current phone number is verified.'}
+                                : isPhoneVerifiedForCurrentPhone
+                                  ? 'Your phone number is verified. Choose Update Email to change your address.'
+                                  : 'Email editing is locked until your current phone number is verified.'}
                           </p>
                         )}
                       </div>
@@ -625,68 +656,6 @@ export default function ProfilePage() {
                                 autoComplete="tel"
                               />
                             )}
-                            {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
-                              <label className="mt-3 flex items-start gap-3 bg-sunken rounded-md p-3.5 border border-hairline cursor-pointer select-none">
-                                <input
-                                  type="checkbox"
-                                  checked={smsConsent}
-                                  onChange={(e) => {
-                                    setSmsConsent(e.target.checked);
-                                    setErrors((prev) => ({ ...prev, smsConsent: '' }));
-                                  }}
-                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-control text-accent focus:ring-accent accent-[#0E5955]"
-                                />
-                                <div>
-                                  <p className="text-xs text-ink-2 leading-relaxed">
-                                    {SMS_CONSENT_TEXT}
-                                  </p>
-                                  <div className="flex gap-3 mt-2">
-                                    <Link href="/terms" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Terms</Link>
-                                    <Link href="/privacy" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>
-                                    <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>SMS Terms</Link>
-                                  </div>
-                                  {errors.smsConsent && (
-                                    <p className="mt-1.5 text-xs text-danger">{errors.smsConsent}</p>
-                                  )}
-                                </div>
-                              </label>
-                            )}
-
-                            {/* SMS consent status — always visible when a number is
-                                on file, so a user can see and revoke consent without
-                                needing to have received a text first. */}
-                            {hasPhoneNumber && (alreadyConsented || user?.smsOptedOut) && (
-                              <div className={`mt-3 rounded-md p-3.5 border ${user?.smsOptedOut ? 'bg-warn-soft border-warn-soft' : 'bg-ok-soft border-ok-soft'}`}>
-                                <div className="flex items-start justify-between gap-3 flex-wrap">
-                                  <div className="min-w-0">
-                                    <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-warn' : 'text-ok'}`}>
-                                      {user?.smsOptedOut
-                                        ? 'SMS messages are turned off'
-                                        : 'You agreed to receive Ovrlap SMS'}
-                                    </p>
-                                    <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-warn/90' : 'text-ok/90'}`}>
-                                      {user?.smsOptedOut
-                                        ? 'Ovrlap will not send text messages to this number. Tick the box above to opt in again.'
-                                        : user?.smsConsentAt
-                                          ? `Consent recorded ${new Date(user.smsConsentAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}. Account verification messages only — never marketing.`
-                                          : 'Account verification messages only — never marketing.'}
-                                    </p>
-                                  </div>
-                                  {!user?.smsOptedOut && (
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={handleWithdrawSmsConsent}
-                                      isLoading={isWithdrawing}
-                                    >
-                                      Withdraw consent
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
                             {hasPhoneNumber && !isPhoneVerifiedForCurrentPhone && (
                               <div className="mt-2 flex items-center gap-2 flex-wrap">
                                 <span className="text-sm text-warn">Not verified yet</span>
@@ -703,6 +672,71 @@ export default function ProfilePage() {
                               </div>
                             )}
                           </>
+                        )}
+
+                        {/* Consent belongs to the number on file, not to whether it
+                            has been verified yet: a verified user must still be able
+                            to see that they consented and withdraw it. */}
+                        {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
+                          <label className="mt-3 flex items-start gap-3 bg-sunken rounded-md p-3.5 border border-hairline cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={smsConsent}
+                              onChange={(e) => {
+                                setSmsConsent(e.target.checked);
+                                setErrors((prev) => ({ ...prev, smsConsent: '' }));
+                              }}
+                              className="mt-0.5 h-4 w-4 shrink-0 rounded border-control text-accent focus:ring-accent accent-[#0E5955]"
+                            />
+                            <div>
+                              <p className="text-xs text-ink-2 leading-relaxed">
+                                {SMS_CONSENT_TEXT}
+                              </p>
+                              <div className="flex gap-3 mt-2">
+                                <Link href="/terms" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Terms</Link>
+                                <Link href="/privacy" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>
+                                <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>SMS Terms</Link>
+                              </div>
+                              {errors.smsConsent && (
+                                <p className="mt-1.5 text-xs text-danger">{errors.smsConsent}</p>
+                              )}
+                            </div>
+                          </label>
+                        )}
+
+                        {/* SMS consent status — always visible when a number is
+                            on file, so a user can see and revoke consent without
+                            needing to have received a text first. */}
+                        {hasPhoneNumber && (alreadyConsented || user?.smsOptedOut) && (
+                          <div className={`mt-3 rounded-md p-3.5 border ${user?.smsOptedOut ? 'bg-warn-soft border-warn-soft' : 'bg-ok-soft border-ok-soft'}`}>
+                            <div className="flex items-start justify-between gap-3 flex-wrap">
+                              <div className="min-w-0">
+                                <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-warn' : 'text-ok'}`}>
+                                  {user?.smsOptedOut
+                                    ? 'SMS messages are turned off'
+                                    : 'You agreed to receive Ovrlap SMS'}
+                                </p>
+                                <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-warn/90' : 'text-ok/90'}`}>
+                                  {user?.smsOptedOut
+                                    ? 'Ovrlap will not send text messages to this number. Tick the box above to opt in again.'
+                                    : user?.smsConsentAt
+                                      ? `Consent recorded ${new Date(user.smsConsentAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}. Account verification messages only — never marketing.`
+                                      : 'Account verification messages only — never marketing.'}
+                                </p>
+                              </div>
+                              {!user?.smsOptedOut && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleWithdrawSmsConsent}
+                                  isLoading={isWithdrawing}
+                                >
+                                  Withdraw consent
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
 

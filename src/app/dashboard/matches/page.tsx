@@ -679,10 +679,10 @@ function PartnerChips({
         )}
       </div>
       {edges.start && (
-        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-7 to-transparent" />
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-7 bg-linear-to-r from-canvas to-transparent" />
       )}
       {edges.end && (
-        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-7 to-transparent" />
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-7 bg-linear-to-l from-canvas to-transparent" />
       )}
       {edges.end && (
         <span className="pointer-events-none absolute -bottom-4 right-0 text-xs font-bold text-ink-3">

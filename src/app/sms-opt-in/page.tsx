@@ -17,7 +17,7 @@ export const metadata: Metadata = {
  */
 export default function SmsOptInPage() {
   return (
-    <div className="min-h-screen via-white">
+    <div className="min-h-screen bg-canvas">
       <div className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
         <header className="mb-10">
           <Link href="/" className="inline-block mb-8">

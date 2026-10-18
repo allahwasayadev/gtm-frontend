@@ -162,7 +162,7 @@ export default function VerifyPhonePage() {
   // No activation in progress — the token is gone or the tab is new.
   if (!state) {
     return (
-      <div className="min-h-screen via-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-canvas flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-surface rounded-lg shadow-card border border-hairline p-8 text-center">
           <h2 className="text-xl font-bold text-ink mb-2">
             Activation expired
@@ -200,7 +200,7 @@ export default function VerifyPhonePage() {
         </p>
       </div>
 
-      <div className="flex-1 min-h-screen via-white flex items-center justify-center p-4 sm:p-8">
+      <div className="flex-1 min-h-screen bg-canvas flex items-center justify-center p-4 sm:p-8">
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 24 }}
