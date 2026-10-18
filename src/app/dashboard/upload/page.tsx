@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
-import { Button, PageHeader, PageTransition } from '@/components/ui';
+import { Button, PageHeader, PageTransition, Input } from '@/components/ui';
 import { CloudUpload, Check, Info, FileSpreadsheet, ArrowRight, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -133,13 +133,14 @@ export default function UploadPage() {
                   <div className="flex-1 pb-8">
                     <h3 className="font-semibold text-ink mb-0.5">Name your list</h3>
                     <p className="text-sm text-ink-3 mb-4">Choose a descriptive name for easy identification</p>
-                    <input
+                    {/* The shared field, so this one gets the same 44px height,
+                        16px type and focus treatment as every other input. */}
+                    <Input
                       type="text"
                       required
                       value={listName}
                       onChange={(e) => setListName(e.target.value)}
                       placeholder="e.g., Q1 2025 Target Accounts"
-                      className="w-full px-4 py-2.5 border border-hairline rounded-md text-sm focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-sm transition-all text-ink placeholder:text-ink-3 bg-surface"
                     />
                   </div>
                 </div>

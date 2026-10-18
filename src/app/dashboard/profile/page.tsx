@@ -523,35 +523,24 @@ export default function ProfilePage() {
                             Update Email
                           </Button>
                         </div>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Mail className="w-4 h-4 text-ink-3" />
-                          </div>
-                          <input
-                            className={`
-                              block w-full pl-10 pr-4 py-2.5 text-sm text-ink
-                              bg-surface border rounded-md
-                              placeholder:text-ink-3
-                              focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-surface focus:shadow-sm
-                              transition-all duration-200
-                              disabled:bg-sunken disabled:text-ink-3 disabled:cursor-not-allowed
-                              ${errors.email ? 'border-danger focus:border-danger focus:ring-danger' : 'border-hairline focus:border-accent focus:ring-accent'}
-                            `}
-                            type="email"
-                            required
-                            value={formData.email}
-                            disabled={!isEmailEditingEnabled}
-                            onChange={(e) => {
-                              setFormData({ ...formData, email: e.target.value });
-                              setErrors({ ...errors, email: '' });
-                            }}
-                            placeholder="you@example.com"
-                            autoComplete="email"
-                          />
-                        </div>
-                        {errors.email && (
-                          <p className="mt-1.5 text-sm text-danger">{errors.email}</p>
-                        )}
+                        {/* The shared field: same 44px height, 16px type,
+                            error wiring and disabled treatment as everywhere
+                            else. The lock behaviour is unchanged. */}
+                        <Input
+                          icon={Mail}
+                          type="email"
+                          required
+                          value={formData.email}
+                          disabled={!isEmailEditingEnabled}
+                          error={errors.email || undefined}
+                          onChange={(e) => {
+                            setFormData({ ...formData, email: e.target.value });
+                            setErrors({ ...errors, email: '' });
+                          }}
+                          placeholder="you@example.com"
+                          autoComplete="email"
+                        />
+                        {/* Input renders the error; this is the helper line. */}
                         {!errors.email && (
                           <p className="mt-1.5 text-sm text-ink-3">
                             {isEmailEditingEnabled

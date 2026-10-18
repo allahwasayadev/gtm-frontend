@@ -289,7 +289,7 @@ export default function ListDetailPage() {
                                   )
                                 }
                                 placeholder="Account name"
-                                className="w-full px-3 py-2 border border-hairline rounded-md text-sm focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-sm focus:bg-surface transition-all text-ink placeholder:text-ink-3 bg-sunken/50"
+                                className="w-full min-h-[44px] px-3 border border-control rounded-sm text-base text-ink bg-surface transition-colors focus:border-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent placeholder:text-ink-3"
                               />
                             ) : (
                               <div className="flex items-center gap-2 sm:gap-3">
