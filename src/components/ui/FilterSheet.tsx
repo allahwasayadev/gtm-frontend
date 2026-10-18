@@ -43,7 +43,9 @@ export function FilterSheet({
   // come from Modal's sheet variant now.
 
   return (
-    <div className="sm:hidden">
+    // Matches the Filters trigger exactly (md:hidden). It used to be sm:hidden,
+    // so between 640 and 767 the trigger was visible but opened nothing.
+    <div className="md:hidden">
       <Modal
         isOpen={isOpen}
         onClose={onClose}

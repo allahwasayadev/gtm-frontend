@@ -505,23 +505,29 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                <div className="hidden md:flex flex-col md:flex-row items-stretch md:items-center gap-2.5 shrink-0">
+                {/* From 768 the two filters sit in the toolbar with visible
+                    labels rather than behind a sheet. They wrap onto a second
+                    line when the toolbar runs out of room. Phones keep the
+                    sheet, and the two renderers never coexist, so there is no
+                    duplicate focusable control at any width. Both read and
+                    write the same state, so a selection survives a resize. */}
+                <div className="hidden md:flex flex-wrap items-end gap-2.5">
                   <Dropdown
-                    aria-label="Company filter"
+                    label="Company"
                     value={companyFilter}
                     onChange={setCompanyFilter}
                     options={companyFilterOptions}
                     placeholder="All companies"
-                    className="md:w-44"
+                    className="w-44 lg:w-52"
                   />
                   <Dropdown
-                    aria-label="Match display filter"
+                    label="Matches"
                     value={matchViewFilter}
                     onChange={(value) =>
                       setMatchViewFilter(value as MatchViewFilter)
                     }
                     options={matchViewOptions}
-                    className="md:w-48"
+                    className="w-48 lg:w-56"
                   />
                   <div className="flex gap-2">
                     {activeList && (

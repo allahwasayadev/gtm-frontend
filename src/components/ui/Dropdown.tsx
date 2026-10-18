@@ -20,6 +20,8 @@ interface DropdownProps {
   triggerClassName?: string;
   disabled?: boolean;
   variant?: 'default' | 'light';
+  /** Visible label above the control; also names it for assistive tech. */
+  label?: string;
   'aria-label'?: string;
 }
 
@@ -32,6 +34,7 @@ export function Dropdown({
   triggerClassName = '',
   disabled = false,
   variant = 'default',
+  label,
   'aria-label': ariaLabel,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +44,7 @@ export function Dropdown({
   const listboxRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const listboxId = useId();
+  const labelId = `${listboxId}-label`;
   const optionId = (i: number) => `${listboxId}-option-${i}`;
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -197,12 +201,16 @@ export function Dropdown({
             selectOption(options[safeHighlightedIndex]);
           }
           break;
+        case 'Tab':
+          // Close and let focus move on; swallowing Tab would trap the user.
+          close();
+          break;
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, options, safeHighlightedIndex, selectOption, enabledIndices]);
+  }, [isOpen, options, safeHighlightedIndex, selectOption, enabledIndices, close]);
 
   useEffect(() => {
     if (isOpen && listboxRef.current) {
@@ -216,15 +224,22 @@ export function Dropdown({
     else open();
   }, [isOpen, open, close]);
 
+  /**
+   * The trigger only opens the listbox.
+   *
+   * It used to also handle keys while open — closing on Enter, Space and
+   * ArrowUp — which put it in a race with the document-level handler that owns
+   * highlighting and selection. React delegates its synthetic events at the
+   * root, so the trigger ran first: ArrowUp closed the list instead of moving
+   * up, and Enter closed it without ever committing the highlighted option.
+   *
+   * While open there is exactly one handler, below.
+   */
   const handleTriggerKeyDown = (event: React.KeyboardEvent) => {
-    if (!isOpen) {
-      if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
-        event.preventDefault();
-        open();
-      }
-    } else if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowUp') {
+    if (isOpen) return;
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
-      close();
+      open();
     }
   };
 
@@ -235,16 +250,26 @@ export function Dropdown({
 
   return (
     <div ref={containerRef} className={`relative ${className.trim()}`}>
+      {label && (
+        <span id={labelId} className="mb-1 block text-xs font-bold uppercase tracking-[0.07em] text-ink-3">
+          {label}
+        </span>
+      )}
       <button
         ref={triggerRef}
         type="button"
         onClick={toggle}
         onKeyDown={handleTriggerKeyDown}
         disabled={disabled}
-        aria-label={ariaLabel}
+        aria-label={label ? undefined : ariaLabel}
+        aria-labelledby={label ? `${labelId} ${listboxId}-value` : undefined}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-controls={listboxId}
+        // Focus stays on the trigger while the list is open, so the trigger is
+        // what points at the highlighted option. Without this the highlight
+        // moved visually but assistive tech never heard about it.
+        aria-activedescendant={isOpen ? optionId(safeHighlightedIndex) : undefined}
         className={`
           w-full flex items-center justify-between gap-2 px-4 py-2.5 pr-3 text-sm rounded-md cursor-pointer
           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0
@@ -256,7 +281,10 @@ export function Dropdown({
           ${triggerClassName}
         `}
       >
-        <span className={`truncate ${variant === 'light' ? 'text-white' : selectedOption ? 'text-ink-2' : 'text-ink-3'}`}>
+        <span
+          id={`${listboxId}-value`}
+          className={`truncate ${variant === 'light' ? 'text-white' : selectedOption ? 'text-ink-2' : 'text-ink-3'}`}
+        >
           {selectedOption?.label || placeholder}
         </span>
         <ChevronDown
