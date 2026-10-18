@@ -41,15 +41,25 @@ export function Header() {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasLists, setHasLists] = useState<boolean | null>(null);
-  const [menuMaxHeight, setMenuMaxHeight] = useState<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
+  const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  // Opening resets the roving index here rather than inside the effect, so the
+  // effect never calls setState synchronously and cause a second render pass.
+  const openMenu = useCallback(() => {
+    setActiveIndex(0);
+    setIsMenuOpen(true);
+  }, []);
+  const toggleMenu = useCallback(() => {
+    setActiveIndex(0);
+    setIsMenuOpen(prev => !prev);
+  }, []);
   const closeAndRestore = useCallback(() => {
     setIsMenuOpen(false);
     triggerRef.current?.focus();
@@ -90,19 +100,27 @@ export function Header() {
     []
   );
 
-  /** Bound the menu to the space actually below the trigger, measured. */
+  /**
+   * Bound the menu to the space actually below the trigger.
+   *
+   * Measured from the live header rather than assuming its height, because the
+   * header is two rows below `lg` and one row above it. Written straight to the
+   * node: this is a DOM sync, and routing it through state would add a render
+   * on every scroll and resize event.
+   */
   const measureMenu = useCallback(() => {
     const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const gap = 8;
-    const bottomGutter = 16;
-    setMenuMaxHeight(Math.max(160, window.innerHeight - rect.bottom - gap - bottomGutter));
+    const node = menuRef.current;
+    if (!rect || !node) return;
+    const GAP = 8;
+    const BOTTOM_GUTTER = 16;
+    const available = window.innerHeight - rect.bottom - GAP - BOTTOM_GUTTER;
+    node.style.maxHeight = `${Math.max(160, available)}px`;
   }, []);
 
   useEffect(() => {
     if (!isMenuOpen) return;
     measureMenu();
-    setActiveIndex(0);
     itemRefs.current[0]?.focus();
 
     const onPointerDown = (e: MouseEvent) => {
@@ -203,11 +221,11 @@ export function Header() {
                   <button
                     ref={triggerRef}
                     type="button"
-                    onClick={() => setIsMenuOpen(prev => !prev)}
+                    onClick={toggleMenu}
                     onKeyDown={(e) => {
                       if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        setIsMenuOpen(true);
+                        openMenu();
                       }
                     }}
                     aria-expanded={isMenuOpen}
@@ -230,7 +248,7 @@ export function Header() {
                       role="menu"
                       aria-label="Account and site menu"
                       onKeyDown={onMenuKeyDown}
-                      style={menuMaxHeight ? { maxHeight: menuMaxHeight } : undefined}
+                      ref={menuRef}
                       className="ovrlap-panel absolute right-0 mt-2 flex w-[min(16rem,calc(100vw-2rem))] origin-top-right flex-col overflow-hidden rounded-lg border border-hairline bg-surface shadow-e3"
                     >
                       <div className="shrink-0 border-b border-hairline px-4 py-3">
