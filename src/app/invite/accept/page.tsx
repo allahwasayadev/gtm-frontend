@@ -79,7 +79,7 @@ function InviteAcceptContent() {
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
       >
         {/* Header */}
         <div className="text-center mb-8">
@@ -98,7 +98,7 @@ function InviteAcceptContent() {
                 className="w-16 h-16 bg-danger rounded-lg flex items-center justify-center mx-auto mb-4 shadow-e2"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.06 }}
               >
                 <X className="w-8 h-8 text-white" />
               </motion.div>
@@ -119,7 +119,7 @@ function InviteAcceptContent() {
                 className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4 shadow-e2"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.06 }}
               >
                 <Handshake className="w-8 h-8 text-white" />
               </motion.div>

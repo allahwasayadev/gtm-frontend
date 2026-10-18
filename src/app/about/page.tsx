@@ -61,7 +61,7 @@ export default function AboutPage() {
                 className="max-w-4xl mx-auto text-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.2 }}
               >
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-ink mb-6 leading-tight">
                   About Ovrlap
@@ -89,7 +89,7 @@ export default function AboutPage() {
                 className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 <h2 className="text-2xl font-bold text-ink mb-6">
@@ -113,7 +113,7 @@ export default function AboutPage() {
               <motion.section
                 variants={{
                   hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 <div className="grid md:grid-cols-2 gap-6">
@@ -172,7 +172,7 @@ export default function AboutPage() {
                 className="grid sm:grid-cols-3 gap-6"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 {highlights.map((highlight, index) => (
@@ -194,7 +194,7 @@ export default function AboutPage() {
                 className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 <h2 className="text-2xl font-bold text-ink mb-6">
@@ -218,7 +218,7 @@ export default function AboutPage() {
                 className="bg-ink rounded-lg p-8 sm:p-10 shadow-xl"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 <h2 className="text-2xl font-bold text-white mb-6">
@@ -244,7 +244,7 @@ export default function AboutPage() {
                 className="text-center"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 <div className="bg-surface rounded-lg p-10 shadow-card border border-hairline">

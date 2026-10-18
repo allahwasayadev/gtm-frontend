@@ -53,7 +53,7 @@ export default function LandingPage() {
             className="flex justify-center mb-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
           >
             <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-20 sm:h-24 md:h-28 w-auto" />
           </motion.div>
@@ -61,7 +61,7 @@ export default function LandingPage() {
             className="text-xl md:text-2xl font-medium text-ink-2 mb-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.2, delay: 0.06, ease: [0.25, 0.1, 0.25, 1] }}
           >
             Find Account Overlaps in Real-Time
           </motion.p>
@@ -69,7 +69,7 @@ export default function LandingPage() {
             className="text-base text-ink-3 max-w-2xl mx-auto mb-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.2, delay: 0.06, ease: [0.25, 0.1, 0.25, 1] }}
           >
             The lightweight tool for sales reps to instantly identify account overlaps
             at events, meetings, and networking sessions.
@@ -79,7 +79,7 @@ export default function LandingPage() {
             className="flex flex-col sm:flex-row gap-3 justify-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.2, delay: 0.06, ease: [0.25, 0.1, 0.25, 1] }}
           >
             <ButtonLink href="/signup" variant="primary" size="lg" className="w-full sm:w-auto px-8">
                 Get Started Free
@@ -106,7 +106,7 @@ export default function LandingPage() {
                 className="bg-surface rounded-lg p-6 shadow-card border border-hairline hover:shadow-card-hover transition-all duration-200"
                 variants={{
                   hidden: { opacity: 0, y: 24 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 <div className="w-12 h-12 bg-accent rounded-md flex items-center justify-center mx-auto mb-4 shadow-e2">
@@ -137,7 +137,7 @@ export default function LandingPage() {
                 className="text-center p-6"
                 variants={{
                   hidden: { opacity: 0, y: 24 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
                 <div className={`w-14 h-14 ${colors.bg} rounded-lg flex items-center justify-center mx-auto mb-4`}>

@@ -178,14 +178,14 @@ export default function UploadPage() {
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, ease: 'easeOut' }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
                           className="flex items-center gap-3 sm:gap-4"
                         >
                           <motion.div
                             className="w-10 h-10 sm:w-12 sm:h-12 bg-ok rounded-md flex items-center justify-center shrink-0 shadow-e2"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.06 }}
                           >
                             <Check className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                           </motion.div>

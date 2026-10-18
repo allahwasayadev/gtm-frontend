@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.2 }}
       >
         <div className="text-center mb-8">
           <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4">

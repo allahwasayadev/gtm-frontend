@@ -194,7 +194,7 @@ function SignupContent() {
           className="w-full max-w-md lg:py-8"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
         >
           {/* Mobile/Tablet Logo + Title */}
           <div className="text-center mb-8 lg:hidden">
@@ -203,7 +203,7 @@ function SignupContent() {
                 className="flex justify-center mb-4"
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.06 }}
               >
                 <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-14 w-auto" />
               </motion.div>

@@ -21,7 +21,7 @@ import Link from 'next/link';
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 };
 
 interface TermsSectionProps {
@@ -63,7 +63,7 @@ export default function TermsPage() {
                 className="max-w-4xl mx-auto text-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.2 }}
               >
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-accent-soft mb-6">
                   <Scale className="w-8 h-8 text-accent" />
@@ -78,7 +78,7 @@ export default function TermsPage() {
                   className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-hairline shadow-sm"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
+                  transition={{ delay: 0.06, duration: 0.2 }}
                 >
                   <Clock className="w-4 h-4 text-ink-3" />
                   <span className="text-sm text-ink-3">Last Updated: September 27, 2026</span>
