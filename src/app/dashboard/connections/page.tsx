@@ -2,16 +2,13 @@
 
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 import { connectionsApi } from '@/features/connections/connections.api';
 import { invitesApi } from '@/features/invites/invites.api';
 import type { Connection } from '@/features/connections/types';
 import type { Invite } from '@/features/invites/types';
 import { ConnectionControlMenu } from '@/features/connections/components/ConnectionControlMenu';
-import {
-  Button, Badge, EmptyState, PageHeader, InviteModal, ConfirmationModal,
-  Skeleton, PageTransition, FadeIn, ButtonLink } from '@/components/ui';
-import { Users, Clock, Mail, ArrowLeftRight, Bell, CheckCircle2, Send, Plus, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button, Badge, PageHeader, InviteModal, ConfirmationModal, Skeleton, PageTransition } from '@/components/ui';
+import { AlertTriangle, Bell, CheckCircle2, Mail, Plus, RefreshCw, Send, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { getUserInitials } from '@/lib/user-initials';
 import toast from 'react-hot-toast';
@@ -318,7 +315,6 @@ function ConnectionsPageInner() {
   return (
     <>
       <main className="w-full px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4 md:py-8">
-        <div className="hidden md:block">
         <PageHeader
           title="Connections"
           description="Manage your network and collaboration partners"
@@ -329,32 +325,26 @@ function ConnectionsPageInner() {
               variant="primary"
               size="sm"
             >
-              <Mail className="w-4 h-4 md:mr-1" />
-              <span className="hidden md:inline">Invite Partner</span>
+              <Mail className="w-4 h-4 mr-1" />
+              Invite Partner
             </Button>
           }
         />
-        </div>
 
         {/* ------------------------------------------------------------------
-            Phones: one segmented list instead of four stacked cards. Every
-            group, count and action from the wide layout below is present.
+            One segmented list at every width, which is the approved Harbour
+            composition. The wide layout used to be a second, stacked copy of
+            the same data with its own markup and handlers; this renderer
+            carries every group, count and action that copy had.
            ------------------------------------------------------------------ */}
-        <PageTransition className="md:hidden">
-          <h1 className="text-xl leading-tight font-bold text-ink tracking-tight">
-            Connections
-          </h1>
-          <p className="mt-1 text-[13px] leading-snug text-ink-2 max-[359px]:hidden">
-            Partners you share account lists with. Ovrlap compares your lists and shows the overlap.
-          </p>
-
-          {/* The tablist sits directly under the introduction and never moves.
+        <PageTransition>
+          {/* The tablist sits directly under the page header and never moves.
               The "requests waiting" notice lives inside the panel below it, so
               changing tab or clearing the queue cannot shift the control. */}
           <div
             role="tablist"
             aria-label="Connection groups"
-            className="mt-3 grid grid-cols-3 gap-1 rounded-md bg-surface-2 p-1"
+            className="grid grid-cols-3 gap-1 rounded-md bg-surface-2 p-1 sm:max-w-md"
           >
             {TAB_VALUES.map((value) => {
               const count =
@@ -609,379 +599,6 @@ function ConnectionsPageInner() {
           </div>
         </PageTransition>
 
-        <div className="hidden md:block">
-        <PageTransition>
-          {/* Pending Requests (Received) */}
-          {pendingReceived.length > 0 && (
-            <FadeIn>
-              <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden mb-6">
-                {/* A quiet section header on the card's own surface. The
-                    previous full-bleed coloured band competed with the rows it
-                    introduced, and its warning tone is carried by the icon and
-                    the count chip instead. */}
-                <div className="flex items-center justify-between gap-3 border-b border-hairline bg-sunken px-5 py-3.5 md:px-6">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-warn-soft">
-                      <Bell className="h-[18px] w-[18px] text-warn" aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0">
-                      <h2 className="text-[15px] font-bold text-ink">Pending Requests</h2>
-                      <p className="text-xs text-ink-3 md:text-[12.5px]">Awaiting your response</p>
-                    </div>
-                  </div>
-                  <span className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-warn-soft px-2 text-xs font-bold tabular text-warn">
-                    {pendingReceived.length}
-                  </span>
-                </div>
-
-                {/* Pending Rows */}
-                <div className="px-5 md:px-6 py-4 space-y-3">
-                  {pendingReceived.map((connection, index) => (
-                    <div
-                      key={connection.id}
-                      className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 bg-warn-soft/50 border border-warn/60 rounded-md"
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-ink text-sm md:text-base truncate">{connection.otherUser.name}</div>
-                          <div className="text-xs md:text-sm text-ink-3 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 shrink-0 md:ml-auto">
-                        <Button
-                          onClick={() => handleAcceptConnection(connection.id)}
-                          variant="success"
-                          size="sm"
-                          className="flex-1 md:flex-none text-xs md:text-sm"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 md:mr-1" />
-                          Accept
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteConnection(connection.id, connection.otherUser.name, 'decline')}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 md:flex-none text-xs md:text-sm"
-                        >
-                          Decline
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </FadeIn>
-          )}
-
-          {/* Active Connections — Main Card */}
-          <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-visible mb-6">
-                <div className="flex items-center justify-between gap-3 border-b border-hairline bg-sunken px-5 py-3.5 md:px-6">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-accent-soft">
-                  <Users className="h-[18px] w-[18px] text-accent-ink" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <h2 className="text-[15px] font-bold text-ink md:text-[17px]">Active Connections</h2>
-                  <p className="text-xs text-ink-3 md:text-[12.5px]">Your collaboration partners</p>
-                </div>
-              </div>
-              {!loading && activeAccepted.length > 0 && (
-                <span className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft px-2 text-xs font-bold tabular text-accent-ink">
-                  {activeAccepted.length}
-                </span>
-              )}
-            </div>
-
-            {/* Body */}
-            <div className="px-5 md:px-6 py-5">
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-4 p-3 rounded-md">
-                      <Skeleton variant="rect" className="w-11 h-11 rounded-md shrink-0" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-36" />
-                        <Skeleton className="h-3 w-48" />
-                      </div>
-                      <Skeleton variant="rect" className="h-8 w-20 rounded-lg shrink-0 hidden md:block" />
-                    </div>
-                  ))}
-                </div>
-              ) : activeAccepted.length === 0 ? (
-                <div className="border-2 border-dashed border-hairline rounded-md">
-                  <EmptyState
-                    icon={Users}
-                    title="No active connections yet"
-                    description="Start connecting with colleagues to find account overlaps"
-                    action={
-                      <Button
-                        onClick={() => setShowInviteModal(true)}
-                        variant="primary"
-                        size="lg"
-                      >
-                        Invite Your First Partner
-                      </Button>
-                    }
-                  />
-                </div>
-              ) : (
-                <div className="space-y-0 divide-y divide-hairline">
-                  <AnimatePresence initial={false}>
-                    {activeAccepted.map((connection) => {
-                      const sharedMatchCount = connection.sharedMatchCount ?? 0;
-                      return (
-                        <motion.div
-                          key={connection.id}
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2, ease: 'easeOut' }}
-                        >
-                          <div className="flex flex-col md:flex-row md:items-center gap-3 py-3.5 px-1 md:px-2 group hover:bg-accent-soft/40 rounded-lg transition-colors duration-150 -mx-1 md:-mx-2">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-ink text-sm md:text-base truncate">{connection.otherUser.name}</div>
-                                <div className="text-xs md:text-sm text-ink-3 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
-                                <div className="mt-1">
-                                  <Badge
-                                    variant={sharedMatchCount > 0 ? 'success' : 'outline'}
-                                    size="sm"
-                                  >
-                                    {sharedMatchCount} {sharedMatchCount === 1 ? 'match' : 'matches'}
-                                  </Badge>
-                                </div>
-                              </div>
-                              <span className="hidden md:inline-block text-xs text-ink-3 shrink-0">
-                                {new Date(connection.createdAt).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric'
-                                })}
-                              </span>
-                            </div>
-                            <div className="flex gap-2 shrink-0 md:ml-2">
-                              <ButtonLink
-                                href={`/dashboard/matches?connection=${connection.id}`}
-                                variant="primary"
-                                size="sm"
-                                className="flex-1 md:flex-none w-full md:w-auto text-xs md:text-sm"
-                              >
-                                <ArrowLeftRight className="w-3.5 h-3.5 md:mr-1" />
-                                <span className="hidden md:inline">Matches</span>
-                                <span className="md:hidden">View Matches</span>
-                              </ButtonLink>
-                              <ConnectionControlMenu
-                                connection={connection}
-                                onMute={handleMuteConnection}
-                                onUnmute={handleUnmuteConnection}
-                                onRemove={handleRemoveConnection}
-                              />
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {mutedAccepted.length > 0 && (
-            <div className="bg-surface rounded-lg border border-warn/70 shadow-card overflow-visible mb-6">
-              <div className="px-5 md:px-6 py-4 border-b border-warn-soft bg-warn-soft/60">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="font-semibold text-warn text-sm md:text-base">
-                      Muted Connections
-                    </h3>
-                    <p className="text-xs text-warn/80">
-                      Hidden from your main account view. They auto-return if new overlaps are found.
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-full bg-warn-soft text-warn text-sm font-bold">
-                    {mutedAccepted.length}
-                  </span>
-                </div>
-              </div>
-              <div className="px-5 md:px-6 py-4 space-y-0 divide-y divide-warn-soft/70">
-                {mutedAccepted.map((connection) => {
-                  const sharedMatchCount = connection.sharedMatchCount ?? 0;
-                  return (
-                    <div
-                      key={connection.id}
-                      className="flex flex-col md:flex-row md:items-center gap-3 py-3.5 px-1 md:px-2"
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="font-semibold text-ink text-sm md:text-base truncate">
-                              {connection.otherUser.name}
-                            </div>
-                            <Badge variant="warning" size="sm">Muted</Badge>
-                          </div>
-                          <div className="text-xs md:text-sm text-ink-3 truncate">
-                            {connection.otherUser.company || connection.otherUser.email}
-                          </div>
-                          <div className="mt-1">
-                            <Badge
-                              variant={sharedMatchCount > 0 ? 'success' : 'outline'}
-                              size="sm"
-                            >
-                              {sharedMatchCount} {sharedMatchCount === 1 ? 'match' : 'matches'}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 shrink-0 md:ml-2">
-                        <ButtonLink
-                          href={`/dashboard/matches?connection=${connection.id}`}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 md:flex-none w-full md:w-auto text-xs md:text-sm"
-                        >
-                          <ArrowLeftRight className="w-3.5 h-3.5 md:mr-1" />
-                          <span className="hidden md:inline">Matches</span>
-                          <span className="md:hidden">View Matches</span>
-                        </ButtonLink>
-                        <ConnectionControlMenu
-                          connection={connection}
-                          onMute={handleMuteConnection}
-                          onUnmute={handleUnmuteConnection}
-                          onRemove={handleRemoveConnection}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Pending Sent */}
-          {pendingSent.length > 0 && (
-            <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden mb-6">
-              <div className="px-5 md:px-6 py-4 border-b border-hairline">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
-                    <Clock className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-ink text-sm md:text-base">Sent Requests</h3>
-                    <p className="text-xs text-ink-3">Connection requests waiting for approval</p>
-                  </div>
-                </div>
-              </div>
-              <div className="px-5 md:px-6 py-4 space-y-3">
-                {pendingSent.map((connection) => (
-                  <div
-                    key={connection.id}
-                    className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 border border-hairline rounded-md"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-ink text-sm md:text-base truncate">{connection.otherUser.name}</div>
-                        <div className="text-xs md:text-sm text-ink-3 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0 md:ml-auto">
-                      <Badge variant="info" size="sm">Pending</Badge>
-                      <Button
-                        onClick={() => handleDeleteConnection(connection.id, connection.otherUser.name, 'cancel')}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs md:text-sm"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Sent Invites */}
-          {invites.length > 0 && (
-            <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden">
-              <div className="px-5 md:px-6 py-4 border-b border-hairline">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
-                    <Send className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-ink text-sm md:text-base">Sent Invites</h3>
-                    <p className="text-xs text-ink-3">Email invitations you&apos;ve sent to partners</p>
-                  </div>
-                </div>
-              </div>
-              <div className="px-5 md:px-6 py-4 space-y-0 divide-y divide-hairline">
-                {invites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex flex-col md:flex-row md:items-center gap-2 md:gap-0 md:justify-between py-3.5 px-1"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 shadow-md ${
-                        invite.status === 'accepted'
-                          ? 'bg-ok'
-                          : invite.status === 'pending'
-                            ? 'bg-accent'
-                            : 'bg-surface-2'
-                      }`}>
-                        <Mail className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-ink text-sm md:text-base">
-                          {invite.invitedName || invite.invitedEmail}
-                        </div>
-                        {invite.invitedName && (
-                          <div className="text-xs md:text-sm text-ink-3">{invite.invitedEmail}</div>
-                        )}
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <Badge
-                            variant={
-                              invite.status === 'pending' ? 'info' :
-                              invite.status === 'accepted' ? 'success' :
-                              'default'
-                            }
-                            size="sm"
-                          >
-                            {invite.status.charAt(0).toUpperCase() + invite.status.slice(1)}
-                          </Badge>
-                          <span className="text-xs text-ink-3">
-                            {new Date(invite.createdAt).toLocaleDateString('en-US', {
-                              month: 'short', day: 'numeric'
-                            })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {invite.status === 'pending' && (
-                      <Button
-                        onClick={async () => {
-                          try {
-                            await invitesApi.revoke(invite.id);
-                            toast.success('Invite revoked');
-                            void loadData();
-                          } catch {
-                            toast.error('Failed to revoke invite');
-                          }
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs md:text-sm self-end md:self-auto"
-                      >
-                        Revoke
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </PageTransition>
-        </div>
       </main>
 
       {/* Invite Modal */}
