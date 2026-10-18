@@ -6,6 +6,7 @@ export { Badge } from './Badge';
 export { Card, CardHeader, CardTitle, CardDescription } from './Card';
 export { EmptyState } from './EmptyState';
 export { Header, PageHeader } from './DashboardHeader';
+export { SiteFooter, LEGAL_LINKS } from './SiteFooter';
 export { NotificationBell } from './NotificationBell';
 export { Skeleton, SkeletonCard, SkeletonListItem, SkeletonTable, SkeletonMatchCard } from './Skeleton';
 export { PageTransition, StaggerList, StaggerItem, FadeIn, LoadingScreen } from './PageTransition';

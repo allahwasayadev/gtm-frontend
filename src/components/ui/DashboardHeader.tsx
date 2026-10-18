@@ -7,50 +7,53 @@ import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { getUserInitials } from '@/lib/user-initials';
 import { NotificationBell } from './NotificationBell';
-import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info, UsersRound, Shield, Scale } from 'lucide-react';
+import { LEGAL_LINKS } from './SiteFooter';
+import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info, UsersRound, Shield, Scale, MessageSquare } from 'lucide-react';
+
+const PUBLIC_NAV = [
+  { name: 'About', href: '/about', icon: Info },
+  { name: 'Privacy', href: '/privacy', icon: Shield },
+  { name: 'Terms', href: '/terms', icon: Scale },
+];
+
+const LEGAL_ICONS: Record<string, typeof Info> = {
+  '/about': Info,
+  '/privacy': Shield,
+  '/terms': Scale,
+  '/sms-opt-in': MessageSquare,
+};
 
 /**
  * Harbour top navigation.
  *
- * Which items appear, where they point and who sees them is unchanged: the
- * three public items on their own when signed out; Dashboard, Connections and
- * Matches added when signed in; Upload inserted only while the account has no
- * list; Users inserted before About only for an Admin. The account menu, the
- * bell and the sign-out action behave as before.
+ * Signed out, the primary navigation is the public one: About, Privacy, Terms,
+ * with Log in and Sign up.
+ *
+ * Signed in, the primary navigation holds only the app's own destinations —
+ * Dashboard, Connections, Matches, plus Upload while the account has no list
+ * and Users for an Admin. The legal and informational destinations moved into
+ * the account menu and the footer. Every destination is preserved; previously
+ * an Admin without a list saw seven tabs, which pushed the core sections into
+ * a horizontal scroller.
  */
 export function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasLists, setHasLists] = useState<boolean | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuMaxHeight, setMenuMaxHeight] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const menuId = useId();
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) closeMenu();
-    };
-    // Escape closes the menu and hands focus back to the control that opened
-    // it, so keyboard users are not dropped at the top of the document.
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        closeMenu();
-        triggerRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isMenuOpen, closeMenu]);
+  const closeAndRestore = useCallback(() => {
+    setIsMenuOpen(false);
+    triggerRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -59,27 +62,99 @@ export function Header() {
       .catch(() => setHasLists(false));
   }, [user]);
 
+  /** App destinations only. Legal lives in the menu and the footer. */
   const navItems = useMemo(() => {
-    const publicItems = [
-      { name: 'About', href: '/about', icon: Info },
-      { name: 'Privacy', href: '/privacy', icon: Shield },
-      { name: 'Terms', href: '/terms', icon: Scale },
-    ];
-    if (!user) return publicItems;
+    if (!user) return PUBLIC_NAV;
     const base = [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
       { name: 'Connections', href: '/dashboard/connections', icon: Users },
       { name: 'Matches', href: '/dashboard/matches', icon: ClipboardCheck },
-      ...publicItems,
     ];
     if (hasLists === false) {
       base.splice(1, 0, { name: 'Upload', href: '/dashboard/upload', icon: Upload });
     }
     if (user?.roles?.includes('Admin')) {
-      base.splice(base.indexOf(base.find(i => i.name === 'About')!), 0, { name: 'Users', href: '/dashboard/users', icon: UsersRound });
+      base.push({ name: 'Users', href: '/dashboard/users', icon: UsersRound });
     }
     return base;
   }, [hasLists, user]);
+
+  /** Everything inside the account menu, in focus order. */
+  const menuItems = useMemo(
+    () => [
+      { kind: 'link' as const, href: '/dashboard/profile', label: 'Your Profile', icon: User },
+      { kind: 'link' as const, href: '/dashboard/connections', label: 'Settings', icon: Settings },
+      ...LEGAL_LINKS.map(l => ({ kind: 'link' as const, href: l.href, label: l.name, icon: LEGAL_ICONS[l.href] ?? Info })),
+      { kind: 'action' as const, label: 'Sign out', icon: LogOut },
+    ],
+    []
+  );
+
+  /** Bound the menu to the space actually below the trigger, measured. */
+  const measureMenu = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const gap = 8;
+    const bottomGutter = 16;
+    setMenuMaxHeight(Math.max(160, window.innerHeight - rect.bottom - gap - bottomGutter));
+  }, []);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    measureMenu();
+    setActiveIndex(0);
+    itemRefs.current[0]?.focus();
+
+    const onPointerDown = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) closeMenu();
+    };
+    const onViewportChange = () => measureMenu();
+
+    document.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('resize', onViewportChange);
+    window.addEventListener('scroll', onViewportChange, true);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('resize', onViewportChange);
+      window.removeEventListener('scroll', onViewportChange, true);
+    };
+  }, [isMenuOpen, closeMenu, measureMenu]);
+
+  /** Real menu keyboard behaviour, to match the menu semantics. */
+  const onMenuKeyDown = (event: React.KeyboardEvent) => {
+    const last = menuItems.length - 1;
+    const focusItem = (i: number) => {
+      setActiveIndex(i);
+      itemRefs.current[i]?.focus();
+    };
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        focusItem(activeIndex >= last ? 0 : activeIndex + 1);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        focusItem(activeIndex <= 0 ? last : activeIndex - 1);
+        break;
+      case 'Home':
+        event.preventDefault();
+        focusItem(0);
+        break;
+      case 'End':
+        event.preventDefault();
+        focusItem(last);
+        break;
+      case 'Escape':
+        event.preventDefault();
+        closeAndRestore();
+        break;
+      case 'Tab':
+        // Tab leaves the menu rather than cycling inside it, which is what a
+        // menu button is supposed to do.
+        closeMenu();
+        break;
+    }
+  };
 
   const isActive = (href: string) =>
     href === '/dashboard' ? pathname === href : pathname.startsWith(href);
@@ -99,7 +174,7 @@ export function Header() {
           </Link>
 
           <nav aria-label="Primary" className="hidden lg:flex min-w-0 shrink items-center">
-            <div className="flex min-w-0 items-center gap-1 overflow-x-auto scrollbar-hide rounded-md bg-sunken p-1">
+            <div className="flex min-w-0 items-center gap-1 rounded-md bg-sunken p-1">
               {navItems.map(item => {
                 const active = isActive(item.href);
                 return (
@@ -107,7 +182,7 @@ export function Header() {
                     key={item.name}
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
-                    className={`relative flex min-h-[44px] items-center gap-2 rounded-sm px-4 text-sm font-bold whitespace-nowrap transition-colors ${
+                    className={`flex min-h-[44px] items-center gap-2 rounded-sm px-4 text-sm font-bold whitespace-nowrap transition-colors ${
                       active ? 'bg-surface text-ink shadow-e1' : 'text-ink-2 hover:text-ink hover:bg-surface/60'
                     }`}
                   >
@@ -124,11 +199,17 @@ export function Header() {
               <>
                 <NotificationBell />
 
-                <div ref={menuRef} className="relative">
+                <div ref={wrapperRef} className="relative">
                   <button
                     ref={triggerRef}
                     type="button"
                     onClick={() => setIsMenuOpen(prev => !prev)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setIsMenuOpen(true);
+                      }
+                    }}
                     aria-expanded={isMenuOpen}
                     aria-haspopup="menu"
                     aria-controls={isMenuOpen ? menuId : undefined}
@@ -146,30 +227,52 @@ export function Header() {
                   {isMenuOpen && (
                     <div
                       id={menuId}
-                      className="ovrlap-panel absolute right-0 mt-2 flex w-[min(16rem,calc(100vw-2rem))] max-h-[calc(100vh-5rem)] origin-top-right flex-col overflow-hidden rounded-lg border border-hairline bg-surface shadow-e3"
+                      role="menu"
+                      aria-label="Account and site menu"
+                      onKeyDown={onMenuKeyDown}
+                      style={menuMaxHeight ? { maxHeight: menuMaxHeight } : undefined}
+                      className="ovrlap-panel absolute right-0 mt-2 flex w-[min(16rem,calc(100vw-2rem))] origin-top-right flex-col overflow-hidden rounded-lg border border-hairline bg-surface shadow-e3"
                     >
                       <div className="shrink-0 border-b border-hairline px-4 py-3">
                         <p className="text-sm font-bold text-ink truncate">{user?.name}</p>
                         <p className="text-xs text-ink-3 truncate mt-0.5">{user?.email}</p>
                         {user?.company && <p className="text-xs text-accent-ink font-bold mt-1 truncate">{user.company}</p>}
                       </div>
-                      {/* The menu is bounded and scrolls inside itself, so no action
-                          is lost on a short or landscape screen. */}
+
+                      {/* Bounded against the space actually below the trigger, so
+                          no action is lost on a short or landscape screen. */}
                       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1">
-                        <Link href="/dashboard/profile" onClick={closeMenu} className="flex min-h-[44px] items-center gap-3 px-4 text-sm text-ink hover:bg-surface-2 transition-colors">
-                          <User className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
-                          Your Profile
-                        </Link>
-                        <Link href="/dashboard/connections" onClick={closeMenu} className="flex min-h-[44px] items-center gap-3 px-4 text-sm text-ink hover:bg-surface-2 transition-colors">
-                          <Settings className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
-                          Settings
-                        </Link>
-                      </div>
-                      <div className="shrink-0 border-t border-hairline py-1">
-                        <button type="button" onClick={handleLogout} className="flex min-h-[44px] w-full items-center gap-3 px-4 text-sm text-danger hover:bg-danger-soft transition-colors">
-                          <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
-                          Sign out
-                        </button>
+                        {menuItems.map((item, index) =>
+                          item.kind === 'link' ? (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              role="menuitem"
+                              tabIndex={index === activeIndex ? 0 : -1}
+                              ref={(el) => { itemRefs.current[index] = el; }}
+                              onClick={closeMenu}
+                              onFocus={() => setActiveIndex(index)}
+                              className="flex min-h-[44px] items-center gap-3 px-4 text-sm text-ink hover:bg-surface-2 focus:bg-surface-2 focus:outline-none transition-colors"
+                            >
+                              <item.icon className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
+                              {item.label}
+                            </Link>
+                          ) : (
+                            <button
+                              key={item.label}
+                              type="button"
+                              role="menuitem"
+                              tabIndex={index === activeIndex ? 0 : -1}
+                              ref={(el) => { itemRefs.current[index] = el; }}
+                              onClick={handleLogout}
+                              onFocus={() => setActiveIndex(index)}
+                              className="flex min-h-[44px] w-full items-center gap-3 border-t border-hairline px-4 text-sm text-danger hover:bg-danger-soft focus:bg-danger-soft focus:outline-none transition-colors"
+                            >
+                              <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                              {item.label}
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
                   )}
