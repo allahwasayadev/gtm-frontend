@@ -110,8 +110,8 @@ export default function PrivacyPage() {
               {/* Information We Collect */}
               <PolicySection
                 icon={Database}
-                iconBg="bg-accent"
-                iconColor="text-accent"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Information We Collect"
               >
                 <p className="font-medium text-ink">
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
               <PolicySection
                 icon={User}
                 iconBg="bg-accent-soft"
-                iconColor="text-accent"
+                iconColor="text-accent-ink"
                 title="Account Information"
               >
                 <p>When you create an account, we collect:</p>
@@ -205,7 +205,7 @@ export default function PrivacyPage() {
               <PolicySection
                 icon={Settings}
                 iconBg="bg-accent-soft"
-                iconColor="text-accent"
+                iconColor="text-accent-ink"
                 title="How We Use Your Information"
               >
                 <p>We use the information collected to:</p>
@@ -233,8 +233,8 @@ export default function PrivacyPage() {
               {/* Data Sharing */}
               <PolicySection
                 icon={Share2}
-                iconBg="bg-accent"
-                iconColor="text-accent"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Data Sharing"
               >
                 <p className="font-medium text-ink">
@@ -258,8 +258,8 @@ export default function PrivacyPage() {
               {/* Data Retention */}
               <PolicySection
                 icon={Clock}
-                iconBg="bg-orange-100"
-                iconColor="text-orange-600"
+                iconBg="bg-warn-soft"
+                iconColor="text-warn"
                 title="Data Retention"
               >
                 <p>
@@ -272,7 +272,7 @@ export default function PrivacyPage() {
                     'Certain limited technical records may be temporarily retained for system integrity, security monitoring, and operational purposes.',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0 mt-2" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-warn shrink-0 mt-2" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -282,8 +282,8 @@ export default function PrivacyPage() {
               {/* Third-Party Services */}
               <PolicySection
                 icon={Server}
-                iconBg="bg-accent"
-                iconColor="text-accent"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Third-Party Services"
               >
                 <p>
@@ -358,8 +358,8 @@ export default function PrivacyPage() {
               {/* Changes to This Policy */}
               <PolicySection
                 icon={RefreshCw}
-                iconBg="bg-teal-100"
-                iconColor="text-teal-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Changes to This Policy"
               >
                 <p>

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, useId } from 'react';
 import { createPortal } from 'react-dom';
+import { pushOverlay, popOverlay, isTopOverlay } from '@/lib/overlay-stack';
 import { ChevronDown, Check } from 'lucide-react';
 
 interface DropdownOption {
@@ -35,7 +36,7 @@ export function Dropdown({
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [listPosition, setListPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [listPosition, setListPosition] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -79,16 +80,46 @@ export function Dropdown({
     setHighlightedIndex(start);
   }, [disabled, selectedIndex, options]);
 
+  /**
+   * Place the listbox against the space that actually exists.
+   *
+   * It used to be pinned to `trigger.bottom + 4` with a fixed `max-h-60`, so on
+   * a short screen — or inside a sheet, where the page behind is scroll-locked
+   * — the last options fell past the bottom of the viewport and could not be
+   * reached at all. Now it flips above the trigger when that side has more
+   * room, caps its height to whatever is available, and is clamped
+   * horizontally.
+   */
   const updateListPosition = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const padding = 4;
-    setListPosition({
-      top: rect.bottom + padding,
-      left: rect.left,
-      width: Math.max(rect.width, 180),
-    });
-  }, []);
+    const GAP = 4;
+    const EDGE = 8;
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+
+    const width = Math.min(Math.max(rect.width, 180), vw - 2 * EDGE);
+    let left = rect.left;
+    if (left + width > vw - EDGE) left = vw - EDGE - width;
+    if (left < EDGE) left = EDGE;
+
+    const roomBelow = vh - rect.bottom - GAP - EDGE;
+    const roomAbove = rect.top - GAP - EDGE;
+    const wanted = Math.min(options.length * 44 + 12, 240);
+
+    let top: number;
+    let maxHeight: number;
+    if (wanted <= roomBelow || roomBelow >= roomAbove) {
+      top = rect.bottom + GAP;
+      maxHeight = Math.max(88, Math.min(wanted, roomBelow));
+    } else {
+      maxHeight = Math.max(88, Math.min(wanted, roomAbove));
+      top = rect.top - GAP - maxHeight;
+    }
+    top = Math.max(EDGE, Math.min(top, vh - EDGE - maxHeight));
+
+    setListPosition({ top, left, width, maxHeight });
+  }, [options.length]);
 
   useLayoutEffect(() => {
     if (!isOpen) return;
@@ -112,15 +143,23 @@ export function Dropdown({
       if (!inTrigger && !inList) close();
     };
 
+    // Take a ticket so Escape only reaches the frontmost overlay: inside a
+    // sheet, one press must close this listbox and leave the sheet open.
+    const layer = pushOverlay();
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close();
+      if (event.key !== 'Escape' || !isTopOverlay(layer)) return;
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      close();
+      triggerRef.current?.focus();
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleEscape, true);
     return () => {
+      popOverlay(layer);
       document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleEscape, true);
     };
   }, [isOpen, close]);
 
@@ -236,12 +275,13 @@ export function Dropdown({
             role="listbox"
             aria-label={ariaLabel}
             tabIndex={-1}
-            className="fixed z-1000 py-1.5 px-1.5 bg-surface rounded-md border border-hairline shadow-e2 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
+            className="fixed z-1000 py-1.5 px-1.5 bg-surface rounded-md border border-hairline shadow-e2 overflow-y-auto overflow-x-hidden overscroll-contain focus:outline-none"
             style={{
               top: listPosition.top,
               left: listPosition.left,
               width: listPosition.width,
               minWidth: listPosition.width,
+              maxHeight: listPosition.maxHeight,
             }}
           >
             {options.map((option, index) => {

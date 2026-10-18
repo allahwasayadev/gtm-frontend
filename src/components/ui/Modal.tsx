@@ -4,6 +4,7 @@ import { useEffect, useRef, useId, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { getFocusable } from '@/lib/focus';
+import { pushOverlay, popOverlay, isTopOverlay } from '@/lib/overlay-stack';
 
 /**
  * Shared overlay behaviour for every dialog and sheet in the app.
@@ -37,6 +38,9 @@ function useOverlayBehaviour(
     if (!isOpen) return;
 
     restoreTo.current = document.activeElement as HTMLElement | null;
+    // The dialog is a layer too: a dropdown opened inside it sits above, and
+    // Escape must reach that one first.
+    const layer = pushOverlay();
 
     const node = panelRef.current;
     const candidates = getFocusable(node);
@@ -50,6 +54,7 @@ function useOverlayBehaviour(
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (!isTopOverlay(layer)) return; // something is open on top of us
         event.stopPropagation();
         onCloseRef.current();
         return;
@@ -88,6 +93,7 @@ function useOverlayBehaviour(
 
     document.addEventListener('keydown', onKeyDown, true);
     return () => {
+      popOverlay(layer);
       document.removeEventListener('keydown', onKeyDown, true);
       document.body.style.overflow = overflow;
       document.body.style.paddingRight = paddingRight;

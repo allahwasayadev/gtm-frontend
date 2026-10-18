@@ -112,7 +112,7 @@ export default function TermsPage() {
               <TermsSection
                 icon={FileText}
                 iconBg="bg-accent-soft"
-                iconColor="text-accent"
+                iconColor="text-accent-ink"
                 title="Description of the Service"
               >
                 <p>
@@ -138,8 +138,8 @@ export default function TermsPage() {
               {/* Account Responsibilities */}
               <TermsSection
                 icon={KeyRound}
-                iconBg="bg-accent"
-                iconColor="text-accent"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Account Responsibilities"
               >
                 <p>
@@ -156,7 +156,7 @@ export default function TermsPage() {
               <TermsSection
                 icon={Upload}
                 iconBg="bg-accent-soft"
-                iconColor="text-accent"
+                iconColor="text-accent-ink"
                 title="Uploading Account Lists"
               >
                 <ul className="space-y-3 ml-1">
@@ -176,8 +176,8 @@ export default function TermsPage() {
               {/* User Connections */}
               <TermsSection
                 icon={Link2}
-                iconBg="bg-accent"
-                iconColor="text-accent"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="User Connections"
               >
                 <ul className="space-y-3 ml-1">
@@ -198,8 +198,8 @@ export default function TermsPage() {
               {/* SMS Verification */}
               <TermsSection
                 icon={Smartphone}
-                iconBg="bg-teal-100"
-                iconColor="text-teal-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="SMS Verification"
               >
                 <p>
@@ -220,7 +220,7 @@ export default function TermsPage() {
                     'Carriers are not liable for delayed or undelivered messages.',
                   ].map((item, i) => (
                     <p key={i} className="flex items-start gap-3 text-sm text-ink-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 mt-2" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
                       <span>{item}</span>
                     </p>
                   ))}
@@ -255,8 +255,8 @@ export default function TermsPage() {
               {/* Service Availability */}
               <TermsSection
                 icon={Cloud}
-                iconBg="bg-orange-100"
-                iconColor="text-orange-600"
+                iconBg="bg-warn-soft"
+                iconColor="text-warn"
                 title="Service Availability"
               >
                 <p>
@@ -293,8 +293,8 @@ export default function TermsPage() {
               {/* Changes to Terms */}
               <TermsSection
                 icon={RefreshCw}
-                iconBg="bg-accent"
-                iconColor="text-accent"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Changes to Terms"
               >
                 <p>
