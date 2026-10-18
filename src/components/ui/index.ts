@@ -19,3 +19,4 @@ export { OnboardingTour, useOnboardingTour } from './OnboardingTour';
 export { CodeInput } from './CodeInput';
 export { CountryCodeSelect, COUNTRY_CODES } from './CountryCodeSelect';
 export { UsPhoneInput } from './UsPhoneInput';
+export { QuickAction, QuickActionGrid } from './QuickAction';

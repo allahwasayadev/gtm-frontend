@@ -26,6 +26,8 @@ import {
   FadeIn,
   LoadingScreen,
   AccountMatchTooltip,
+  QuickAction,
+  QuickActionGrid,
   InviteModal,
   FilterSheet,
   OnboardingTour,
@@ -39,7 +41,6 @@ import {
   CloudUpload,
   Mail,
   ClipboardCheck,
-  ChevronRight,
   Pencil,
   Plus,
   SlidersHorizontal,
@@ -399,107 +400,46 @@ export default function DashboardPage() {
             <p className="md:hidden mb-1.5 px-0.5 text-[11px] font-bold uppercase tracking-wider text-ink-3">
               Quick actions
             </p>
-            <div className="grid grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-8">
+            <QuickActionGrid>
               {activeList ? (
-                <Link
+                <QuickAction
                   href={`/dashboard/lists/${activeList.id}`}
-                  className="group"
-                  data-tour="upload-list"
-                >
-                  <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-surface rounded-xl md:rounded-2xl border border-hairline shadow-card hover:shadow-card-hover hover:border-accent-soft transition-all duration-200">
-                    <div className="w-7 h-7 md:w-10 md:h-10 bg-accent-soft rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                      <FileText className="w-4 h-4 md:w-5 md:h-5 text-accent" />
-                    </div>
-                    <div className="max-md:w-full md:flex-1 min-w-0">
-                      <div className="font-semibold text-ink text-[11.5px] max-md:leading-tight md:text-sm">
-                        View List
-                      </div>
-                      <div className="hidden md:block text-xs text-ink-3">
-                        {activeList.name}
-                      </div>
-                    </div>
-                    <ChevronRight className="hidden md:block w-5 h-5 text-ink-3 shrink-0" />
-                  </div>
-                </Link>
+                  icon={FileText}
+                  label="View List"
+                  detail={activeList.name}
+                  dataTour="upload-list"
+                />
               ) : (
-                <Link
+                <QuickAction
                   href="/dashboard/upload"
-                  className="group"
-                  data-tour="upload-list"
-                >
-                  <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-surface rounded-xl md:rounded-2xl border border-hairline shadow-card hover:shadow-card-hover hover:border-accent-soft transition-all duration-200">
-                    <div className="w-7 h-7 md:w-10 md:h-10 bg-accent-soft rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                      <CloudUpload className="w-4 h-4 md:w-5 md:h-5 text-accent" />
-                    </div>
-                    <div className="max-md:w-full md:flex-1 min-w-0">
-                      <div className="font-semibold text-ink text-[11.5px] max-md:leading-tight md:text-sm">
-                        Upload List
-                      </div>
-                      <div className="hidden md:block text-xs text-ink-3">
-                        Add account list
-                      </div>
-                    </div>
-                    <ChevronRight className="hidden md:block w-5 h-5 text-ink-3 shrink-0" />
-                  </div>
-                </Link>
+                  icon={CloudUpload}
+                  label="Upload List"
+                  detail="Start mapping"
+                  dataTour="upload-list"
+                />
               )}
-              <button
-                onClick={() => setShowInviteModal(true)}
-                className="group text-left max-md:h-full"
-                data-tour="invite-partner"
-              >
-                <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-surface rounded-xl md:rounded-2xl border border-hairline shadow-card hover:shadow-card-hover hover:border-accent transition-all duration-200">
-                  <div className="w-7 h-7 md:w-10 md:h-10 bg-accent rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <Mail className="w-4 h-4 md:w-5 md:h-5 text-accent" />
-                  </div>
-                  <div className="max-md:w-full md:flex-1 min-w-0">
-                    <div className="font-semibold text-ink text-[11.5px] max-md:leading-tight md:text-sm">
-                      Invite Partner
-                    </div>
-                    <div className="hidden md:block text-xs text-ink-3">
-                      Send email invite
-                    </div>
-                  </div>
-                  <ChevronRight className="hidden md:block w-5 h-5 text-ink-3 shrink-0" />
-                </div>
-              </button>
-              <Link href="/dashboard/connections" className="group">
-                <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-surface rounded-xl md:rounded-2xl border border-hairline shadow-card hover:shadow-card-hover hover:border-ok transition-all duration-200">
-                  <div className="w-7 h-7 md:w-10 md:h-10 bg-ok-soft rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <Users className="w-4 h-4 md:w-5 md:h-5 text-ok" />
-                  </div>
-                  <div className="max-md:w-full md:flex-1 min-w-0">
-                    <div className="font-semibold text-ink text-[11.5px] max-md:leading-tight md:text-sm">
-                      Connections
-                    </div>
-                    <div className="hidden md:block text-xs text-ink-3">
-                      Manage partners
-                    </div>
-                  </div>
-                  <ChevronRight className="hidden md:block w-5 h-5 text-ink-3 shrink-0" />
-                </div>
-              </Link>
-              <Link
+              <QuickAction
+                href="/dashboard/connections"
+                icon={Mail}
+                label="Invite Partner"
+                detail="Send email invite"
+                dataTour="invite-partner"
+              />
+              <QuickAction
+                href="/dashboard/connections"
+                icon={Users}
+                label="Connections"
+                detail="Manage partners"
+                tone="ok"
+              />
+              <QuickAction
                 href="/dashboard/matches"
-                className="group"
-                data-tour="view-matches"
-              >
-                <div className="max-md:h-full flex flex-col md:flex-row items-center text-center md:text-left gap-1 md:gap-3 px-1 py-2.5 md:p-4 bg-surface rounded-xl md:rounded-2xl border border-hairline shadow-card hover:shadow-card-hover hover:border-accent transition-all duration-200">
-                  <div className="w-7 h-7 md:w-10 md:h-10 bg-accent rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <ClipboardCheck className="w-4 h-4 md:w-5 md:h-5 text-accent" />
-                  </div>
-                  <div className="max-md:w-full md:flex-1 min-w-0">
-                    <div className="font-semibold text-ink text-[11.5px] max-md:leading-tight md:text-sm">
-                      View Matches
-                    </div>
-                    <div className="hidden md:block text-xs text-ink-3">
-                      Account overlaps
-                    </div>
-                  </div>
-                  <ChevronRight className="hidden md:block w-5 h-5 text-ink-3 shrink-0" />
-                </div>
-              </Link>
-            </div>
+                icon={ClipboardCheck}
+                label="View Matches"
+                detail="Account overlaps"
+                dataTour="view-matches"
+              />
+            </QuickActionGrid>
           </FadeIn>
 
           <FadeIn delay={0.2}>
