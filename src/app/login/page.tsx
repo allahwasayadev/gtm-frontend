@@ -126,7 +126,7 @@ function LoginContent() {
           </div>
 
           {/* Form Card */}
-          <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
+          <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
                 label="Email Address"

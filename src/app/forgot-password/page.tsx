@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4">
             <KeyRound className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-ink mb-2">
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
+        <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
           {submitted ? (
             <>
               <p className="text-sm text-ink-2 leading-relaxed">

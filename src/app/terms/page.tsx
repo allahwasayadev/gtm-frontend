@@ -35,11 +35,11 @@ interface TermsSectionProps {
 function TermsSection({ icon: Icon, iconBg, iconColor, title, children }: TermsSectionProps) {
   return (
     <motion.section
-      className="bg-surface rounded-2xl p-8 sm:p-10 shadow-card border border-hairline"
+      className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
       variants={sectionVariants}
     >
       <div className="flex items-center gap-3 mb-6">
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+        <div className={`w-10 h-10 rounded-md ${iconBg} flex items-center justify-center shrink-0`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-ink">{title}</h2>
@@ -65,7 +65,7 @@ export default function TermsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent-soft mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-accent-soft mb-6">
                   <Scale className="w-8 h-8 text-accent" />
                 </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-ink mb-6 leading-tight">
@@ -100,7 +100,7 @@ export default function TermsPage() {
             >
               {/* Agreement Notice */}
               <motion.div
-                className=" to-white rounded-2xl p-8 sm:p-10 shadow-card border border-warn/60"
+                className=" to-white rounded-lg p-8 sm:p-10 shadow-card border border-warn/60"
                 variants={sectionVariants}
               >
                 <p className="text-lg text-ink-2 leading-relaxed">
@@ -145,7 +145,7 @@ export default function TermsPage() {
                 <p>
                   Users are responsible for maintaining the confidentiality of their account credentials and for all activity associated with their account.
                 </p>
-                <div className="bg-accent rounded-xl p-5 border border-accent">
+                <div className="bg-accent rounded-md p-5 border border-accent">
                   <p className="font-medium text-ink text-sm">
                     You agree to provide accurate and complete information when creating an account.
                   </p>
@@ -211,7 +211,7 @@ export default function TermsPage() {
                 <p>
                   Consenting to SMS is optional and is not a condition of creating or using an Ovrlap account. Providing a phone number is also optional. Declining does not restrict access to any part of the service, and consent may be withdrawn at any time from profile settings, or delivery stopped by replying STOP.
                 </p>
-                <div className="bg-sunken rounded-xl p-5 space-y-3 border border-hairline">
+                <div className="bg-sunken rounded-md p-5 space-y-3 border border-hairline">
                   {[
                     'Ovrlap sends no marketing or promotional text messages.',
                     'Message frequency varies — a message is sent only when the user requests a verification code.',
@@ -225,7 +225,7 @@ export default function TermsPage() {
                     </p>
                   ))}
                 </div>
-                <div className="bg-accent-soft rounded-xl p-5 border border-accent-soft">
+                <div className="bg-accent-soft rounded-md p-5 border border-accent-soft">
                   <p className="font-semibold text-accent-ink leading-relaxed">
                     No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
                   </p>
@@ -269,11 +269,11 @@ export default function TermsPage() {
 
               {/* Limitation of Liability */}
               <motion.section
-                className="bg-ink rounded-2xl p-8 sm:p-10 shadow-xl"
+                className="bg-ink rounded-lg p-8 sm:p-10 shadow-xl"
                 variants={sectionVariants}
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-surface/10 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-md bg-surface/10 flex items-center justify-center shrink-0">
                     <ShieldAlert className="w-5 h-5 text-warn-soft" />
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-white">Limitation of Liability</h2>
@@ -307,7 +307,7 @@ export default function TermsPage() {
 
               {/* Contact */}
               <motion.div className="text-center" variants={sectionVariants}>
-                <div className="bg-surface rounded-2xl p-10 shadow-card border border-hairline">
+                <div className="bg-surface rounded-lg p-10 shadow-card border border-hairline">
                   <h2 className="text-2xl font-bold text-ink mb-3">Contact</h2>
                   <p className="text-ink-2 mb-6 text-lg">
                     Questions regarding these Terms and Conditions can be directed to:

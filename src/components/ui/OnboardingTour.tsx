@@ -208,7 +208,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="absolute pointer-events-none rounded-2xl"
+            className="absolute pointer-events-none rounded-lg"
             style={{
               top: spotlightRect.top,
               left: spotlightRect.left,
@@ -233,7 +233,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
             aria-labelledby="onboarding-title"
             aria-describedby="onboarding-body"
           >
-            <div className="bg-surface rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
+            <div className="bg-surface rounded-lg shadow-2xl shadow-black/20 overflow-hidden">
               <div className="px-6 pt-5 pb-4 border-b border-hairline">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -259,7 +259,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                 </div>
                 <div className="flex items-start gap-4">
                   <div
-                    className={`w-12 h-12 ${step.iconBg} rounded-xl flex items-center justify-center shrink-0 shadow-lg`}
+                    className={`w-12 h-12 ${step.iconBg} rounded-md flex items-center justify-center shrink-0 shadow-lg`}
                   >
                     <StepIcon className="w-6 h-6 text-white" aria-hidden />
                   </div>

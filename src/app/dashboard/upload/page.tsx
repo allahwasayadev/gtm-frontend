@@ -101,13 +101,13 @@ export default function UploadPage() {
       />
         <PageTransition>
           <form onSubmit={handleSubmit}>
-            <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-hidden">
+            <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden">
               {/* Gradient Header */}
               <div className="bg-accent px-5 sm:px-8 py-5 sm:py-6 relative overflow-hidden">
                 <div className="absolute -top-8 -right-8 w-28 h-28 bg-surface/10 rounded-full" />
                 <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-surface/5 rounded-full" />
                 <div className="relative flex items-center gap-4">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 bg-surface/20 backdrop-blur-sm rounded-md flex items-center justify-center shadow-e2">
                     <CloudUpload className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
@@ -140,7 +140,7 @@ export default function UploadPage() {
                       value={listName}
                       onChange={(e) => setListName(e.target.value)}
                       placeholder="e.g., Q1 2025 Target Accounts"
-                      className="w-full px-4 py-2.5 border border-hairline rounded-xl text-sm focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-sm transition-all text-ink placeholder:text-ink-3 bg-surface"
+                      className="w-full px-4 py-2.5 border border-hairline rounded-md text-sm focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-sm transition-all text-ink placeholder:text-ink-3 bg-surface"
                     />
                   </div>
                 </div>
@@ -166,7 +166,7 @@ export default function UploadPage() {
                       onDragLeave={handleDrag}
                       onDragOver={handleDrag}
                       onDrop={handleDrop}
-                      className={`border-2 border-dashed rounded-xl text-center transition-all duration-200 ${
+                      className={`border-2 border-dashed rounded-md text-center transition-all duration-200 ${
                         dragActive
                           ? 'border-accent bg-accent-soft/80 shadow-e2 p-6 sm:p-10'
                           : file
@@ -182,7 +182,7 @@ export default function UploadPage() {
                           className="flex items-center gap-3 sm:gap-4"
                         >
                           <motion.div
-                            className="w-10 h-10 sm:w-12 sm:h-12 bg-ok rounded-xl flex items-center justify-center shrink-0 shadow-e2"
+                            className="w-10 h-10 sm:w-12 sm:h-12 bg-ok rounded-md flex items-center justify-center shrink-0 shadow-e2"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
@@ -203,14 +203,14 @@ export default function UploadPage() {
                         </motion.div>
                       ) : (
                         <div>
-                          <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-e2">
+                          <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4 shadow-e2">
                             <CloudUpload className="w-7 h-7 text-white" />
                           </div>
                           <p className="text-base font-semibold text-ink mb-1">
                             Drag and drop your file here
                           </p>
                           <p className="text-sm text-ink-3 mb-4">or</p>
-                          <label className="cursor-pointer inline-flex items-center justify-center px-5 py-2.5 text-white font-medium rounded-xl hover: hover: transition-all duration-200 shadow-e2">
+                          <label className="cursor-pointer inline-flex items-center justify-center px-5 py-2.5 text-white font-medium rounded-md hover: hover: transition-all duration-200 shadow-e2">
                             Browse Files
                             <input
                               type="file"
@@ -229,7 +229,7 @@ export default function UploadPage() {
                 </div>
 
                 {/* Info Banner */}
-                <div className="mt-6 p-3.5 sm:p-4 border border-accent rounded-xl">
+                <div className="mt-6 p-3.5 sm:p-4 border border-accent rounded-md">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
                       <Info className="w-4 h-4 text-white" />

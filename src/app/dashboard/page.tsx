@@ -252,7 +252,7 @@ export default function DashboardPage() {
           ) : (
             <>
             {/* Narrow screens: the same three metrics as one compact summary. */}
-            <div className="md:hidden mb-3 grid grid-cols-3 bg-surface rounded-xl border border-hairline shadow-card overflow-hidden">
+            <div className="md:hidden mb-3 grid grid-cols-3 bg-surface rounded-md border border-hairline shadow-card overflow-hidden">
               <div className="px-2 py-2.5">
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
@@ -310,7 +310,7 @@ export default function DashboardPage() {
                 className="border-t-4 border-t-accent rounded-none cursor-default"
               >
                 <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center shadow-e2">
+                  <div className="w-12 h-12 bg-accent rounded-md flex items-center justify-center shadow-e2">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                 className="border-t-4 border-t-ok rounded-none cursor-default"
               >
                 <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 bg-ok rounded-xl flex items-center justify-center shadow-e2">
+                  <div className="w-12 h-12 bg-ok rounded-md flex items-center justify-center shadow-e2">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
@@ -356,7 +356,7 @@ export default function DashboardPage() {
                 className="border-t-4 border-t-warn rounded-none cursor-default"
               >
                 <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 bg-warn rounded-xl flex items-center justify-center shadow-e2">
+                  <div className="w-12 h-12 bg-warn rounded-md flex items-center justify-center shadow-e2">
                     <Clock className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
@@ -560,7 +560,7 @@ export default function DashboardPage() {
                           duration: 0.3,
                           ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
                         }}
-                        className="rounded-xl border border-hairline overflow-hidden"
+                        className="rounded-md border border-hairline overflow-hidden"
                       >
                         {/* Rep header */}
                         <div className="px-4 py-3 bg-sunken/70 border-b border-hairline">
@@ -617,9 +617,9 @@ export default function DashboardPage() {
                 <>
                   {/* Phones: the same words, laid out so the primary action
                       stays on the first screen instead of below the fold. */}
-                  <div className="md:hidden border-2 border-dashed border-hairline rounded-xl p-3">
+                  <div className="md:hidden border-2 border-dashed border-hairline rounded-md p-3">
                     <div className="flex items-start gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-xl bg-accent-soft flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-accent-soft flex items-center justify-center shrink-0">
                         <FileText className="w-5 h-5 text-accent" />
                       </div>
                       <div className="min-w-0">
@@ -636,7 +636,7 @@ export default function DashboardPage() {
                       </ButtonLink>
                   </div>
 
-                  <div className="hidden md:block border-2 border-dashed border-hairline rounded-xl">
+                  <div className="hidden md:block border-2 border-dashed border-hairline rounded-md">
                     <EmptyState
                       icon={FileText}
                       title="No accounts yet"

@@ -218,7 +218,7 @@ function SignupContent() {
           </div>
 
           {/* Form Card */}
-          <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
+          <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
                 label="Full Name"
@@ -340,7 +340,7 @@ function SignupContent() {
               </div>
 
               {/* SMS consent (A2P 10DLC). REQUIRED: SMS is the only activation channel. */}
-              <label className="flex items-start gap-3 bg-sunken rounded-xl p-4 border border-hairline cursor-pointer select-none">
+              <label className="flex items-start gap-3 bg-sunken rounded-md p-4 border border-hairline cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={formData.smsConsent}

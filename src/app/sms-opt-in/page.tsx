@@ -54,7 +54,7 @@ export default function SmsOptInPage() {
             phone verification screen, and profile settings. In each one you
             enter your own mobile number and tick an unchecked box reading:
           </p>
-          <blockquote className="my-4 border-l-4 border-accent bg-surface rounded-r-xl p-5 text-ink-2 text-sm leading-relaxed shadow-sm">
+          <blockquote className="my-4 border-l-4 border-accent bg-surface rounded-r-md p-5 text-ink-2 text-sm leading-relaxed shadow-sm">
             {SMS_CONSENT_TEXT}
           </blockquote>
           <ul className="space-y-2.5">
@@ -177,7 +177,7 @@ export default function SmsOptInPage() {
         </Section>
 
         <Section title="Your mobile information is never shared">
-          <div className="bg-accent-soft border border-accent-soft rounded-xl p-5">
+          <div className="bg-accent-soft border border-accent-soft rounded-md p-5">
             <p className="text-accent-ink font-medium leading-relaxed">
               No mobile information will be shared with third parties or
               affiliates for marketing or promotional purposes. Text messaging
@@ -236,7 +236,7 @@ function Bullet({ children }: { children: React.ReactNode }) {
 
 function Sample({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface rounded-xl border border-hairline overflow-hidden shadow-sm">
+    <div className="bg-surface rounded-md border border-hairline overflow-hidden shadow-sm">
       <div className="px-4 py-2 bg-sunken border-b border-hairline">
         <span className="text-xs font-semibold text-ink-3 uppercase tracking-wide">
           {label}

@@ -46,7 +46,7 @@ export default function SmsEvidencePage() {
             </code>
             :
           </p>
-          <blockquote className="my-4 border-l-4 border-accent bg-surface rounded-r-xl p-5 text-ink-2 text-sm leading-relaxed shadow-sm">
+          <blockquote className="my-4 border-l-4 border-accent bg-surface rounded-r-md p-5 text-ink-2 text-sm leading-relaxed shadow-sm">
             {SMS_CONSENT_TEXT}
           </blockquote>
         </header>
@@ -88,7 +88,7 @@ export default function SmsEvidencePage() {
           alt="Ovrlap profile settings showing the recorded SMS consent state and a Withdraw consent button."
         />
 
-        <section className="mt-10 bg-surface rounded-xl border border-hairline p-6">
+        <section className="mt-10 bg-surface rounded-md border border-hairline p-6">
           <h2 className="text-lg font-semibold text-ink mb-3">
             About these screenshots
           </h2>
@@ -180,7 +180,7 @@ function Shot({
         <img
           src={src}
           alt={alt}
-          className="w-full rounded-xl border border-hairline shadow-sm bg-surface"
+          className="w-full rounded-md border border-hairline shadow-sm bg-surface"
         />
       </a>
     </section>

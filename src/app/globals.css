@@ -59,10 +59,17 @@
   --color-unread: #f4f8f7;
 
   /* --- radii --- */
+  /* The whole scale is declared, including the names Tailwind ships, so the
+     utilities stay monotonic. Leaving --radius-xl at its 12px default while
+     --radius-lg was redefined to 16px made `rounded-lg` larger than
+     `rounded-xl`, which is why legacy markup looked inconsistent. */
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 16px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
 
   /* --- elevation, warm-tinted so shadows sit in the same light as the
          cream canvas rather than greying it --- */

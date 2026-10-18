@@ -122,7 +122,7 @@ export default function ListDetailPage() {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-2xl border border-hairline shadow-card p-6">
+        <div className="bg-surface rounded-lg border border-hairline shadow-card p-6">
           <div className="flex justify-between items-center mb-6">
             <div className="space-y-2">
               <Skeleton className="h-5 w-28" />
@@ -183,7 +183,7 @@ export default function ListDetailPage() {
             {/* Premium Header */}
             <div className="flex justify-between items-start mb-6 pb-6 border-b border-hairline">
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center shrink-0 shadow-e2">
+                <div className="w-11 h-11 bg-accent rounded-md flex items-center justify-center shrink-0 shadow-e2">
                   <List className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -229,7 +229,7 @@ export default function ListDetailPage() {
             </div>
 
             {accounts.length === 0 ? (
-              <div className="border-2 border-dashed border-hairline rounded-xl">
+              <div className="border-2 border-dashed border-hairline rounded-md">
                 <EmptyState
                   icon={FileText}
                   title="No accounts yet"
@@ -237,7 +237,7 @@ export default function ListDetailPage() {
                 />
               </div>
             ) : (
-              <div className="overflow-hidden rounded-xl border border-hairline">
+              <div className="overflow-hidden rounded-md border border-hairline">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-sunken/60 border-b border-hairline">
@@ -289,7 +289,7 @@ export default function ListDetailPage() {
                                   )
                                 }
                                 placeholder="Account name"
-                                className="w-full px-3 py-2 border border-hairline rounded-xl text-sm focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-sm focus:bg-surface transition-all text-ink placeholder:text-ink-3 bg-sunken/50"
+                                className="w-full px-3 py-2 border border-hairline rounded-md text-sm focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-sm focus:bg-surface transition-all text-ink placeholder:text-ink-3 bg-sunken/50"
                               />
                             ) : (
                               <div className="flex items-center gap-2 sm:gap-3">

@@ -368,7 +368,7 @@ function MatchesContent() {
         {loadFailed ? (
           <Card>
             <div role="alert" className="px-5 py-8 text-center">
-              <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-soft text-danger">
+              <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-danger-soft text-danger">
                 <AlertTriangle className="h-6 w-6" />
               </span>
               <h3 className="text-base font-semibold text-ink">
@@ -433,7 +433,7 @@ function MatchesContent() {
                 <button
                   type="button"
                   onClick={() => setSelectedConnectionId('')}
-                  className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
+                  className={`w-full text-left rounded-md border px-3 py-3 transition-colors ${
                     allPartnersMode
                       ? 'border-accent bg-accent-soft'
                       : 'border-hairline bg-surface hover:bg-sunken'
@@ -468,7 +468,7 @@ function MatchesContent() {
                         key={connection.id}
                         type="button"
                         onClick={() => setSelectedConnectionId(connection.id)}
-                        className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
+                        className={`w-full text-left rounded-md border px-3 py-3 transition-colors ${
                           isSelected
                             ? 'border-accent bg-accent-soft'
                             : 'border-hairline bg-surface hover:bg-sunken'
@@ -650,7 +650,7 @@ function PartnerChips({
       data-selected={selected}
       aria-pressed={selected}
       onClick={onClick}
-      className={`flex min-h-[44px] w-[108px] shrink-0 snap-start flex-col items-start rounded-xl border px-2.5 py-2 text-left transition-colors ${
+      className={`flex min-h-[44px] w-[108px] shrink-0 snap-start flex-col items-start rounded-md border px-2.5 py-2 text-left transition-colors ${
         selected
           ? 'border-accent bg-accent-soft ring-1 ring-accent'
           : 'border-hairline bg-surface'
@@ -718,7 +718,7 @@ function AllPartnersPanel({
       <Card className="p-4 sm:p-5">
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, index) => (
-            <div key={index} className="rounded-xl border border-hairline p-4">
+            <div key={index} className="rounded-md border border-hairline p-4">
               <Skeleton className="h-4 w-52" />
               <div className="mt-3 flex flex-wrap gap-2">
                 <Skeleton className="h-6 w-28" />
@@ -849,7 +849,7 @@ function AllPartnersPanel({
                       key={`${account.yourAccountId}-${partner.connectionId}`}
                       type="button"
                       onClick={() => onSelectConnection(partner.connectionId)}
-                      className="group w-full text-left rounded-2xl border border-hairline bg-surface shadow-[0_6px_18px_rgba(15,23,42,0.04)] px-4 py-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent-soft hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft/70"
+                      className="group w-full text-left rounded-lg border border-hairline bg-surface shadow-[0_6px_18px_rgba(15,23,42,0.04)] px-4 py-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent-soft hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft/70"
                     >
                       <div className="flex items-start gap-3">
                         <div className="min-w-0">
@@ -909,7 +909,7 @@ function PartnerPanel({
   if (connection.isMuted) {
     return (
       <Card className="p-5">
-        <div className="rounded-xl border border-warn bg-warn-soft px-4 py-3">
+        <div className="rounded-md border border-warn bg-warn-soft px-4 py-3">
           <div className="font-medium text-warn">
             This connection is muted
           </div>
@@ -927,7 +927,7 @@ function PartnerPanel({
       <Card className="p-4 sm:p-5">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="rounded-xl border border-hairline p-4">
+            <div key={index} className="rounded-md border border-hairline p-4">
               <Skeleton className="h-4 w-48" />
               <Skeleton className="h-3 w-64 mt-2" />
             </div>
@@ -954,7 +954,7 @@ function PartnerPanel({
       {suggestedMatches.length > 0 && (
         <Card className="p-4 sm:p-5 border-accent-soft/70 bg-accent-soft">
           <div className="flex items-start gap-3 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-md bg-accent flex items-center justify-center shrink-0">
               <Lightbulb className="w-4 h-4 text-white" />
             </div>
             <div>
@@ -977,7 +977,7 @@ function PartnerPanel({
               return (
                 <div
                   key={matchKey}
-                  className="rounded-xl border border-accent-soft bg-surface p-4"
+                  className="rounded-md border border-accent-soft bg-surface p-4"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center gap-3">
                     <div className="flex-1 min-w-0">
@@ -1032,7 +1032,7 @@ function PartnerPanel({
           <div className="px-4 sm:px-5 py-4 border-b border-hairline bg-sunken/70">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-ok flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-md bg-ok flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-4 h-4 text-white" />
                 </div>
                 <div>

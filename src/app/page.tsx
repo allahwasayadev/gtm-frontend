@@ -103,13 +103,13 @@ export default function LandingPage() {
             {steps.map((step) => (
               <motion.div
                 key={step.title}
-                className="bg-surface rounded-2xl p-6 shadow-card border border-hairline hover:shadow-card-hover transition-all duration-200"
+                className="bg-surface rounded-lg p-6 shadow-card border border-hairline hover:shadow-card-hover transition-all duration-200"
                 variants={{
                   hidden: { opacity: 0, y: 24 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
                 }}
               >
-                <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 shadow-e2">
+                <div className="w-12 h-12 bg-accent rounded-md flex items-center justify-center mx-auto mb-4 shadow-e2">
                   <step.icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-semibold text-ink mb-2">{step.title}</h3>
@@ -140,7 +140,7 @@ export default function LandingPage() {
                   visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
                 }}
               >
-                <div className={`w-14 h-14 ${colors.bg} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
+                <div className={`w-14 h-14 ${colors.bg} rounded-lg flex items-center justify-center mx-auto mb-4`}>
                   <feature.icon className={`w-7 h-7 ${colors.text}`} />
                 </div>
                 <h3 className="font-semibold text-ink mb-2">{feature.title}</h3>

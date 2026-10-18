@@ -207,7 +207,7 @@ export function Dropdown({
         aria-haspopup="listbox"
         aria-controls={listboxId}
         className={`
-          w-full flex items-center justify-between gap-2 px-4 py-2.5 pr-3 text-sm rounded-xl cursor-pointer
+          w-full flex items-center justify-between gap-2 px-4 py-2.5 pr-3 text-sm rounded-md cursor-pointer
           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0
           disabled:opacity-50 disabled:cursor-not-allowed
           ${variant === 'light'
@@ -236,7 +236,7 @@ export function Dropdown({
             role="listbox"
             aria-label={ariaLabel}
             tabIndex={-1}
-            className="fixed z-1000 py-1.5 px-1.5 bg-surface rounded-xl border border-hairline shadow-e2 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
+            className="fixed z-1000 py-1.5 px-1.5 bg-surface rounded-md border border-hairline shadow-e2 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
             style={{
               top: listPosition.top,
               left: listPosition.left,

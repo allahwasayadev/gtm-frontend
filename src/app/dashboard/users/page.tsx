@@ -88,7 +88,7 @@ export default function UsersPage() {
               Usage at a glance
             </h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-5 border-t-4 border-t-accent rounded-xl cursor-default bg-surface shadow-sm">
+              <Card className="p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Total users</p>
@@ -96,12 +96,12 @@ export default function UsersPage() {
                       {stats?.totalUsers ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-accent-soft rounded-xl flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-accent-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
                     <UsersRound className="w-6 h-6 text-accent" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-ok rounded-xl cursor-default bg-surface shadow-sm">
+              <Card className="p-5 border-t-4 border-t-ok rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Lists uploaded</p>
@@ -109,12 +109,12 @@ export default function UsersPage() {
                       {stats?.totalLists ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-ok-soft rounded-xl flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-ok-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
                     <FileStack className="w-6 h-6 text-ok" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-warn rounded-xl cursor-default bg-surface shadow-sm">
+              <Card className="p-5 border-t-4 border-t-warn rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Mappings created</p>
@@ -122,12 +122,12 @@ export default function UsersPage() {
                       {stats?.totalMappings ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-warn-soft rounded-xl flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-warn-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
                     <GitBranch className="w-6 h-6 text-warn" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-accent rounded-xl cursor-default bg-surface shadow-sm">
+              <Card className="p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Overlaps stored</p>
@@ -135,7 +135,7 @@ export default function UsersPage() {
                       {stats?.totalOverlaps ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-accent rounded-md flex items-center justify-center shrink-0" aria-hidden>
                     <Layers className="w-6 h-6 text-accent" />
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default function UsersPage() {
               />
             </Card>
           ) : (
-            <div className="rounded-xl border border-hairline bg-surface shadow-sm ring-1 ring-hairline overflow-hidden">
+            <div className="rounded-md border border-hairline bg-surface shadow-sm ring-1 ring-hairline overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[800px] text-left text-sm">
                   <colgroup>

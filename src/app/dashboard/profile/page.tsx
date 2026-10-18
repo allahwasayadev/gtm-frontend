@@ -433,7 +433,7 @@ export default function ProfilePage() {
 
           <div className="space-y-6">
             <FadeIn delay={0.1}>
-              <div className="bg-surface rounded-2xl border border-hairline overflow-hidden">
+              <div className="bg-surface rounded-lg border border-hairline overflow-hidden">
                 <div className=" px-6 py-8">
                   <div className="flex flex-col sm:flex-row items-center gap-5">
                     <div className="relative">
@@ -530,7 +530,7 @@ export default function ProfilePage() {
                           <input
                             className={`
                               block w-full pl-10 pr-4 py-2.5 text-sm text-ink
-                              bg-surface border rounded-xl
+                              bg-surface border rounded-md
                               placeholder:text-ink-3
                               focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-surface focus:shadow-sm
                               transition-all duration-200
@@ -571,7 +571,7 @@ export default function ProfilePage() {
                             <label className="block text-sm font-medium text-ink-2 mb-1.5">
                               Phone Number
                             </label>
-                            <div className="flex items-center gap-2 px-4 py-2.5 bg-sunken border border-hairline rounded-xl">
+                            <div className="flex items-center gap-2 px-4 py-2.5 bg-sunken border border-hairline rounded-md">
                               <Phone className="w-4 h-4 text-ink-3" />
                               <span className="text-sm text-ink-2 flex-1">{formData.phoneNumber}</span>
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-ok-soft text-ok text-xs font-medium rounded-full">
@@ -637,7 +637,7 @@ export default function ProfilePage() {
                               />
                             )}
                             {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
-                              <label className="mt-3 flex items-start gap-3 bg-sunken rounded-xl p-3.5 border border-hairline cursor-pointer select-none">
+                              <label className="mt-3 flex items-start gap-3 bg-sunken rounded-md p-3.5 border border-hairline cursor-pointer select-none">
                                 <input
                                   type="checkbox"
                                   checked={smsConsent}
@@ -667,7 +667,7 @@ export default function ProfilePage() {
                                 on file, so a user can see and revoke consent without
                                 needing to have received a text first. */}
                             {hasPhoneNumber && (alreadyConsented || user?.smsOptedOut) && (
-                              <div className={`mt-3 rounded-xl p-3.5 border ${user?.smsOptedOut ? 'bg-warn-soft border-warn-soft' : 'bg-ok-soft border-ok-soft'}`}>
+                              <div className={`mt-3 rounded-md p-3.5 border ${user?.smsOptedOut ? 'bg-warn-soft border-warn-soft' : 'bg-ok-soft border-ok-soft'}`}>
                                 <div className="flex items-start justify-between gap-3 flex-wrap">
                                   <div className="min-w-0">
                                     <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-warn' : 'text-ok'}`}>
@@ -736,7 +736,7 @@ export default function ProfilePage() {
                       </label>
                       <div className="grid sm:grid-cols-2 gap-3">
                         <label
-                          className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          className={`relative flex items-center gap-4 p-4 rounded-md border-2 cursor-pointer transition-all ${
                             formData.role === 'OEM'
                               ? 'border-accent bg-accent-soft/50'
                               : 'border-hairline hover:border-control hover:bg-sunken'
@@ -749,7 +749,7 @@ export default function ProfilePage() {
                             checked={formData.role === 'OEM'}
                             onChange={() => setFormData({ ...formData, role: 'OEM' })}
                           />
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                          <div className={`w-12 h-12 rounded-md flex items-center justify-center shrink-0 transition-colors ${
                             formData.role === 'OEM' ? 'bg-accent' : 'bg-surface-2'
                           }`}
                           >
@@ -767,7 +767,7 @@ export default function ProfilePage() {
                         </label>
 
                         <label
-                          className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          className={`relative flex items-center gap-4 p-4 rounded-md border-2 cursor-pointer transition-all ${
                             formData.role === 'Reseller'
                               ? 'border-accent bg-accent-soft/50'
                               : 'border-hairline hover:border-control hover:bg-sunken'
@@ -780,7 +780,7 @@ export default function ProfilePage() {
                             checked={formData.role === 'Reseller'}
                             onChange={() => setFormData({ ...formData, role: 'Reseller' })}
                           />
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                          <div className={`w-12 h-12 rounded-md flex items-center justify-center shrink-0 transition-colors ${
                             formData.role === 'Reseller' ? 'bg-accent' : 'bg-surface-2'
                           }`}
                           >

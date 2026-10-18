@@ -106,7 +106,7 @@ export const UsPhoneInput = forwardRef<HTMLInputElement, UsPhoneInputProps>(
         )}
 
         <div
-          className={`flex items-stretch bg-surface border rounded-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-offset-0 focus-within:shadow-sm ${
+          className={`flex items-stretch bg-surface border rounded-md transition-all duration-200 focus-within:ring-2 focus-within:ring-offset-0 focus-within:shadow-sm ${
             error
               ? 'border-danger focus-within:border-danger focus-within:ring-danger'
               : 'border-hairline focus-within:border-accent focus-within:ring-accent'
@@ -116,7 +116,7 @@ export const UsPhoneInput = forwardRef<HTMLInputElement, UsPhoneInputProps>(
               description rather than read out as a stray "+1" before it. */}
           <div
             aria-hidden="true"
-            className="flex items-center gap-2 pl-3.5 pr-3 py-2.5 text-sm font-medium text-ink-3 border-r border-hairline rounded-l-xl bg-sunken/80 select-none shrink-0"
+            className="flex items-center gap-2 pl-3.5 pr-3 py-2.5 text-sm font-medium text-ink-3 border-r border-hairline rounded-l-md bg-sunken/80 select-none shrink-0"
           >
             <Phone className="w-4 h-4 text-ink-3" />
             {US_DIAL_CODE}
@@ -145,7 +145,7 @@ export const UsPhoneInput = forwardRef<HTMLInputElement, UsPhoneInputProps>(
               onChange(edit.digits);
               pendingCaretRef.current = edit.caret;
             }}
-            className="block w-full min-w-0 px-3.5 py-2.5 text-base sm:text-sm text-ink bg-transparent rounded-r-xl placeholder:text-ink-3 focus:outline-none disabled:text-ink-3 disabled:cursor-not-allowed"
+            className="block w-full min-w-0 px-3.5 py-2.5 text-base sm:text-sm text-ink bg-transparent rounded-r-md placeholder:text-ink-3 focus:outline-none disabled:text-ink-3 disabled:cursor-not-allowed"
           />
         </div>
 

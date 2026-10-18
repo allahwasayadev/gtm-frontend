@@ -163,7 +163,7 @@ export default function VerifyPhonePage() {
   if (!state) {
     return (
       <div className="min-h-screen via-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-surface rounded-2xl shadow-card border border-hairline p-8 text-center">
+        <div className="w-full max-w-md bg-surface rounded-lg shadow-card border border-hairline p-8 text-center">
           <h2 className="text-xl font-bold text-ink mb-2">
             Activation expired
           </h2>
@@ -184,7 +184,7 @@ export default function VerifyPhonePage() {
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 bg-accent p-12 flex-col justify-center">
         <Link href="/">
-          <div className="w-14 h-14 bg-surface/15 rounded-2xl flex items-center justify-center mb-8">
+          <div className="w-14 h-14 bg-surface/15 rounded-lg flex items-center justify-center mb-8">
             <ArrowLeftRight className="w-7 h-7 text-white" />
           </div>
         </Link>
@@ -208,7 +208,7 @@ export default function VerifyPhonePage() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4">
               <Smartphone className="w-7 h-7 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-ink mb-2">
@@ -232,7 +232,7 @@ export default function VerifyPhonePage() {
             )}
           </div>
 
-          <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
+          <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
             {needsNumber ? (
               <form onSubmit={handleSetPhone} className="space-y-5">
                 <UsPhoneInput
@@ -249,7 +249,7 @@ export default function VerifyPhonePage() {
                   error={phoneError}
                   helperText={`We text a code to this ${US_DIAL_CODE} number.`}
                 />
-                <p className="text-xs text-ink-2 bg-sunken rounded-xl p-4 border border-hairline leading-relaxed">
+                <p className="text-xs text-ink-2 bg-sunken rounded-md p-4 border border-hairline leading-relaxed">
                   {SMS_CONSENT_TEXT}
                 </p>
                 {error && <p className="text-sm text-danger">{error}</p>}
@@ -267,7 +267,7 @@ export default function VerifyPhonePage() {
               /* Number already on file. Show the consent wording and WAIT —
                  an existing account must never be texted just for showing up. */
               <div className="space-y-5">
-                <p className="text-xs text-ink-2 bg-sunken rounded-xl p-4 border border-hairline leading-relaxed">
+                <p className="text-xs text-ink-2 bg-sunken rounded-md p-4 border border-hairline leading-relaxed">
                   {SMS_CONSENT_TEXT}
                 </p>
                 {error && <p className="text-sm text-danger">{error}</p>}

@@ -124,7 +124,7 @@ export function CountryCodeSelect({ value, onChange }: CountryCodeSelectProps) {
           setIsOpen(!isOpen);
           setSearch('');
         }}
-        className="flex items-center gap-1.5 w-[110px] px-3 py-2.5 text-sm text-ink bg-surface border border-hairline rounded-xl hover:border-control focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+        className="flex items-center gap-1.5 w-[110px] px-3 py-2.5 text-sm text-ink bg-surface border border-hairline rounded-md hover:border-control focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
       >
         <span className="text-base leading-none">{selected.flag}</span>
         <span className="font-medium">{selected.code}</span>
@@ -132,7 +132,7 @@ export function CountryCodeSelect({ value, onChange }: CountryCodeSelectProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-surface border border-hairline rounded-xl shadow-e2 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-surface border border-hairline rounded-md shadow-e2 overflow-hidden">
           {/* Search */}
           <div className="p-2 border-b border-hairline">
             <div className="relative">

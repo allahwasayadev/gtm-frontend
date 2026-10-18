@@ -86,7 +86,7 @@ export default function AboutPage() {
             >
               {/* The Problem Section */}
               <motion.section
-                className="bg-surface rounded-2xl p-8 sm:p-10 shadow-card border border-hairline"
+                className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -118,7 +118,7 @@ export default function AboutPage() {
               >
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Old Way */}
-                  <div className="bg-surface rounded-2xl p-8 shadow-card border border-hairline">
+                  <div className="bg-surface rounded-lg p-8 shadow-card border border-hairline">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-danger-soft flex items-center justify-center">
                         <X className="w-5 h-5 text-danger" />
@@ -138,7 +138,7 @@ export default function AboutPage() {
                   </div>
 
                   {/* New Way */}
-                  <div className=" to-white rounded-2xl p-8 shadow-card border border-accent-soft/60">
+                  <div className=" to-white rounded-lg p-8 shadow-card border border-accent-soft/60">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-accent-soft flex items-center justify-center">
                         <Check className="w-5 h-5 text-accent" />
@@ -159,7 +159,7 @@ export default function AboutPage() {
                 </div>
 
                 {/* Summary */}
-                <div className="mt-6 bg-surface rounded-2xl p-6 sm:p-8 shadow-card border border-hairline text-center">
+                <div className="mt-6 bg-surface rounded-lg p-6 sm:p-8 shadow-card border border-hairline text-center">
                   <p className="text-lg text-ink-2">
                     Instead of separate spreadsheets floating around in email threads, you have <span className="font-semibold text-accent">one view</span> of your accounts and how they align across your connections.
                   </p>
@@ -178,7 +178,7 @@ export default function AboutPage() {
                 {highlights.map((highlight, index) => (
                   <div
                     key={index}
-                    className="bg-surface rounded-xl p-6 shadow-card border border-hairline text-center"
+                    className="bg-surface rounded-md p-6 shadow-card border border-hairline text-center"
                   >
                     <div className="w-12 h-12 rounded-full bg-accent-soft flex items-center justify-center mx-auto mb-4">
                       <highlight.icon className="w-6 h-6 text-accent" />
@@ -191,7 +191,7 @@ export default function AboutPage() {
 
               {/* What This Allows Section */}
               <motion.section
-                className="bg-surface rounded-2xl p-8 sm:p-10 shadow-card border border-hairline"
+                className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -215,7 +215,7 @@ export default function AboutPage() {
 
               {/* Benefits Section */}
               <motion.section
-                className="bg-ink rounded-2xl p-8 sm:p-10 shadow-xl"
+                className="bg-ink rounded-lg p-8 sm:p-10 shadow-xl"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -247,7 +247,7 @@ export default function AboutPage() {
                   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
                 }}
               >
-                <div className="bg-surface rounded-2xl p-10 shadow-card border border-hairline">
+                <div className="bg-surface rounded-lg p-10 shadow-card border border-hairline">
                   <h2 className="text-2xl font-bold text-ink mb-3">
                     Get in Touch
                   </h2>

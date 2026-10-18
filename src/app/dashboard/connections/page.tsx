@@ -33,7 +33,7 @@ function MobileGroup({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-hairline bg-surface shadow-card">
+    <section className="overflow-hidden rounded-md border border-hairline bg-surface shadow-card">
       <div className="flex items-center justify-between gap-2 border-b border-hairline px-3 py-2.5">
         <div className="min-w-0">
           <h2 className="text-xs font-bold uppercase tracking-wider text-ink-3">{label}</h2>
@@ -50,9 +50,9 @@ function MobileError({ onRetry }: { onRetry: () => void }) {
   return (
     <div
       role="alert"
-      className="rounded-xl border border-danger bg-danger-soft/70 px-5 py-6 text-center"
+      className="rounded-md border border-danger bg-danger-soft/70 px-5 py-6 text-center"
     >
-      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-danger-soft text-danger">
+      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-danger-soft text-danger">
         <AlertTriangle className="h-5 w-5" />
       </span>
       <h3 className="text-[15px] font-bold text-ink">
@@ -93,8 +93,8 @@ function MobileEmpty({
     sky: 'bg-accent text-accent',
   } as const;
   return (
-    <div className="rounded-xl border border-hairline bg-surface px-5 py-6 text-center shadow-card">
-      <span className={`mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl ${tones[tone]}`}>
+    <div className="rounded-md border border-hairline bg-surface px-5 py-6 text-center shadow-card">
+      <span className={`mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg ${tones[tone]}`}>
         <Icon className="h-5 w-5" />
       </span>
       <h3 className="text-[15px] font-bold text-ink">{title}</h3>
@@ -131,7 +131,7 @@ function MobilePartnerRow({
         href={`/dashboard/matches?connection=${connection.id}`}
         className="flex min-w-0 flex-1 items-center gap-2.5"
       >
-        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[13px] font-bold ${
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[13px] font-bold ${
           muted ? 'bg-surface-2 text-ink-3' : 'bg-accent-soft text-accent-ink'
         }`}>
           {getUserInitials(connection.otherUser.name, 2)}
@@ -354,7 +354,7 @@ function ConnectionsPageInner() {
           <div
             role="tablist"
             aria-label="Connection groups"
-            className="mt-3 grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1"
+            className="mt-3 grid grid-cols-3 gap-1 rounded-md bg-surface-2 p-1"
           >
             {TAB_VALUES.map((value) => {
               const count =
@@ -390,7 +390,7 @@ function ConnectionsPageInner() {
               <button
                 type="button"
                 onClick={() => selectTab('pending')}
-                className="mb-3 flex w-full items-center gap-2.5 rounded-xl border border-warn bg-warn-soft px-3 py-2.5 text-left"
+                className="mb-3 flex w-full items-center gap-2.5 rounded-md border border-warn bg-warn-soft px-3 py-2.5 text-left"
               >
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-warn text-[12px] font-extrabold text-white">
                   {pendingReceived.length}
@@ -413,8 +413,8 @@ function ConnectionsPageInner() {
             ) : loading ? (
               <div className="space-y-2.5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3">
-                    <Skeleton variant="rect" className="h-9 w-9 shrink-0 rounded-xl" />
+                  <div key={i} className="flex items-center gap-3 rounded-md border border-hairline bg-surface p-3">
+                    <Skeleton variant="rect" className="h-9 w-9 shrink-0 rounded-md" />
                     <div className="flex-1 space-y-2"><Skeleton className="h-3.5 w-32" /><Skeleton className="h-3 w-40" /></div>
                   </div>
                 ))}
@@ -493,9 +493,9 @@ function ConnectionsPageInner() {
               ) : (
                 <div className="space-y-2.5">
                   {pendingReceived.map((connection) => (
-                    <div key={connection.id} className="overflow-hidden rounded-xl border border-hairline bg-surface shadow-card">
+                    <div key={connection.id} className="overflow-hidden rounded-md border border-hairline bg-surface shadow-card">
                       <div className="flex items-center gap-3 px-3 pt-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warn-soft text-[13px] font-bold text-warn">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-warn-soft text-[13px] font-bold text-warn">
                           {getUserInitials(connection.otherUser.name, 2)}
                         </span>
                         <span className="min-w-0 flex-1">
@@ -537,7 +537,7 @@ function ConnectionsPageInner() {
                   >
                     {pendingSent.map((connection) => (
                       <div key={connection.id} className="flex items-center gap-3 border-b border-hairline px-3 py-2.5 last:border-b-0">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-[13px] font-bold text-accent">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent text-[13px] font-bold text-accent">
                           {getUserInitials(connection.otherUser.name, 2)}
                         </span>
                         <span className="min-w-0 flex-1">
@@ -562,7 +562,7 @@ function ConnectionsPageInner() {
                   >
                     {invites.map((invite) => (
                       <div key={invite.id} className="flex items-center gap-3 border-b border-hairline px-3 py-2.5 last:border-b-0">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent text-accent">
                           <Mail className="h-4 w-4" />
                         </span>
                         <span className="min-w-0 flex-1">
@@ -614,14 +614,14 @@ function ConnectionsPageInner() {
           {/* Pending Requests (Received) */}
           {pendingReceived.length > 0 && (
             <FadeIn>
-              <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-hidden mb-6">
+              <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden mb-6">
                 {/* Amber Gradient Header */}
                 <div className=" to-orange-400 px-5 md:px-6 py-4 relative overflow-hidden">
                   <div className="absolute -top-6 -right-6 w-20 h-20 bg-surface/10 rounded-full" />
                   <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-surface/5 rounded-full" />
                   <div className="relative flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
+                      <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-md flex items-center justify-center shadow-e2">
                         <Bell className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -640,7 +640,7 @@ function ConnectionsPageInner() {
                   {pendingReceived.map((connection, index) => (
                     <div
                       key={connection.id}
-                      className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 bg-warn-soft/50 border border-warn/60 rounded-xl"
+                      className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 bg-warn-soft/50 border border-warn/60 rounded-md"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="min-w-0">
@@ -675,14 +675,14 @@ function ConnectionsPageInner() {
           )}
 
           {/* Active Connections — Main Card */}
-          <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-visible mb-6">
+          <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-visible mb-6">
             {/* Gradient Header */}
             <div className="bg-accent px-5 md:px-6 py-5 relative overflow-hidden">
               <div className="absolute -top-8 -right-8 w-28 h-28 bg-surface/10 rounded-full" />
               <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-surface/5 rounded-full" />
               <div className="relative flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
+                  <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-md flex items-center justify-center shadow-e2">
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -703,8 +703,8 @@ function ConnectionsPageInner() {
               {loading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-4 p-3 rounded-xl">
-                      <Skeleton variant="rect" className="w-11 h-11 rounded-xl shrink-0" />
+                    <div key={i} className="flex items-center gap-4 p-3 rounded-md">
+                      <Skeleton variant="rect" className="w-11 h-11 rounded-md shrink-0" />
                       <div className="flex-1 space-y-2">
                         <Skeleton className="h-4 w-36" />
                         <Skeleton className="h-3 w-48" />
@@ -714,7 +714,7 @@ function ConnectionsPageInner() {
                   ))}
                 </div>
               ) : activeAccepted.length === 0 ? (
-                <div className="border-2 border-dashed border-hairline rounded-xl">
+                <div className="border-2 border-dashed border-hairline rounded-md">
                   <EmptyState
                     icon={Users}
                     title="No active connections yet"
@@ -794,7 +794,7 @@ function ConnectionsPageInner() {
           </div>
 
           {mutedAccepted.length > 0 && (
-            <div className="bg-surface rounded-2xl border border-warn/70 shadow-card overflow-visible mb-6">
+            <div className="bg-surface rounded-lg border border-warn/70 shadow-card overflow-visible mb-6">
               <div className="px-5 md:px-6 py-4 border-b border-warn-soft bg-warn-soft/60">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -866,7 +866,7 @@ function ConnectionsPageInner() {
 
           {/* Pending Sent */}
           {pendingSent.length > 0 && (
-            <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-hidden mb-6">
+            <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden mb-6">
               <div className="px-5 md:px-6 py-4 border-b border-hairline">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
@@ -882,7 +882,7 @@ function ConnectionsPageInner() {
                 {pendingSent.map((connection) => (
                   <div
                     key={connection.id}
-                    className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 border border-hairline rounded-xl"
+                    className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 border border-hairline rounded-md"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="min-w-0">
@@ -909,7 +909,7 @@ function ConnectionsPageInner() {
 
           {/* Sent Invites */}
           {invites.length > 0 && (
-            <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-hidden">
+            <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden">
               <div className="px-5 md:px-6 py-4 border-b border-hairline">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
@@ -928,7 +928,7 @@ function ConnectionsPageInner() {
                     className="flex flex-col md:flex-row md:items-center gap-2 md:gap-0 md:justify-between py-3.5 px-1"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
+                      <div className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 shadow-md ${
                         invite.status === 'accepted'
                           ? 'bg-ok'
                           : invite.status === 'pending'

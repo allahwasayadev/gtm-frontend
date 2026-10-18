@@ -34,11 +34,11 @@ interface PolicySectionProps {
 function PolicySection({ icon: Icon, iconBg, iconColor, title, children }: PolicySectionProps) {
   return (
     <motion.section
-      className="bg-surface rounded-2xl p-8 sm:p-10 shadow-card border border-hairline"
+      className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
       variants={sectionVariants}
     >
       <div className="flex items-center gap-3 mb-6">
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+        <div className={`w-10 h-10 rounded-md ${iconBg} flex items-center justify-center shrink-0`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-ink">{title}</h2>
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent-soft mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-accent-soft mb-6">
                   <Shield className="w-8 h-8 text-accent" />
                 </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-ink mb-6 leading-tight">
@@ -99,7 +99,7 @@ export default function PrivacyPage() {
             >
               {/* Introduction */}
               <motion.div
-                className=" to-white rounded-2xl p-8 sm:p-10 shadow-card border border-accent-soft/60"
+                className=" to-white rounded-lg p-8 sm:p-10 shadow-card border border-accent-soft/60"
                 variants={sectionVariants}
               >
                 <p className="text-lg text-ink-2 leading-relaxed">
@@ -148,7 +148,7 @@ export default function PrivacyPage() {
                 <p>
                   Ovrlap uses phone number verification to confirm user identity and secure accounts.
                 </p>
-                <div className="bg-sunken rounded-xl p-5 space-y-3 border border-hairline">
+                <div className="bg-sunken rounded-md p-5 space-y-3 border border-hairline">
                   {[
                     'Your phone number is used only to send you a one-time verification code. Ovrlap sends no other text messages.',
                     'Ovrlap does not send marketing text messages.',
@@ -164,7 +164,7 @@ export default function PrivacyPage() {
                     </p>
                   ))}
                 </div>
-                <div className="bg-accent-soft rounded-xl p-5 border border-accent-soft">
+                <div className="bg-accent-soft rounded-md p-5 border border-accent-soft">
                   <p className="font-semibold text-accent-ink leading-relaxed">
                     No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
                   </p>
@@ -191,7 +191,7 @@ export default function PrivacyPage() {
                 <p>
                   Ovrlap processes these lists solely to determine matching company names between connected users.
                 </p>
-                <div className="bg-warn-soft/50 rounded-xl p-5 border border-warn-soft">
+                <div className="bg-warn-soft/50 rounded-md p-5 border border-warn-soft">
                   <p className="font-medium text-ink text-sm">
                     Ovrlap is designed to process business account names only and does not require or request personal customer data.
                   </p>
@@ -223,7 +223,7 @@ export default function PrivacyPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="bg-accent-soft rounded-xl p-5 border border-accent-soft mt-2">
+                <div className="bg-accent-soft rounded-md p-5 border border-accent-soft mt-2">
                   <p className="font-semibold text-accent-ink">
                     Ovrlap does not sell, rent, or trade user data.
                   </p>
@@ -297,7 +297,7 @@ export default function PrivacyPage() {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="flex flex-col items-center gap-2 p-4 rounded-xl bg-sunken border border-hairline text-center"
+                      className="flex flex-col items-center gap-2 p-4 rounded-md bg-sunken border border-hairline text-center"
                     >
                       <item.icon className="w-5 h-5 text-accent" />
                       <span className="text-sm text-ink-2">{item.label}</span>
@@ -326,11 +326,11 @@ export default function PrivacyPage() {
 
               {/* User Control */}
               <motion.section
-                className="bg-ink rounded-2xl p-8 sm:p-10 shadow-xl"
+                className="bg-ink rounded-lg p-8 sm:p-10 shadow-xl"
                 variants={sectionVariants}
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-surface/10 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-md bg-surface/10 flex items-center justify-center shrink-0">
                     <Settings className="w-5 h-5 text-accent-soft" />
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-white">User Control</h2>
@@ -372,7 +372,7 @@ export default function PrivacyPage() {
 
               {/* Contact */}
               <motion.div className="text-center" variants={sectionVariants}>
-                <div className="bg-surface rounded-2xl p-10 shadow-card border border-hairline">
+                <div className="bg-surface rounded-lg p-10 shadow-card border border-hairline">
                   <h2 className="text-2xl font-bold text-ink mb-3">Contact</h2>
                   <p className="text-ink-2 mb-6 text-lg">
                     If you have questions regarding this Privacy Policy, please contact:

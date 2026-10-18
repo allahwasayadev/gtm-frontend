@@ -141,7 +141,7 @@ export function ConnectionControlMenu({
         <div
           ref={dropdownRef}
           role="menu"
-          className="fixed z-50 w-52 rounded-xl border border-hairline bg-surface shadow-lg ring-1 ring-hairline p-1.5"
+          className="fixed z-50 w-52 rounded-md border border-hairline bg-surface shadow-lg ring-1 ring-hairline p-1.5"
           style={{
             top: menuPosition.top,
             left: menuPosition.left,

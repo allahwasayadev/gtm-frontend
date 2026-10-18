@@ -90,12 +90,12 @@ function InviteAcceptContent() {
           </Link>
         </div>
 
-        <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
+        <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
           {!validation?.valid ? (
             /* Invalid / Expired State */
             <div className="text-center">
               <motion.div
-                className="w-16 h-16 bg-danger rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-e2"
+                className="w-16 h-16 bg-danger rounded-lg flex items-center justify-center mx-auto mb-4 shadow-e2"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
@@ -116,7 +116,7 @@ function InviteAcceptContent() {
             /* Valid Invite */
             <div className="text-center">
               <motion.div
-                className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-e2"
+                className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4 shadow-e2"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
