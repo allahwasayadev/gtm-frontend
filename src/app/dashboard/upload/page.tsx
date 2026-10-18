@@ -102,18 +102,17 @@ export default function UploadPage() {
         <PageTransition>
           <form onSubmit={handleSubmit}>
             <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden">
-              {/* Gradient Header */}
-              <div className="bg-accent px-5 sm:px-8 py-5 sm:py-6 relative overflow-hidden">
-                <div className="absolute -top-8 -right-8 w-28 h-28 bg-surface/10 rounded-full" />
-                <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-surface/5 rounded-full" />
-                <div className="relative flex items-center gap-4">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 bg-surface/20 backdrop-blur-sm rounded-md flex items-center justify-center shadow-e2">
-                    <CloudUpload className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-base sm:text-lg font-bold text-white">Import Accounts</h2>
-                    <p className="text-accent-soft text-xs sm:text-sm">Upload a spreadsheet with your account names</p>
-                  </div>
+              {/* Quiet section header on the card's own surface, matching the
+                  rest of the app; the accent is carried by the icon. */}
+              <div className="flex items-center gap-3 border-b border-hairline bg-sunken px-5 py-3.5 sm:px-8">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-accent-soft">
+                  <CloudUpload className="h-[18px] w-[18px] text-accent-ink" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-[15px] font-bold text-ink sm:text-[17px]">Import Accounts</h2>
+                  <p className="text-xs text-ink-3 sm:text-[12.5px]">
+                    Upload a spreadsheet with your account names
+                  </p>
                 </div>
               </div>
 
