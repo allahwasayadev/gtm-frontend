@@ -122,7 +122,7 @@ export default function ListDetailPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card p-6">
+        <div className="bg-surface rounded-2xl border border-hairline shadow-card p-6">
           <div className="flex justify-between items-center mb-6">
             <div className="space-y-2">
               <Skeleton className="h-5 w-28" />
@@ -181,14 +181,14 @@ export default function ListDetailPage() {
       <PageTransition>
           <Card>
             {/* Premium Header */}
-            <div className="flex justify-between items-start mb-6 pb-6 border-b border-slate-100">
+            <div className="flex justify-between items-start mb-6 pb-6 border-b border-hairline">
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 bg-linear-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center shrink-0 shadow-e2">
                   <List className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-semibold text-slate-900">Accounts</h3>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                  <h3 className="text-base sm:text-lg font-semibold text-ink">Accounts</h3>
+                  <p className="text-xs sm:text-sm text-ink-3 mt-0.5">
                     {editing
                       ? 'Edit account names below'
                       : 'View and manage your accounts'}
@@ -229,7 +229,7 @@ export default function ListDetailPage() {
             </div>
 
             {accounts.length === 0 ? (
-              <div className="border-2 border-dashed border-slate-200 rounded-xl">
+              <div className="border-2 border-dashed border-hairline rounded-xl">
                 <EmptyState
                   icon={FileText}
                   title="No accounts yet"
@@ -237,26 +237,26 @@ export default function ListDetailPage() {
                 />
               </div>
             ) : (
-              <div className="overflow-hidden rounded-xl border border-slate-200/60">
+              <div className="overflow-hidden rounded-xl border border-hairline">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-slate-50/60 border-b border-slate-100">
+                    <tr className="bg-sunken/60 border-b border-hairline">
                       <th
                         scope="col"
-                        className="hidden sm:table-cell px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-14"
+                        className="hidden sm:table-cell px-4 py-2.5 text-left text-[11px] font-semibold text-ink-3 uppercase tracking-wider w-14"
                       >
                         #
                       </th>
                       <th
                         scope="col"
-                        className="px-3 sm:px-5 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider"
+                        className="px-3 sm:px-5 py-2.5 text-left text-[11px] font-semibold text-ink-3 uppercase tracking-wider"
                       >
                         Account
                       </th>
                       {editing && (
                         <th
                           scope="col"
-                          className="px-2 sm:px-4 py-2.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-10 sm:w-16"
+                          className="px-2 sm:px-4 py-2.5 text-center text-[11px] font-semibold text-ink-3 uppercase tracking-wider w-10 sm:w-16"
                         >
                           <span className="sr-only sm:not-sr-only">
                             Del
@@ -265,15 +265,15 @@ export default function ListDetailPage() {
                       )}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-hairline">
                     {accounts.map((account, index) => {
                       return (
                         <tr
                           key={account.id}
-                          className={`group transition-colors duration-150 ${editing ? 'bg-white' : 'bg-white hover:bg-slate-50/80'}`}
+                          className={`group transition-colors duration-150 ${editing ? 'bg-surface' : 'bg-surface hover:bg-sunken/80'}`}
                         >
                           <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap align-top">
-                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-400 text-xs font-semibold group-hover:bg-slate-200/80 group-hover:text-slate-500 transition-colors">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-surface-2 text-ink-3 text-xs font-semibold group-hover:bg-surface-2/80 group-hover:text-ink-3 transition-colors">
                               {index + 1}
                             </span>
                           </td>
@@ -289,11 +289,11 @@ export default function ListDetailPage() {
                                   )
                                 }
                                 placeholder="Account name"
-                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-sm focus:bg-white transition-all text-slate-900 placeholder-slate-400 bg-slate-50/50"
+                                className="w-full px-3 py-2 border border-hairline rounded-xl text-sm focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-sm focus:bg-surface transition-all text-ink placeholder:text-ink-3 bg-sunken/50"
                               />
                             ) : (
                               <div className="flex items-center gap-2 sm:gap-3">
-                                <span className="font-medium text-slate-700 text-sm sm:text-base group-hover:text-slate-900 transition-colors">
+                                <span className="font-medium text-ink-2 text-sm sm:text-base group-hover:text-ink transition-colors">
                                   {account.accountName}
                                 </span>
                               </div>
@@ -303,7 +303,7 @@ export default function ListDetailPage() {
                             <td className="px-2 sm:px-4 py-3 text-center align-top">
                               <button
                                 onClick={() => handleRemoveAccount(index)}
-                                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-300 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-ink-3 hover:text-danger hover:bg-danger-soft transition-all duration-200"
                                 title="Remove"
                               >
                                 <X className="w-4 h-4" />
@@ -317,10 +317,10 @@ export default function ListDetailPage() {
                 </table>
 
                 {/* Footer */}
-                <div className="bg-slate-50/60 px-3 sm:px-5 py-2.5 border-t border-slate-100">
+                <div className="bg-sunken/60 px-3 sm:px-5 py-2.5 border-t border-hairline">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs sm:text-sm text-slate-500">
-                      <span className="font-semibold text-slate-700">
+                    <p className="text-xs sm:text-sm text-ink-3">
+                      <span className="font-semibold text-ink-2">
                         {accounts.length}
                       </span>{' '}
                       account{accounts.length !== 1 ? 's' : ''}
@@ -328,7 +328,7 @@ export default function ListDetailPage() {
                     {editing && (
                       <button
                         onClick={handleAddAccount}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-accent hover:text-accent-ink hover:bg-accent-soft rounded-lg transition-all"
                       >
                         <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Add Account</span>

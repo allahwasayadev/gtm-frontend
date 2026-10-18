@@ -64,12 +64,12 @@ function LoginContent() {
   return (
     <div className="min-h-screen flex lg:h-screen lg:overflow-hidden">
       {/* Brand Panel — lg+ */}
-      <div className="hidden lg:flex lg:h-screen lg:w-120 xl:w-130 shrink-0 bg-linear-to-br from-indigo-600 via-indigo-700 to-violet-800 relative overflow-hidden flex-col justify-center px-12 xl:px-16">
+      <div className="hidden lg:flex lg:h-screen lg:w-120 xl:w-130 shrink-0 bg-accent relative overflow-hidden flex-col justify-center px-12 xl:px-16">
         {/* Decorative elements */}
-        <div className="absolute top-20 -left-16 w-64 h-64 bg-white/5 rounded-full" />
-        <div className="absolute bottom-20 right-10 w-48 h-48 bg-white/5 rounded-full" />
-        <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl" />
-        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 bg-violet-400/20 rounded-full blur-2xl" />
+        <div className="absolute top-20 -left-16 w-64 h-64 bg-surface/5 rounded-full" />
+        <div className="absolute bottom-20 right-10 w-48 h-48 bg-surface/5 rounded-full" />
+        <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-white/30/20 rounded-full blur-2xl" />
+        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 bg-accent rounded-full blur-2xl" />
 
         <div className="relative">
           <Link href="/" className="inline-block mb-8">
@@ -79,17 +79,17 @@ function LoginContent() {
           <h1 className="text-3xl xl:text-4xl font-bold text-white mb-3">
             Welcome Back
           </h1>
-          <p className="text-indigo-200 text-lg mb-12 max-w-sm leading-relaxed">
+          <p className="text-accent-soft text-lg mb-12 max-w-sm leading-relaxed">
             Sign in to continue finding account overlaps with your partners.
           </p>
 
           <div className="space-y-4">
             {features.map((feature, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
-                  <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <div className="w-7 h-7 bg-surface/10 rounded-lg flex items-center justify-center shrink-0">
+                  <Check className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="text-indigo-100 text-sm">{feature}</span>
+                <span className="text-white/90 text-sm">{feature}</span>
               </div>
             ))}
           </div>
@@ -97,7 +97,7 @@ function LoginContent() {
       </div>
 
       {/* Form Panel */}
-      <div className="flex-1 min-h-screen lg:h-screen bg-linear-to-br from-indigo-50 via-white to-sky-50 lg:bg-slate-50/80 flex items-center justify-center p-4 sm:p-8 lg:overflow-y-auto">
+      <div className="flex-1 min-h-screen lg:h-screen via-white lg:bg-sunken/80 flex items-center justify-center p-4 sm:p-8 lg:overflow-y-auto">
         <motion.div
           className="w-full max-w-md lg:py-8"
           initial={{ opacity: 0, y: 24 }}
@@ -116,17 +116,17 @@ function LoginContent() {
                 <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-14 w-auto" />
               </motion.div>
             </Link>
-            <p className="text-slate-500">Welcome back! Sign in to continue.</p>
+            <p className="text-ink-3">Welcome back! Sign in to continue.</p>
           </div>
 
           {/* Desktop Heading */}
           <div className="hidden lg:block mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome back</h2>
-            <p className="text-slate-500">Sign in to your account to continue</p>
+            <h2 className="text-2xl font-bold text-ink mb-2">Welcome back</h2>
+            <p className="text-ink-3">Sign in to your account to continue</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
+          <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
                 label="Email Address"
@@ -153,7 +153,7 @@ function LoginContent() {
                 <div className="mt-2 text-right">
                   <Link
                     href="/forgot-password"
-                    className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                    className="text-sm font-medium text-accent hover:text-accent-ink transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -165,19 +165,19 @@ function LoginContent() {
                 variant="primary"
                 size="lg"
                 isLoading={isSubmitting}
-                className="w-full shadow-lg shadow-indigo-500/25"
+                className="w-full shadow-e2"
               >
                 Sign In
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-slate-100">
-              <p className="text-center text-sm text-slate-500">
+            <div className="mt-6 pt-6 border-t border-hairline">
+              <p className="text-center text-sm text-ink-3">
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/signup"
-                  className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="font-semibold text-accent hover:text-accent-ink transition-colors"
                 >
                   Create account
                 </Link>
@@ -185,7 +185,7 @@ function LoginContent() {
             </div>
           </div>
 
-          <p className="text-center text-xs text-slate-400 mt-8">
+          <p className="text-center text-xs text-ink-3 mt-8">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </motion.div>

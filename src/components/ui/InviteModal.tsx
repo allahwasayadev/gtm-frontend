@@ -102,7 +102,7 @@ export function InviteModal({ isOpen, onClose, onSuccess }: InviteModalProps) {
 
             <div className="relative flex items-start justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
+                <div className="w-11 h-11 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
                   <Send className="w-5 h-5 text-white" />
                 </div>
                 <div>

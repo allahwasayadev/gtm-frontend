@@ -20,33 +20,33 @@ export const metadata: Metadata = {
  */
 export default function SmsEvidencePage() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-indigo-50">
+    <div className="min-h-screen via-white">
       <div className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
         <header className="mb-10">
           <Link href="/" className="inline-block mb-8">
             <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-10 w-auto" />
           </Link>
-          <p className="text-sm font-medium text-indigo-600 mb-2">
-            <Link href="/sms-opt-in" className="hover:text-indigo-700">
+          <p className="text-sm font-medium text-accent mb-2">
+            <Link href="/sms-opt-in" className="hover:text-accent-ink">
               ← SMS Terms &amp; Opt-In
             </Link>
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+          <h1 className="text-3xl sm:text-4xl font-bold text-ink mb-3">
             Consent screens
           </h1>
-          <p className="text-slate-600 leading-relaxed">
+          <p className="text-ink-2 leading-relaxed">
             Ovrlap collects SMS consent in three places. The first is on the
             public sign-up page; the other two are inside a signed-in account,
             so they are shown here as screenshots of the real screens.
           </p>
-          <p className="text-slate-600 leading-relaxed mt-3">
+          <p className="text-ink-2 leading-relaxed mt-3">
             The same wording is used in all three, version{' '}
-            <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">
+            <code className="text-xs bg-surface-2 px-1.5 py-0.5 rounded">
               {SMS_CONSENT_VERSION}
             </code>
             :
           </p>
-          <blockquote className="my-4 border-l-4 border-indigo-300 bg-white rounded-r-xl p-5 text-slate-700 text-sm leading-relaxed shadow-sm">
+          <blockquote className="my-4 border-l-4 border-accent bg-surface rounded-r-xl p-5 text-ink-2 text-sm leading-relaxed shadow-sm">
             {SMS_CONSENT_TEXT}
           </blockquote>
         </header>
@@ -88,31 +88,31 @@ export default function SmsEvidencePage() {
           alt="Ovrlap profile settings showing the recorded SMS consent state and a Withdraw consent button."
         />
 
-        <section className="mt-10 bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-3">
+        <section className="mt-10 bg-surface rounded-xl border border-hairline p-6">
+          <h2 className="text-lg font-semibold text-ink mb-3">
             About these screenshots
           </h2>
-          <ul className="space-y-2.5 text-slate-600 text-sm leading-relaxed">
+          <ul className="space-y-2.5 text-ink-2 text-sm leading-relaxed">
             <li className="flex gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-2" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
               <span>
                 Captured from the deployed build. Screen 1 can be checked
                 directly at{' '}
-                <Link href="/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                <Link href="/signup" className="text-accent hover:text-accent-ink font-medium">
                   /signup
                 </Link>
                 .
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-2" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
               <span>
                 No verification code and no delivery confirmation appears in any
                 of them. No message was sent to produce them.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-2" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
               <span>
                 The phone numbers shown are fictional test numbers in the
                 reserved 555-01xx range.
@@ -121,17 +121,17 @@ export default function SmsEvidencePage() {
           </ul>
         </section>
 
-        <footer className="mt-12 pt-8 border-t border-slate-200 flex flex-wrap gap-x-6 gap-y-2">
-          <Link href="/sms-opt-in" className="text-sm text-slate-500 hover:text-slate-700">
+        <footer className="mt-12 pt-8 border-t border-hairline flex flex-wrap gap-x-6 gap-y-2">
+          <Link href="/sms-opt-in" className="text-sm text-ink-3 hover:text-ink-2">
             SMS Terms &amp; Opt-In
           </Link>
-          <Link href="/privacy" className="text-sm text-slate-500 hover:text-slate-700">
+          <Link href="/privacy" className="text-sm text-ink-3 hover:text-ink-2">
             Privacy Policy
           </Link>
-          <Link href="/terms" className="text-sm text-slate-500 hover:text-slate-700">
+          <Link href="/terms" className="text-sm text-ink-3 hover:text-ink-2">
             Terms of Service
           </Link>
-          <a href="mailto:support@ovrlap.app" className="text-sm text-slate-500 hover:text-slate-700">
+          <a href="mailto:support@ovrlap.app" className="text-sm text-ink-3 hover:text-ink-2">
             support@ovrlap.app
           </a>
         </footer>
@@ -157,12 +157,12 @@ function Shot({
 }) {
   return (
     <section className="mb-10">
-      <h2 className="text-xl font-semibold text-slate-900 mb-1">
+      <h2 className="text-xl font-semibold text-ink mb-1">
         {n}. {title}
         {href && (
           <>
             {' '}
-            <Link href={href} className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+            <Link href={href} className="text-sm font-medium text-accent hover:text-accent-ink">
               (live)
             </Link>
           </>
@@ -170,8 +170,8 @@ function Shot({
       </h2>
       <ul className="mb-4 space-y-1.5">
         {notes.map((t) => (
-          <li key={t} className="flex gap-3 text-slate-600 text-sm leading-relaxed">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-2" />
+          <li key={t} className="flex gap-3 text-ink-2 text-sm leading-relaxed">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
             <span>{t}</span>
           </li>
         ))}
@@ -180,7 +180,7 @@ function Shot({
         <img
           src={src}
           alt={alt}
-          className="w-full rounded-xl border border-slate-200 shadow-sm bg-white"
+          className="w-full rounded-xl border border-hairline shadow-sm bg-surface"
         />
       </a>
     </section>

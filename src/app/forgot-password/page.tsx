@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-indigo-50 flex items-center justify-center p-4 sm:p-8">
+    <div className="min-h-screen via-white flex items-center justify-center p-4 sm:p-8">
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 24 }}
@@ -58,27 +58,27 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
             <KeyRound className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-bold text-ink mb-2">
             Reset your password
           </h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-ink-3 text-sm">
             {submitted
               ? 'Check your phone'
               : 'Enter your email address or mobile number.'}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
+        <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
           {submitted ? (
             <>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-ink-2 leading-relaxed">
                 If an account exists with a verified mobile number, we have sent
                 a 6-digit reset code to it by text.
               </p>
-              <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+              <p className="text-xs text-ink-3 mt-3 leading-relaxed">
                 Codes are only sent to a number that has already been verified
                 on the account. If you no longer have access to that number,
                 contact support.
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-ink-2 mb-1.5">
                   Email address or mobile number
                 </label>
                 <Input
@@ -124,10 +124,10 @@ export default function ForgotPasswordPage() {
             </form>
           )}
 
-          <div className="text-center mt-6 pt-4 border-t border-slate-100">
+          <div className="text-center mt-6 pt-4 border-t border-hairline">
             <Link
               href="/login"
-              className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-1"
+              className="text-sm font-semibold text-accent hover:text-accent-ink inline-flex items-center gap-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Back to sign in
             </Link>

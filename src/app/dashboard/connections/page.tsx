@@ -34,11 +34,11 @@ function MobileGroup({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-card">
-      <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2.5">
+    <section className="overflow-hidden rounded-xl border border-hairline bg-surface shadow-card">
+      <div className="flex items-center justify-between gap-2 border-b border-hairline px-3 py-2.5">
         <div className="min-w-0">
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</h2>
-          {note && <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{note}</p>}
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-ink-3">{label}</h2>
+          {note && <p className="mt-0.5 text-[11px] leading-snug text-ink-3">{note}</p>}
         </div>
         {action}
       </div>
@@ -51,15 +51,15 @@ function MobileError({ onRetry }: { onRetry: () => void }) {
   return (
     <div
       role="alert"
-      className="rounded-xl border border-red-200 bg-red-50/70 px-5 py-6 text-center"
+      className="rounded-xl border border-danger bg-danger-soft/70 px-5 py-6 text-center"
     >
-      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-danger-soft text-danger">
         <AlertTriangle className="h-5 w-5" />
       </span>
-      <h3 className="text-[15px] font-bold text-slate-900">
+      <h3 className="text-[15px] font-bold text-ink">
         We couldn&apos;t load your connections
       </h3>
-      <p className="mx-auto mt-1 max-w-[17rem] text-[13px] leading-snug text-slate-600">
+      <p className="mx-auto mt-1 max-w-[17rem] text-[13px] leading-snug text-ink-2">
         Something went wrong on our side. Your partners and requests are safe &mdash; try again
         in a moment.
       </p>
@@ -89,24 +89,24 @@ function MobileEmpty({
   footnote?: string;
 }) {
   const tones = {
-    violet: 'bg-violet-100 text-violet-600',
-    amber: 'bg-amber-100 text-amber-700',
-    sky: 'bg-sky-100 text-sky-700',
+    violet: 'bg-accent text-accent',
+    amber: 'bg-warn-soft text-warn',
+    sky: 'bg-accent text-accent',
   } as const;
   return (
-    <div className="rounded-xl border border-slate-200/60 bg-white px-5 py-6 text-center shadow-card">
+    <div className="rounded-xl border border-hairline bg-surface px-5 py-6 text-center shadow-card">
       <span className={`mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl ${tones[tone]}`}>
         <Icon className="h-5 w-5" />
       </span>
-      <h3 className="text-[15px] font-bold text-slate-900">{title}</h3>
-      <p className="mx-auto mt-1 max-w-[16rem] text-[13px] leading-snug text-slate-500">{body}</p>
+      <h3 className="text-[15px] font-bold text-ink">{title}</h3>
+      <p className="mx-auto mt-1 max-w-[16rem] text-[13px] leading-snug text-ink-3">{body}</p>
       {actionLabel && onAction && (
         <Button variant="primary" className="mt-3.5 w-full" onClick={onAction}>
           <Mail className="mr-1.5 h-4 w-4" />
           {actionLabel}
         </Button>
       )}
-      {footnote && <p className="mt-2.5 text-[11.5px] text-slate-500">{footnote}</p>}
+      {footnote && <p className="mt-2.5 text-[11.5px] text-ink-3">{footnote}</p>}
     </div>
   );
 }
@@ -127,32 +127,32 @@ function MobilePartnerRow({
   const sharedMatchCount = connection.sharedMatchCount ?? 0;
   const role = connection.otherUser.roles?.[0];
   return (
-    <div className="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 last:border-b-0">
+    <div className="flex items-center gap-2.5 border-b border-hairline px-3 py-2.5 last:border-b-0">
       <Link
         href={`/dashboard/matches?connection=${connection.id}`}
         className="flex min-w-0 flex-1 items-center gap-2.5"
       >
         <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[13px] font-bold ${
-          muted ? 'bg-slate-100 text-slate-500' : 'bg-indigo-50 text-indigo-700'
+          muted ? 'bg-surface-2 text-ink-3' : 'bg-accent-soft text-accent-ink'
         }`}>
           {getUserInitials(connection.otherUser.name, 2)}
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
-            <span className="min-w-0 truncate text-[13.5px] font-bold leading-tight text-slate-900">
+            <span className="min-w-0 truncate text-[13.5px] font-bold leading-tight text-ink">
               {connection.otherUser.name}
             </span>
             {muted && <Badge variant="warning" size="sm">Muted</Badge>}
           </span>
-          <span className="block truncate text-[11.5px] text-slate-500">
+          <span className="block truncate text-[11.5px] text-ink-3">
             {connection.otherUser.company || connection.otherUser.email}
             {role ? ` · ${role}` : ''}
           </span>
         </span>
         <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-bold ${
           sharedMatchCount > 0
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-            : 'border-slate-200 bg-slate-50 text-slate-500'
+            ? 'border-ok bg-ok-soft text-ok'
+            : 'border-hairline bg-sunken text-ink-3'
         }`}>
           {sharedMatchCount} {sharedMatchCount === 1 ? 'match' : 'matches'}
         </span>
@@ -342,10 +342,10 @@ function ConnectionsPageInner() {
             group, count and action from the wide layout below is present.
            ------------------------------------------------------------------ */}
         <PageTransition className="md:hidden">
-          <h1 className="text-xl leading-tight font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl leading-tight font-bold text-ink tracking-tight">
             Connections
           </h1>
-          <p className="mt-1 text-[13px] leading-snug text-slate-600 max-[359px]:hidden">
+          <p className="mt-1 text-[13px] leading-snug text-ink-2 max-[359px]:hidden">
             Partners you share account lists with. Ovrlap compares your lists and shows the overlap.
           </p>
 
@@ -355,7 +355,7 @@ function ConnectionsPageInner() {
           <div
             role="tablist"
             aria-label="Connection groups"
-            className="mt-3 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1"
+            className="mt-3 grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1"
           >
             {TAB_VALUES.map((value) => {
               const count =
@@ -372,14 +372,14 @@ function ConnectionsPageInner() {
                   aria-selected={selected}
                   onClick={() => selectTab(value)}
                   className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[12.5px] font-bold transition-colors ${
-                    selected ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
+                    selected ? 'bg-surface text-ink shadow-sm' : 'text-ink-2'
                   }`}
                 >
                   {label}
                   <span className={`rounded-full px-1.5 text-[10.5px] leading-[1.45] ${
                     value === 'pending' && count > 0
-                      ? 'bg-amber-100 text-amber-800'
-                      : selected ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-200 text-slate-600'
+                      ? 'bg-warn-soft text-warn'
+                      : selected ? 'bg-accent-soft text-accent-ink' : 'bg-surface-2 text-ink-2'
                   }`}>{count}</span>
                 </button>
               );
@@ -391,17 +391,17 @@ function ConnectionsPageInner() {
               <button
                 type="button"
                 onClick={() => selectTab('pending')}
-                className="mb-3 flex w-full items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-left"
+                className="mb-3 flex w-full items-center gap-2.5 rounded-xl border border-warn bg-warn-soft px-3 py-2.5 text-left"
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-[12px] font-extrabold text-white">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-warn text-[12px] font-extrabold text-white">
                   {pendingReceived.length}
                 </span>
-                <span className="flex-1 text-[12.5px] font-bold leading-tight text-amber-900">
+                <span className="flex-1 text-[12.5px] font-bold leading-tight text-warn">
                   {pendingReceived.length === 1
                     ? '1 request is waiting on you'
                     : `${pendingReceived.length} requests are waiting on you`}
                 </span>
-                <span className="text-[12px] font-bold text-amber-700">Review</span>
+                <span className="text-[12px] font-bold text-warn">Review</span>
               </button>
             )}
             {loadFailed ? (
@@ -414,7 +414,7 @@ function ConnectionsPageInner() {
             ) : loading ? (
               <div className="space-y-2.5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-xl border border-slate-200/60 bg-white p-3">
+                  <div key={i} className="flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3">
                     <Skeleton variant="rect" className="h-9 w-9 shrink-0 rounded-xl" />
                     <div className="flex-1 space-y-2"><Skeleton className="h-3.5 w-32" /><Skeleton className="h-3 w-40" /></div>
                   </div>
@@ -439,7 +439,7 @@ function ConnectionsPageInner() {
                       <button
                         type="button"
                         onClick={() => setShowInviteModal(true)}
-                        className="inline-flex h-7 items-center gap-1 rounded-lg bg-indigo-600 px-2.5 text-[12.5px] font-bold text-white"
+                        className="inline-flex h-7 items-center gap-1 rounded-lg bg-accent px-2.5 text-[12.5px] font-bold text-white"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         Invite
@@ -456,7 +456,7 @@ function ConnectionsPageInner() {
                       />
                     ))}
                     {activeAccepted.length === 0 && (
-                      <p className="px-3 py-4 text-center text-[13px] text-slate-500">
+                      <p className="px-3 py-4 text-center text-[13px] text-ink-3">
                         All of your partners are muted.
                       </p>
                     )}
@@ -494,14 +494,14 @@ function ConnectionsPageInner() {
               ) : (
                 <div className="space-y-2.5">
                   {pendingReceived.map((connection) => (
-                    <div key={connection.id} className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-card">
+                    <div key={connection.id} className="overflow-hidden rounded-xl border border-hairline bg-surface shadow-card">
                       <div className="flex items-center gap-3 px-3 pt-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-[13px] font-bold text-amber-700">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warn-soft text-[13px] font-bold text-warn">
                           {getUserInitials(connection.otherUser.name, 2)}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13.5px] font-bold leading-tight text-slate-900">{connection.otherUser.name}</span>
-                          <span className="block truncate text-[11.5px] text-slate-500">{connection.otherUser.company || connection.otherUser.email}</span>
+                          <span className="block truncate text-[13.5px] font-bold leading-tight text-ink">{connection.otherUser.name}</span>
+                          <span className="block truncate text-[11.5px] text-ink-3">{connection.otherUser.company || connection.otherUser.email}</span>
                         </span>
                       </div>
                       <div className="flex gap-2 px-3 pb-3 pt-2.5">
@@ -537,13 +537,13 @@ function ConnectionsPageInner() {
                     note="Sent to people already on Ovrlap, waiting for them to accept."
                   >
                     {pendingSent.map((connection) => (
-                      <div key={connection.id} className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5 last:border-b-0">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-[13px] font-bold text-sky-700">
+                      <div key={connection.id} className="flex items-center gap-3 border-b border-hairline px-3 py-2.5 last:border-b-0">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-[13px] font-bold text-accent">
                           {getUserInitials(connection.otherUser.name, 2)}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13.5px] font-bold leading-tight text-slate-900">{connection.otherUser.name}</span>
-                          <span className="block truncate text-[11.5px] text-slate-500">{connection.otherUser.company || connection.otherUser.email}</span>
+                          <span className="block truncate text-[13.5px] font-bold leading-tight text-ink">{connection.otherUser.name}</span>
+                          <span className="block truncate text-[11.5px] text-ink-3">{connection.otherUser.company || connection.otherUser.email}</span>
                         </span>
                         <Button
                           onClick={() => handleDeleteConnection(connection.id, connection.otherUser.name, 'cancel')}
@@ -562,16 +562,16 @@ function ConnectionsPageInner() {
                     note="Sent by email to people who do not have an Ovrlap account yet."
                   >
                     {invites.map((invite) => (
-                      <div key={invite.id} className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5 last:border-b-0">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+                      <div key={invite.id} className="flex items-center gap-3 border-b border-hairline px-3 py-2.5 last:border-b-0">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent">
                           <Mail className="h-4 w-4" />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13.5px] font-bold leading-tight text-slate-900">
+                          <span className="block truncate text-[13.5px] font-bold leading-tight text-ink">
                             {invite.invitedName || invite.invitedEmail}
                           </span>
                           {invite.invitedName && (
-                            <span className="block truncate text-[11.5px] text-slate-500">{invite.invitedEmail}</span>
+                            <span className="block truncate text-[11.5px] text-ink-3">{invite.invitedEmail}</span>
                           )}
                           <span className="mt-0.5 flex items-center gap-2">
                             <Badge
@@ -580,7 +580,7 @@ function ConnectionsPageInner() {
                             >
                               {invite.status.charAt(0).toUpperCase() + invite.status.slice(1)}
                             </Badge>
-                            <span className="text-[11px] text-slate-500">
+                            <span className="text-[11px] text-ink-3">
                               {new Date(invite.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </span>
                           </span>
@@ -615,22 +615,22 @@ function ConnectionsPageInner() {
           {/* Pending Requests (Received) */}
           {pendingReceived.length > 0 && (
             <FadeIn>
-              <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card overflow-hidden mb-6">
+              <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-hidden mb-6">
                 {/* Amber Gradient Header */}
-                <div className="bg-linear-to-br from-amber-500 via-amber-400 to-orange-400 px-5 md:px-6 py-4 relative overflow-hidden">
-                  <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/10 rounded-full" />
-                  <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-white/5 rounded-full" />
+                <div className=" to-orange-400 px-5 md:px-6 py-4 relative overflow-hidden">
+                  <div className="absolute -top-6 -right-6 w-20 h-20 bg-surface/10 rounded-full" />
+                  <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-surface/5 rounded-full" />
                   <div className="relative flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-amber-600/20">
+                      <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
                         <Bell className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <h2 className="text-base font-bold text-white">Pending Requests</h2>
-                        <p className="text-amber-100 text-xs md:text-sm">Awaiting your response</p>
+                        <p className="text-warn-soft text-xs md:text-sm">Awaiting your response</p>
                       </div>
                     </div>
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-bold">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-surface/20 backdrop-blur-sm text-white text-sm font-bold">
                       {pendingReceived.length}
                     </span>
                   </div>
@@ -641,12 +641,12 @@ function ConnectionsPageInner() {
                   {pendingReceived.map((connection, index) => (
                     <div
                       key={connection.id}
-                      className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 bg-amber-50/50 border border-amber-200/60 rounded-xl"
+                      className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 bg-warn-soft/50 border border-warn/60 rounded-xl"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="min-w-0">
-                          <div className="font-semibold text-slate-900 text-sm md:text-base truncate">{connection.otherUser.name}</div>
-                          <div className="text-xs md:text-sm text-slate-500 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
+                          <div className="font-semibold text-ink text-sm md:text-base truncate">{connection.otherUser.name}</div>
+                          <div className="text-xs md:text-sm text-ink-3 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
                         </div>
                       </div>
                       <div className="flex gap-2 shrink-0 md:ml-auto">
@@ -676,23 +676,23 @@ function ConnectionsPageInner() {
           )}
 
           {/* Active Connections — Main Card */}
-          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card overflow-visible mb-6">
+          <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-visible mb-6">
             {/* Gradient Header */}
-            <div className="bg-linear-to-br from-indigo-600 via-indigo-500 to-violet-500 px-5 md:px-6 py-5 relative overflow-hidden">
-              <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full" />
-              <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-white/5 rounded-full" />
+            <div className="bg-accent px-5 md:px-6 py-5 relative overflow-hidden">
+              <div className="absolute -top-8 -right-8 w-28 h-28 bg-surface/10 rounded-full" />
+              <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-surface/5 rounded-full" />
               <div className="relative flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
+                  <div className="w-10 h-10 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h2 className="text-base md:text-lg font-bold text-white">Active Connections</h2>
-                    <p className="text-indigo-200 text-xs md:text-sm">Your collaboration partners</p>
+                    <p className="text-accent-soft text-xs md:text-sm">Your collaboration partners</p>
                   </div>
                 </div>
                 {!loading && activeAccepted.length > 0 && (
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-bold">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-surface/20 backdrop-blur-sm text-white text-sm font-bold">
                     {activeAccepted.length}
                   </span>
                 )}
@@ -715,7 +715,7 @@ function ConnectionsPageInner() {
                   ))}
                 </div>
               ) : activeAccepted.length === 0 ? (
-                <div className="border-2 border-dashed border-slate-200 rounded-xl">
+                <div className="border-2 border-dashed border-hairline rounded-xl">
                   <EmptyState
                     icon={Users}
                     title="No active connections yet"
@@ -732,7 +732,7 @@ function ConnectionsPageInner() {
                   />
                 </div>
               ) : (
-                <div className="space-y-0 divide-y divide-slate-100">
+                <div className="space-y-0 divide-y divide-hairline">
                   <AnimatePresence initial={false}>
                     {activeAccepted.map((connection) => {
                       const sharedMatchCount = connection.sharedMatchCount ?? 0;
@@ -744,11 +744,11 @@ function ConnectionsPageInner() {
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.2, ease: 'easeOut' }}
                         >
-                          <div className="flex flex-col md:flex-row md:items-center gap-3 py-3.5 px-1 md:px-2 group hover:bg-indigo-50/40 rounded-lg transition-colors duration-150 -mx-1 md:-mx-2">
+                          <div className="flex flex-col md:flex-row md:items-center gap-3 py-3.5 px-1 md:px-2 group hover:bg-accent-soft/40 rounded-lg transition-colors duration-150 -mx-1 md:-mx-2">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-slate-900 text-sm md:text-base truncate">{connection.otherUser.name}</div>
-                                <div className="text-xs md:text-sm text-slate-500 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
+                                <div className="font-semibold text-ink text-sm md:text-base truncate">{connection.otherUser.name}</div>
+                                <div className="text-xs md:text-sm text-ink-3 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
                                 <div className="mt-1">
                                   <Badge
                                     variant={sharedMatchCount > 0 ? 'success' : 'outline'}
@@ -758,7 +758,7 @@ function ConnectionsPageInner() {
                                   </Badge>
                                 </div>
                               </div>
-                              <span className="hidden md:inline-block text-xs text-slate-400 shrink-0">
+                              <span className="hidden md:inline-block text-xs text-ink-3 shrink-0">
                                 {new Date(connection.createdAt).toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
@@ -792,23 +792,23 @@ function ConnectionsPageInner() {
           </div>
 
           {mutedAccepted.length > 0 && (
-            <div className="bg-white rounded-2xl border border-amber-200/70 shadow-card overflow-visible mb-6">
-              <div className="px-5 md:px-6 py-4 border-b border-amber-100 bg-amber-50/60">
+            <div className="bg-surface rounded-2xl border border-warn/70 shadow-card overflow-visible mb-6">
+              <div className="px-5 md:px-6 py-4 border-b border-warn-soft bg-warn-soft/60">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="font-semibold text-amber-900 text-sm md:text-base">
+                    <h3 className="font-semibold text-warn text-sm md:text-base">
                       Muted Connections
                     </h3>
-                    <p className="text-xs text-amber-700/80">
+                    <p className="text-xs text-warn/80">
                       Hidden from your main account view. They auto-return if new overlaps are found.
                     </p>
                   </div>
-                  <span className="inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-full bg-amber-100 text-amber-700 text-sm font-bold">
+                  <span className="inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-full bg-warn-soft text-warn text-sm font-bold">
                     {mutedAccepted.length}
                   </span>
                 </div>
               </div>
-              <div className="px-5 md:px-6 py-4 space-y-0 divide-y divide-amber-100/70">
+              <div className="px-5 md:px-6 py-4 space-y-0 divide-y divide-warn-soft/70">
                 {mutedAccepted.map((connection) => {
                   const sharedMatchCount = connection.sharedMatchCount ?? 0;
                   return (
@@ -819,12 +819,12 @@ function ConnectionsPageInner() {
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="font-semibold text-slate-900 text-sm md:text-base truncate">
+                            <div className="font-semibold text-ink text-sm md:text-base truncate">
                               {connection.otherUser.name}
                             </div>
                             <Badge variant="warning" size="sm">Muted</Badge>
                           </div>
-                          <div className="text-xs md:text-sm text-slate-500 truncate">
+                          <div className="text-xs md:text-sm text-ink-3 truncate">
                             {connection.otherUser.company || connection.otherUser.email}
                           </div>
                           <div className="mt-1">
@@ -861,15 +861,15 @@ function ConnectionsPageInner() {
 
           {/* Pending Sent */}
           {pendingSent.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card overflow-hidden mb-6">
-              <div className="px-5 md:px-6 py-4 border-b border-slate-100">
+            <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-hidden mb-6">
+              <div className="px-5 md:px-6 py-4 border-b border-hairline">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-linear-to-br from-sky-400 to-blue-500 rounded-lg flex items-center justify-center shrink-0 shadow-md shadow-sky-500/15">
+                  <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
                     <Clock className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 text-sm md:text-base">Sent Requests</h3>
-                    <p className="text-xs text-slate-500">Connection requests waiting for approval</p>
+                    <h3 className="font-semibold text-ink text-sm md:text-base">Sent Requests</h3>
+                    <p className="text-xs text-ink-3">Connection requests waiting for approval</p>
                   </div>
                 </div>
               </div>
@@ -877,12 +877,12 @@ function ConnectionsPageInner() {
                 {pendingSent.map((connection) => (
                   <div
                     key={connection.id}
-                    className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 border border-slate-100 rounded-xl"
+                    className="flex flex-col md:flex-row md:items-center gap-3 p-3 md:p-4 border border-hairline rounded-xl"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="min-w-0">
-                        <div className="font-semibold text-slate-900 text-sm md:text-base truncate">{connection.otherUser.name}</div>
-                        <div className="text-xs md:text-sm text-slate-500 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
+                        <div className="font-semibold text-ink text-sm md:text-base truncate">{connection.otherUser.name}</div>
+                        <div className="text-xs md:text-sm text-ink-3 truncate">{connection.otherUser.company || connection.otherUser.email}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 md:ml-auto">
@@ -904,19 +904,19 @@ function ConnectionsPageInner() {
 
           {/* Sent Invites */}
           {invites.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card overflow-hidden">
-              <div className="px-5 md:px-6 py-4 border-b border-slate-100">
+            <div className="bg-surface rounded-2xl border border-hairline shadow-card overflow-hidden">
+              <div className="px-5 md:px-6 py-4 border-b border-hairline">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-linear-to-br from-violet-400 to-purple-500 rounded-lg flex items-center justify-center shrink-0 shadow-md shadow-violet-500/15">
+                  <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
                     <Send className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 text-sm md:text-base">Sent Invites</h3>
-                    <p className="text-xs text-slate-500">Email invitations you&apos;ve sent to partners</p>
+                    <h3 className="font-semibold text-ink text-sm md:text-base">Sent Invites</h3>
+                    <p className="text-xs text-ink-3">Email invitations you&apos;ve sent to partners</p>
                   </div>
                 </div>
               </div>
-              <div className="px-5 md:px-6 py-4 space-y-0 divide-y divide-slate-100">
+              <div className="px-5 md:px-6 py-4 space-y-0 divide-y divide-hairline">
                 {invites.map((invite) => (
                   <div
                     key={invite.id}
@@ -925,19 +925,19 @@ function ConnectionsPageInner() {
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
                         invite.status === 'accepted'
-                          ? 'bg-linear-to-br from-emerald-400 to-emerald-500 shadow-emerald-500/15'
+                          ? 'bg-ok'
                           : invite.status === 'pending'
-                            ? 'bg-linear-to-br from-sky-400 to-blue-500 shadow-sky-500/15'
-                            : 'bg-linear-to-br from-slate-300 to-slate-400 shadow-slate-400/15'
+                            ? 'bg-accent'
+                            : 'bg-surface-2'
                       }`}>
                         <Mail className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <div className="font-semibold text-slate-900 text-sm md:text-base">
+                        <div className="font-semibold text-ink text-sm md:text-base">
                           {invite.invitedName || invite.invitedEmail}
                         </div>
                         {invite.invitedName && (
-                          <div className="text-xs md:text-sm text-slate-500">{invite.invitedEmail}</div>
+                          <div className="text-xs md:text-sm text-ink-3">{invite.invitedEmail}</div>
                         )}
                         <div className="flex items-center gap-2 mt-0.5">
                           <Badge
@@ -950,7 +950,7 @@ function ConnectionsPageInner() {
                           >
                             {invite.status.charAt(0).toUpperCase() + invite.status.slice(1)}
                           </Badge>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-ink-3">
                             {new Date(invite.createdAt).toLocaleDateString('en-US', {
                               month: 'short', day: 'numeric'
                             })}

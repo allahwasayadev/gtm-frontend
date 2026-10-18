@@ -236,7 +236,7 @@ export function Dropdown({
             role="listbox"
             aria-label={ariaLabel}
             tabIndex={-1}
-            className="fixed z-1000 py-1.5 px-1.5 bg-surface rounded-xl border border-hairline shadow-xl shadow-slate-300/30 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
+            className="fixed z-1000 py-1.5 px-1.5 bg-surface rounded-xl border border-hairline shadow-e2 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
             style={{
               top: listPosition.top,
               left: listPosition.left,

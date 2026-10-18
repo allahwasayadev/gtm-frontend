@@ -162,12 +162,12 @@ export default function VerifyPhonePage() {
   // No activation in progress — the token is gone or the tab is new.
   if (!state) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-indigo-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-card border border-slate-200/60 p-8 text-center">
-          <h2 className="text-xl font-bold text-slate-900 mb-2">
+      <div className="min-h-screen via-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-surface rounded-2xl shadow-card border border-hairline p-8 text-center">
+          <h2 className="text-xl font-bold text-ink mb-2">
             Activation expired
           </h2>
-          <p className="text-slate-500 text-sm mb-6">
+          <p className="text-ink-3 text-sm mb-6">
             Sign in with your password to pick up where you left off.
           </p>
           <Link href="/login">
@@ -184,16 +184,16 @@ export default function VerifyPhonePage() {
 
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-indigo-600 to-indigo-800 p-12 flex-col justify-center">
+      <div className="hidden lg:flex lg:w-1/2 bg-accent p-12 flex-col justify-center">
         <Link href="/">
-          <div className="w-14 h-14 bg-white/15 rounded-2xl flex items-center justify-center mb-8">
+          <div className="w-14 h-14 bg-surface/15 rounded-2xl flex items-center justify-center mb-8">
             <ArrowLeftRight className="w-7 h-7 text-white" />
           </div>
         </Link>
         <h1 className="text-3xl xl:text-4xl font-bold text-white mb-3">
           One last step
         </h1>
-        <p className="text-indigo-200 text-lg max-w-sm leading-relaxed">
+        <p className="text-accent-soft text-lg max-w-sm leading-relaxed">
           {needsNumber
             ? 'Add a mobile number so we can text you a code. Your account is not active until it is verified.'
             : !state.codeSent
@@ -202,7 +202,7 @@ export default function VerifyPhonePage() {
         </p>
       </div>
 
-      <div className="flex-1 min-h-screen bg-linear-to-br from-sky-50 via-white to-indigo-50 flex items-center justify-center p-4 sm:p-8">
+      <div className="flex-1 min-h-screen via-white flex items-center justify-center p-4 sm:p-8">
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 24 }}
@@ -210,10 +210,10 @@ export default function VerifyPhonePage() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Smartphone className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <h2 className="text-2xl font-bold text-ink mb-2">
               {needsNumber
                 ? 'Add your mobile number'
                 : !state.codeSent
@@ -222,19 +222,19 @@ export default function VerifyPhonePage() {
             </h2>
             {!needsNumber && state.phoneHint && (
               <>
-                <p className="text-slate-500">
+                <p className="text-ink-3">
                   {state.codeSent
                     ? 'We sent a 6-digit code by text to'
                     : 'We will text your code to'}
                 </p>
-                <p className="text-indigo-600 font-semibold">
+                <p className="text-accent font-semibold">
                   {state.phoneHint}
                 </p>
               </>
             )}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
+          <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
             {needsNumber ? (
               <form onSubmit={handleSetPhone} className="space-y-5">
                 <UsPhoneInput
@@ -251,10 +251,10 @@ export default function VerifyPhonePage() {
                   error={phoneError}
                   helperText={`We text a code to this ${US_DIAL_CODE} number.`}
                 />
-                <p className="text-xs text-slate-600 bg-slate-50 rounded-xl p-4 border border-slate-100 leading-relaxed">
+                <p className="text-xs text-ink-2 bg-sunken rounded-xl p-4 border border-hairline leading-relaxed">
                   {SMS_CONSENT_TEXT}
                 </p>
-                {error && <p className="text-sm text-red-600">{error}</p>}
+                {error && <p className="text-sm text-danger">{error}</p>}
                 <Button
                   type="submit"
                   variant="primary"
@@ -269,10 +269,10 @@ export default function VerifyPhonePage() {
               /* Number already on file. Show the consent wording and WAIT —
                  an existing account must never be texted just for showing up. */
               <div className="space-y-5">
-                <p className="text-xs text-slate-600 bg-slate-50 rounded-xl p-4 border border-slate-100 leading-relaxed">
+                <p className="text-xs text-ink-2 bg-sunken rounded-xl p-4 border border-hairline leading-relaxed">
                   {SMS_CONSENT_TEXT}
                 </p>
-                {error && <p className="text-sm text-red-600">{error}</p>}
+                {error && <p className="text-sm text-danger">{error}</p>}
                 <Button
                   variant="primary"
                   size="lg"
@@ -282,11 +282,11 @@ export default function VerifyPhonePage() {
                 >
                   Text me a code
                 </Button>
-                <div className="text-center pt-4 border-t border-slate-100">
+                <div className="text-center pt-4 border-t border-hairline">
                   <button
                     type="button"
                     onClick={() => setState({ ...state, needsPhoneNumber: true })}
-                    className="text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                    className="text-sm font-semibold text-accent hover:text-accent-ink"
                   >
                     Use a different number
                   </button>
@@ -294,7 +294,7 @@ export default function VerifyPhonePage() {
               </div>
             ) : (
               <>
-                <label className="block text-sm font-medium text-slate-700 mb-3 text-center">
+                <label className="block text-sm font-medium text-ink-2 mb-3 text-center">
                   Enter your 6-digit code
                 </label>
                 <CodeInput
@@ -309,21 +309,21 @@ export default function VerifyPhonePage() {
                   <p
                     id="activation-code-error"
                     role="alert"
-                    className="text-sm text-red-600 text-center mt-4"
+                    className="text-sm text-danger text-center mt-4"
                   >
                     {error}
                   </p>
                 )}
 
                 <div className="text-center mt-6">
-                  <p className="text-sm text-slate-500 mb-1">
+                  <p className="text-sm text-ink-3 mb-1">
                     Didn&apos;t get the code?
                   </p>
                   <button
                     type="button"
                     onClick={handleRequestCode}
                     disabled={isResending || resendCooldown > 0}
-                    className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 disabled:text-slate-400 disabled:cursor-not-allowed"
+                    className="text-sm font-semibold text-accent hover:text-accent-ink disabled:text-ink-3 disabled:cursor-not-allowed"
                   >
                     {isResending ? (
                       <span className="flex items-center gap-1 justify-center">
@@ -338,19 +338,19 @@ export default function VerifyPhonePage() {
                   </button>
                 </div>
 
-                <p className="text-xs text-slate-400 text-center mt-6">
+                <p className="text-xs text-ink-3 text-center mt-6">
                   The code expires in 10 minutes. Standard message and data
                   rates may apply. Reply STOP to opt out and HELP for help.
                 </p>
 
                 {/* Wrong number typed at sign-up, or the number has changed. */}
-                <div className="text-center mt-4 pt-4 border-t border-slate-100">
+                <div className="text-center mt-4 pt-4 border-t border-hairline">
                   <button
                     type="button"
                     onClick={() =>
                       setState({ ...state, needsPhoneNumber: true })
                     }
-                    className="text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                    className="text-sm font-semibold text-accent hover:text-accent-ink"
                   >
                     Use a different number
                   </button>

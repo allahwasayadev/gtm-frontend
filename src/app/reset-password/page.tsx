@@ -96,7 +96,7 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-indigo-50 flex items-center justify-center p-4 sm:p-8">
+    <div className="min-h-screen via-white flex items-center justify-center p-4 sm:p-8">
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 24 }}
@@ -104,21 +104,21 @@ function ResetPasswordContent() {
         transition={{ duration: 0.5 }}
       >
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-bold text-ink mb-2">
             Choose a new password
           </h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-ink-3 text-sm">
             Enter the 6-digit code we texted you.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
+        <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-ink-2 mb-1.5">
                 Email address or mobile number
               </label>
               <Input
@@ -131,7 +131,7 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-ink-2 mb-1.5">
                 6-digit code
               </label>
               {/* No maxLength: it counts characters, so a pasted "123 456"
@@ -158,7 +158,7 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-ink-2 mb-1.5">
                 New password
               </label>
               <Input
@@ -171,7 +171,7 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-ink-2 mb-1.5">
                 Confirm new password
               </label>
               <Input
@@ -183,7 +183,7 @@ function ResetPasswordContent() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <Button
               type="submit"
@@ -196,14 +196,14 @@ function ResetPasswordContent() {
             </Button>
           </form>
 
-          <p className="text-xs text-slate-400 text-center mt-6">
+          <p className="text-xs text-ink-3 text-center mt-6">
             The code expires in 10 minutes.
           </p>
 
-          <div className="text-center mt-4 pt-4 border-t border-slate-100">
+          <div className="text-center mt-4 pt-4 border-t border-hairline">
             <Link
               href="/forgot-password"
-              className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-1"
+              className="text-sm font-semibold text-accent hover:text-accent-ink inline-flex items-center gap-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Request a new code
             </Link>

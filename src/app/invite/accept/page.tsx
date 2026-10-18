@@ -74,7 +74,7 @@ function InviteAcceptContent() {
   const redirectPath = `/invite/accept?token=${token}`;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-sky-50 flex items-center justify-center p-4">
+    <div className="min-h-screen via-white flex items-center justify-center p-4">
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 24 }}
@@ -84,28 +84,28 @@ function InviteAcceptContent() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block group">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 transition-colors group-hover:text-indigo-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-2 transition-colors group-hover:text-accent">
               Ovrlap
             </h1>
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
+        <div className="bg-surface rounded-2xl shadow-card border border-hairline px-5 py-6 sm:p-8">
           {!validation?.valid ? (
             /* Invalid / Expired State */
             <div className="text-center">
               <motion.div
-                className="w-16 h-16 bg-linear-to-br from-red-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-500/20"
+                className="w-16 h-16 bg-danger rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-e2"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
               >
                 <X className="w-8 h-8 text-white" />
               </motion.div>
-              <h2 className="text-xl font-bold text-slate-900 mb-2">
+              <h2 className="text-xl font-bold text-ink mb-2">
                 {validation?.status === 'expired' ? 'Invite Expired' : 'Invalid Invite'}
               </h2>
-              <p className="text-slate-500 mb-6">
+              <p className="text-ink-3 mb-6">
                 {validation?.message || 'This invite link is not valid.'}
               </p>
               <Link href="/login">
@@ -118,7 +118,7 @@ function InviteAcceptContent() {
             /* Valid Invite */
             <div className="text-center">
               <motion.div
-                className="w-16 h-16 bg-linear-to-br from-indigo-500 to-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/20"
+                className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-e2"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
@@ -126,15 +126,15 @@ function InviteAcceptContent() {
                 <Handshake className="w-8 h-8 text-white" />
               </motion.div>
 
-              <h2 className="text-xl font-bold text-slate-900 mb-1">
+              <h2 className="text-xl font-bold text-ink mb-1">
                 You&apos;re Invited!
               </h2>
-              <p className="text-slate-500 mb-6">
-                <span className="font-semibold text-slate-900">
+              <p className="text-ink-3 mb-6">
+                <span className="font-semibold text-ink">
                   {validation.inviterName}
                 </span>
                 {validation.inviterCompany && (
-                  <span className="text-slate-400"> from {validation.inviterCompany}</span>
+                  <span className="text-ink-3"> from {validation.inviterCompany}</span>
                 )}{' '}
                 wants to connect with you on Ovrlap.
               </p>
@@ -171,7 +171,7 @@ function InviteAcceptContent() {
           )}
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-8">
+        <p className="text-center text-xs text-ink-3 mt-8">
           Compare account lists and find overlaps with your partners
         </p>
       </motion.div>

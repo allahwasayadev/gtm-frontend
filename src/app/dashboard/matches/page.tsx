@@ -358,10 +358,10 @@ function MatchesContent() {
         />
       </div>
       <div className="mb-3 lg:hidden">
-        <h1 className="text-xl leading-tight font-bold text-slate-900 tracking-tight">
+        <h1 className="text-xl leading-tight font-bold text-ink tracking-tight">
           Account Matches
         </h1>
-        <p className="mt-1 text-[13px] leading-snug text-slate-600 max-[359px]:hidden">
+        <p className="mt-1 text-[13px] leading-snug text-ink-2 max-[359px]:hidden">
           Accounts you and a partner both work. Pick a partner to review their suggested matches.
         </p>
       </div>
@@ -370,13 +370,13 @@ function MatchesContent() {
         {loadFailed ? (
           <Card>
             <div role="alert" className="px-5 py-8 text-center">
-              <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-soft text-danger">
                 <AlertTriangle className="h-6 w-6" />
               </span>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-base font-semibold text-ink">
                 We couldn&apos;t load your matches
               </h3>
-              <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">
+              <p className="mx-auto mt-1 max-w-sm text-sm text-ink-2">
                 Something went wrong on our side. Your partners and overlaps are safe &mdash;
                 try again in a moment.
               </p>
@@ -421,14 +421,14 @@ function MatchesContent() {
             <aside className="hidden lg:block space-y-4">
               <Card className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-                    <ArrowLeftRight className="w-4 h-4 text-indigo-600" />
+                  <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center">
+                    <ArrowLeftRight className="w-4 h-4 text-accent" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-slate-900">
+                    <div className="text-sm font-semibold text-ink">
                       Views
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-ink-3">
                       All partners or reseller drilldown
                     </div>
                   </div>
@@ -439,20 +439,20 @@ function MatchesContent() {
                   onClick={() => setSelectedConnectionId('')}
                   className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
                     allPartnersMode
-                      ? 'border-indigo-300 bg-indigo-50'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
+                      ? 'border-accent bg-accent-soft'
+                      : 'border-hairline bg-surface hover:bg-sunken'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="text-sm font-semibold text-slate-900">
+                      <div className="text-sm font-semibold text-ink">
                         {partnerTypeFilter === 'RESELLER'
                           ? 'Reseller Overlaps'
                           : partnerTypeFilter === 'OEM'
                             ? 'OEM Overlaps'
                             : 'All Partners'}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-ink-3">
                         {partnerTypeFilter === 'RESELLER'
                           ? 'Account-centric reseller overlap view'
                           : partnerTypeFilter === 'OEM'
@@ -474,16 +474,16 @@ function MatchesContent() {
                         onClick={() => setSelectedConnectionId(connection.id)}
                         className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${
                           isSelected
-                            ? 'border-indigo-300 bg-indigo-50'
-                            : 'border-slate-200 bg-white hover:bg-slate-50'
+                            ? 'border-accent bg-accent-soft'
+                            : 'border-hairline bg-surface hover:bg-sunken'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold text-slate-900 truncate">
+                            <div className="text-sm font-semibold text-ink truncate">
                               {connection.otherUser.name}
                             </div>
-                            <div className="text-xs text-slate-500 truncate">
+                            <div className="text-xs text-ink-3 truncate">
                               {connection.otherUser.company ||
                                 connection.otherUser.email}
                             </div>
@@ -510,7 +510,7 @@ function MatchesContent() {
               <Card padding="none" className="p-3 lg:p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5 lg:gap-3">
                   <div className="min-w-0">
-                    <h2 className="hidden lg:block text-lg font-semibold text-slate-900">
+                    <h2 className="hidden lg:block text-lg font-semibold text-ink">
                       {allPartnersMode
                         ? partnerTypeFilter === 'RESELLER'
                           ? 'Reseller Overlaps (Account-Centric)'
@@ -519,12 +519,12 @@ function MatchesContent() {
                             : 'All Partners Overlap (Account-Centric)'
                         : `${selectedConnection?.otherUser.name ?? 'Partner'} Matches`}
                     </h2>
-                    <h2 className="lg:hidden text-[15px] font-bold leading-tight text-slate-900">
+                    <h2 className="lg:hidden text-[15px] font-bold leading-tight text-ink">
                       {allPartnersMode
                         ? 'Overlapping accounts'
                         : selectedConnection?.otherUser.name ?? 'Partner matches'}
                     </h2>
-                    <p className="hidden lg:block text-sm text-slate-500 mt-0.5">
+                    <p className="hidden lg:block text-sm text-ink-3 mt-0.5">
                       {allPartnersMode
                         ? partnerTypeFilter === 'RESELLER'
                           ? 'Your accounts with overlaps across mapped resellers'
@@ -656,15 +656,15 @@ function PartnerChips({
       onClick={onClick}
       className={`flex min-h-[44px] w-[108px] shrink-0 snap-start flex-col items-start rounded-xl border px-2.5 py-2 text-left transition-colors ${
         selected
-          ? 'border-indigo-400 bg-indigo-50 ring-1 ring-indigo-300'
-          : 'border-slate-200/80 bg-white'
+          ? 'border-accent bg-accent-soft ring-1 ring-accent'
+          : 'border-hairline bg-surface'
       }`}
     >
-      <span className={`text-[17px] font-extrabold leading-none tracking-tight ${selected ? 'text-indigo-700' : 'text-slate-900'}`}>
+      <span className={`text-[17px] font-extrabold leading-none tracking-tight ${selected ? 'text-accent-ink' : 'text-ink'}`}>
         {count}
       </span>
-      <span className="mt-1 w-full truncate text-[11px] font-bold leading-tight text-slate-600">{title}</span>
-      <span className="w-full truncate text-[10.5px] leading-tight text-slate-500">{sub}</span>
+      <span className="mt-1 w-full truncate text-[11px] font-bold leading-tight text-ink-2">{title}</span>
+      <span className="w-full truncate text-[10.5px] leading-tight text-ink-3">{sub}</span>
     </button>
   );
 
@@ -690,13 +690,13 @@ function PartnerChips({
         )}
       </div>
       {edges.start && (
-        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-7 bg-linear-to-r from-slate-50 to-transparent" />
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-7 to-transparent" />
       )}
       {edges.end && (
-        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-7 bg-linear-to-l from-slate-50 to-transparent" />
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-7 to-transparent" />
       )}
       {edges.end && (
-        <span className="pointer-events-none absolute -bottom-4 right-0 text-[10.5px] font-bold text-slate-500">
+        <span className="pointer-events-none absolute -bottom-4 right-0 text-[10.5px] font-bold text-ink-3">
           scroll for more &rarr;
         </span>
       )}
@@ -722,7 +722,7 @@ function AllPartnersPanel({
       <Card className="p-4 sm:p-5">
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, index) => (
-            <div key={index} className="rounded-xl border border-slate-200 p-4">
+            <div key={index} className="rounded-xl border border-hairline p-4">
               <Skeleton className="h-4 w-52" />
               <div className="mt-3 flex flex-wrap gap-2">
                 <Skeleton className="h-6 w-28" />
@@ -753,11 +753,11 @@ function AllPartnersPanel({
       <Card className="hidden lg:block p-4 sm:p-5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div className="text-sm text-slate-500">Matched Accounts</div>
-            <div className="text-2xl font-bold text-slate-900">
+            <div className="text-sm text-ink-3">Matched Accounts</div>
+            <div className="text-2xl font-bold text-ink">
               {accounts.length}
             </div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-xs text-ink-3 mt-1">
               {totalPartnerOverlaps} partner overlap
               {totalPartnerOverlaps !== 1 ? 's' : ''} across mapped resellers
             </div>
@@ -768,7 +768,7 @@ function AllPartnersPanel({
                 key={summary.connectionId}
                 type="button"
                 onClick={() => onSelectConnection(summary.connectionId)}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+                className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-2 hover:bg-sunken"
               >
                 <span className="font-medium">{summary.partnerName}</span>
                 <Badge
@@ -784,25 +784,25 @@ function AllPartnersPanel({
       </Card>
 
       <Card padding="none" className="overflow-hidden lg:hidden">
-        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+        <div className="flex items-center justify-between border-b border-hairline px-3 py-2.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-ink-3">
             Overlapping accounts &middot; {accounts.length}
           </span>
-          <span className="text-[11px] text-slate-500">
+          <span className="text-[11px] text-ink-3">
             {totalPartnerOverlaps} overlap{totalPartnerOverlaps !== 1 ? 's' : ''}
           </span>
         </div>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-hairline">
           {accounts.map((account) => (
             <div key={account.yourAccountId} className="px-3 py-2.5">
               <div className="flex items-center gap-2.5">
-                <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-slate-800">
+                <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-ink">
                   {account.yourAccountName}
                 </span>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${
                   account.partners.length > 2
-                    ? 'bg-linear-to-r from-indigo-600 to-violet-600 text-white'
-                    : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                    ? 'bg-accent text-white'
+                    : 'border border-ok bg-ok-soft text-ok'
                 }`}>
                   {account.partners.length}
                 </span>
@@ -814,7 +814,7 @@ function AllPartnersPanel({
                     type="button"
                     onClick={() => onSelectConnection(partner.connectionId)}
                     title={`Their list: ${partner.theirAccountName}`}
-                    className="inline-flex min-h-8 max-w-full items-center truncate rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600"
+                    className="inline-flex min-h-8 max-w-full items-center truncate rounded-md bg-surface-2 px-2 py-1 text-[11px] font-semibold text-ink-2"
                   >
                     {partner.partnerName}
                   </button>
@@ -826,20 +826,20 @@ function AllPartnersPanel({
       </Card>
 
       <Card className="p-0 overflow-hidden hidden lg:block">
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-hairline">
           {accounts.map((account) => (
             <div key={account.yourAccountId} className="p-4 sm:p-5">
               <div className="flex flex-col lg:flex-row lg:items-start gap-4">
                 <div className="min-w-0 lg:w-72">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                      <Building2 className="w-4 h-4 text-indigo-600" />
+                    <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 text-accent" />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-slate-900 truncate">
+                      <div className="font-semibold text-ink truncate">
                         {account.yourAccountName}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-ink-3">
                         {account.partners.length} partner overlap
                         {account.partners.length !== 1 ? 's' : ''}
                       </div>
@@ -853,17 +853,17 @@ function AllPartnersPanel({
                       key={`${account.yourAccountId}-${partner.connectionId}`}
                       type="button"
                       onClick={() => onSelectConnection(partner.connectionId)}
-                      className="group w-full text-left rounded-2xl border border-slate-200/90 bg-white shadow-[0_6px_18px_rgba(15,23,42,0.04)] px-4 py-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200/70"
+                      className="group w-full text-left rounded-2xl border border-hairline bg-surface shadow-[0_6px_18px_rgba(15,23,42,0.04)] px-4 py-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent-soft hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft/70"
                     >
                       <div className="flex items-start gap-3">
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-900 truncate">
+                          <div className="text-sm font-semibold text-ink truncate">
                             {partner.partnerName}
                           </div>
-                          <div className="text-xs text-slate-500 truncate">
+                          <div className="text-xs text-ink-3 truncate">
                             {partner.partnerCompany || 'Company not provided'}
                           </div>
-                          <div className="mt-1 text-xs text-slate-500 truncate">
+                          <div className="mt-1 text-xs text-ink-3 truncate">
                             Their list: {partner.theirAccountName}
                           </div>
                         </div>
@@ -913,11 +913,11 @@ function PartnerPanel({
   if (connection.isMuted) {
     return (
       <Card className="p-5">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-          <div className="font-medium text-amber-900">
+        <div className="rounded-xl border border-warn bg-warn-soft px-4 py-3">
+          <div className="font-medium text-warn">
             This connection is muted
           </div>
-          <p className="text-sm text-amber-800 mt-1">
+          <p className="text-sm text-warn mt-1">
             It is hidden from overlap views until new overlaps are detected or
             you unmute it.
           </p>
@@ -931,7 +931,7 @@ function PartnerPanel({
       <Card className="p-4 sm:p-5">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="rounded-xl border border-slate-200 p-4">
+            <div key={index} className="rounded-xl border border-hairline p-4">
               <Skeleton className="h-4 w-48" />
               <Skeleton className="h-3 w-64 mt-2" />
             </div>
@@ -956,17 +956,17 @@ function PartnerPanel({
   return (
     <div className="space-y-4">
       {suggestedMatches.length > 0 && (
-        <Card className="p-4 sm:p-5 border-indigo-200/70 bg-linear-to-r from-indigo-50 to-violet-50">
+        <Card className="p-4 sm:p-5 border-accent-soft/70 bg-accent-soft">
           <div className="flex items-start gap-3 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shrink-0">
               <Lightbulb className="w-4 h-4 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-indigo-950">
+              <div className="font-semibold text-accent-ink">
                 {suggestedMatches.length} Suggested Match
                 {suggestedMatches.length !== 1 ? 'es' : ''}
               </div>
-              <p className="text-sm text-indigo-800 mt-0.5">
+              <p className="text-sm text-accent-ink mt-0.5">
                 Suggestions are intentionally conservative. Confirm only if
                 these are the same company.
               </p>
@@ -981,25 +981,25 @@ function PartnerPanel({
               return (
                 <div
                   key={matchKey}
-                  className="rounded-xl border border-indigo-200 bg-white p-4"
+                  className="rounded-xl border border-accent-soft bg-surface p-4"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-slate-900 truncate">
+                      <div className="font-semibold text-ink truncate">
                         {match.accountName}
                       </div>
-                      <div className="mt-1 text-sm text-slate-600 truncate">
+                      <div className="mt-1 text-sm text-ink-2 truncate">
                         You: {match.yourAccountName}
                       </div>
-                      <div className="text-sm text-slate-600 truncate">
+                      <div className="text-sm text-ink-2 truncate">
                         Them: {match.theirAccountName}
                       </div>
-                      <div className="mt-2 text-xs text-slate-500">
+                      <div className="mt-2 text-xs text-ink-3">
                         {connection.otherUser.name} •{' '}
                         {connection.otherUser.company ??
                           connection.otherUser.email}
                       </div>
-                      <div className="mt-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-700">
+                      <div className="mt-2 inline-flex rounded-full bg-surface-2 px-3 py-1 text-[11px] font-medium text-ink-2">
                         Suggested match
                       </div>
                     </div>
@@ -1033,18 +1033,18 @@ function PartnerPanel({
 
       {resolvedMatches.length > 0 && (
         <Card className="p-0 overflow-hidden">
-          <div className="px-4 sm:px-5 py-4 border-b border-slate-100 bg-slate-50/70">
+          <div className="px-4 sm:px-5 py-4 border-b border-hairline bg-sunken/70">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-ok flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900">
+                  <div className="font-semibold text-ink">
                     {resolvedMatches.length} Resolved Match
                     {resolvedMatches.length !== 1 ? 'es' : ''}
                   </div>
-                  <div className="text-sm text-slate-500">
+                  <div className="text-sm text-ink-3">
                     {connection.otherUser.name} overlap view
                   </div>
                 </div>
@@ -1055,7 +1055,7 @@ function PartnerPanel({
             </div>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-hairline">
             {resolvedMatches.map((match) => (
               <div
                 key={`${match.yourAccountId}-${match.theirAccountId}`}
@@ -1063,24 +1063,24 @@ function PartnerPanel({
               >
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   <div className="flex items-center gap-3 min-w-0 lg:w-80">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                      <Building2 className="w-4 h-4 text-indigo-600" />
+                    <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 text-accent" />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-slate-900 truncate">
+                      <div className="font-semibold text-ink truncate">
                         {match.yourAccountName}
                       </div>
-                      <div className="text-xs text-slate-500 truncate">
+                      <div className="text-xs text-ink-3 truncate">
                         Matched to {match.theirAccountName}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 truncate">
+                    <div className="text-sm font-semibold text-ink truncate">
                       {connection.otherUser.name}
                     </div>
-                    <div className="text-xs text-slate-500 truncate">
+                    <div className="text-xs text-ink-3 truncate">
                       {connection.otherUser.company ??
                         connection.otherUser.email}
                     </div>

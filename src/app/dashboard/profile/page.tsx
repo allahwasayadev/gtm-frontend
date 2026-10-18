@@ -436,36 +436,36 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-slate-50/50">
+    <main className="min-h-[calc(100vh-4rem)] bg-sunken/50">
       <PageTransition>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <FadeIn>
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900">Profile Settings</h1>
-              <p className="text-slate-500 mt-1">Manage your account information</p>
+              <h1 className="text-2xl font-bold text-ink">Profile Settings</h1>
+              <p className="text-ink-3 mt-1">Manage your account information</p>
             </div>
           </FadeIn>
 
           <div className="space-y-6">
             <FadeIn delay={0.1}>
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div className="bg-linear-to-r from-indigo-500 via-indigo-600 to-violet-600 px-6 py-8">
+              <div className="bg-surface rounded-2xl border border-hairline overflow-hidden">
+                <div className=" px-6 py-8">
                   <div className="flex flex-col sm:flex-row items-center gap-5">
                     <div className="relative">
-                      <div className="w-6 h-6 bg-emerald-400 rounded-lg border-2 border-white flex items-center justify-center">
+                      <div className="w-6 h-6 bg-ok rounded-lg border-2 border-white flex items-center justify-center">
                         <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                       </div>
                     </div>
                     <div className="text-center sm:text-left">
                       <h2 className="text-xl font-bold text-white">{user.name}</h2>
-                      <p className="text-indigo-100 text-sm">{user.email}</p>
+                      <p className="text-white/90 text-sm">{user.email}</p>
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-lg text-xs font-medium text-white">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface/20 rounded-lg text-xs font-medium text-white">
                           {user.roles?.includes('OEM') ? <Factory className="w-3 h-3" /> : <Store className="w-3 h-3" />}
                           {user.roles?.includes('OEM') ? 'OEM Seller' : 'Reseller'}
                         </span>
                         {user.company && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-lg text-xs font-medium text-white">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface/20 rounded-lg text-xs font-medium text-white">
                             <Building2 className="w-3 h-3" />
                             {user.company}
                           </span>
@@ -475,30 +475,30 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 bg-slate-50/50">
+                <div className="grid grid-cols-2 sm:grid-cols-3 divide-x divide-hairline border-b border-hairline bg-sunken/50">
                   <div className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-1">
+                    <div className="flex items-center justify-center gap-2 text-ink-3 text-sm mb-1">
                       <Calendar className="w-4 h-4" />
                       Member since
                     </div>
-                    <p className="font-semibold text-slate-900">{formatDate(user.createdAt)}</p>
+                    <p className="font-semibold text-ink">{formatDate(user.createdAt)}</p>
                   </div>
                   <div className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-1">
+                    <div className="flex items-center justify-center gap-2 text-ink-3 text-sm mb-1">
                       <Shield className="w-4 h-4" />
                       Status
                     </div>
-                    <p className="font-semibold text-emerald-600 flex items-center justify-center gap-1.5">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <p className="font-semibold text-ok flex items-center justify-center gap-1.5">
+                      <span className="w-2 h-2 bg-ok rounded-full animate-pulse" />
                       Active
                     </p>
                   </div>
                   <div className="px-6 py-4 text-center hidden sm:block">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-1">
+                    <div className="flex items-center justify-center gap-2 text-ink-3 text-sm mb-1">
                       <Mail className="w-4 h-4" />
                       Email
                     </div>
-                    <p className={`font-semibold ${user.emailVerified ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    <p className={`font-semibold ${user.emailVerified ? 'text-ok' : 'text-warn'}`}>
                       {user.emailVerified ? 'Verified' : 'Pending'}
                     </p>
                   </div>
@@ -524,9 +524,9 @@ export default function ProfilePage() {
 
                       <div className="w-full">
                         <div className="flex items-center justify-between gap-3 mb-1.5">
-                          <label className="block text-sm font-medium text-slate-700">
+                          <label className="block text-sm font-medium text-ink-2">
                             Email Address
-                            <span className="text-red-500 ml-1">*</span>
+                            <span className="text-danger ml-1">*</span>
                           </label>
                           <Button
                             type="button"
@@ -540,17 +540,17 @@ export default function ProfilePage() {
                         </div>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Mail className="w-4 h-4 text-slate-400" />
+                            <Mail className="w-4 h-4 text-ink-3" />
                           </div>
                           <input
                             className={`
-                              block w-full pl-10 pr-4 py-2.5 text-sm text-slate-900
-                              bg-white border rounded-xl
-                              placeholder:text-slate-400
-                              focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-white focus:shadow-sm
+                              block w-full pl-10 pr-4 py-2.5 text-sm text-ink
+                              bg-surface border rounded-xl
+                              placeholder:text-ink-3
+                              focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-surface focus:shadow-sm
                               transition-all duration-200
-                              disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
-                              ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20'}
+                              disabled:bg-sunken disabled:text-ink-3 disabled:cursor-not-allowed
+                              ${errors.email ? 'border-danger focus:border-danger focus:ring-danger' : 'border-hairline focus:border-accent focus:ring-accent'}
                             `}
                             type="email"
                             required
@@ -565,10 +565,10 @@ export default function ProfilePage() {
                           />
                         </div>
                         {errors.email && (
-                          <p className="mt-1.5 text-sm text-red-600">{errors.email}</p>
+                          <p className="mt-1.5 text-sm text-danger">{errors.email}</p>
                         )}
                         {!errors.email && (
-                          <p className="mt-1.5 text-sm text-slate-500">
+                          <p className="mt-1.5 text-sm text-ink-3">
                             {isEmailEditingEnabled
                               ? 'Phone verified. You can edit your email now.'
                               : !hasPhoneNumber
@@ -583,18 +583,18 @@ export default function ProfilePage() {
                       <div>
                         {isPhoneVerifiedForCurrentPhone ? (
                           <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                            <label className="block text-sm font-medium text-ink-2 mb-1.5">
                               Phone Number
                             </label>
-                            <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                              <Phone className="w-4 h-4 text-slate-400" />
-                              <span className="text-sm text-slate-700 flex-1">{formData.phoneNumber}</span>
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">
+                            <div className="flex items-center gap-2 px-4 py-2.5 bg-sunken border border-hairline rounded-xl">
+                              <Phone className="w-4 h-4 text-ink-3" />
+                              <span className="text-sm text-ink-2 flex-1">{formData.phoneNumber}</span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-ok-soft text-ok text-xs font-medium rounded-full">
                                 <CheckCircle2 className="w-3 h-3" />
                                 Verified
                               </span>
                             </div>
-                            <p className="mt-1.5 text-sm text-slate-500">
+                            <p className="mt-1.5 text-sm text-ink-3">
                               Verified phone number. To change, contact support.
                             </p>
                           </div>
@@ -652,7 +652,7 @@ export default function ProfilePage() {
                               />
                             )}
                             {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
-                              <label className="mt-3 flex items-start gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100 cursor-pointer select-none">
+                              <label className="mt-3 flex items-start gap-3 bg-sunken rounded-xl p-3.5 border border-hairline cursor-pointer select-none">
                                 <input
                                   type="checkbox"
                                   checked={smsConsent}
@@ -660,19 +660,19 @@ export default function ProfilePage() {
                                     setSmsConsent(e.target.checked);
                                     setErrors((prev) => ({ ...prev, smsConsent: '' }));
                                   }}
-                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 accent-indigo-600"
+                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-control text-accent focus:ring-accent accent-[#0E5955]"
                                 />
                                 <div>
-                                  <p className="text-xs text-slate-600 leading-relaxed">
+                                  <p className="text-xs text-ink-2 leading-relaxed">
                                     {SMS_CONSENT_TEXT}
                                   </p>
                                   <div className="flex gap-3 mt-2">
-                                    <Link href="/terms" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>Terms</Link>
-                                    <Link href="/privacy" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>
-                                    <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>SMS Terms</Link>
+                                    <Link href="/terms" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Terms</Link>
+                                    <Link href="/privacy" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>
+                                    <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>SMS Terms</Link>
                                   </div>
                                   {errors.smsConsent && (
-                                    <p className="mt-1.5 text-xs text-red-600">{errors.smsConsent}</p>
+                                    <p className="mt-1.5 text-xs text-danger">{errors.smsConsent}</p>
                                   )}
                                 </div>
                               </label>
@@ -682,15 +682,15 @@ export default function ProfilePage() {
                                 on file, so a user can see and revoke consent without
                                 needing to have received a text first. */}
                             {hasPhoneNumber && (alreadyConsented || user?.smsOptedOut) && (
-                              <div className={`mt-3 rounded-xl p-3.5 border ${user?.smsOptedOut ? 'bg-amber-50 border-amber-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                              <div className={`mt-3 rounded-xl p-3.5 border ${user?.smsOptedOut ? 'bg-warn-soft border-warn-soft' : 'bg-ok-soft border-ok-soft'}`}>
                                 <div className="flex items-start justify-between gap-3 flex-wrap">
                                   <div className="min-w-0">
-                                    <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-amber-800' : 'text-emerald-800'}`}>
+                                    <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-warn' : 'text-ok'}`}>
                                       {user?.smsOptedOut
                                         ? 'SMS messages are turned off'
                                         : 'You agreed to receive Ovrlap SMS'}
                                     </p>
-                                    <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-amber-700/90' : 'text-emerald-700/90'}`}>
+                                    <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-warn/90' : 'text-ok/90'}`}>
                                       {user?.smsOptedOut
                                         ? 'Ovrlap will not send text messages to this number. Tick the box above to opt in again.'
                                         : user?.smsConsentAt
@@ -715,8 +715,8 @@ export default function ProfilePage() {
 
                             {hasPhoneNumber && !isPhoneVerifiedForCurrentPhone && (
                               <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                <span className="text-sm text-amber-600">Not verified yet</span>
-                                <span className="text-slate-300">·</span>
+                                <span className="text-sm text-warn">Not verified yet</span>
+                                <span className="text-ink-3">·</span>
                                 <Button
                                   type="button"
                                   variant="primary"
@@ -746,15 +746,15 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-3">
+                      <label className="block text-sm font-medium text-ink-2 mb-3">
                         Your Role
                       </label>
                       <div className="grid sm:grid-cols-2 gap-3">
                         <label
                           className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             formData.role === 'OEM'
-                              ? 'border-indigo-500 bg-indigo-50/50'
-                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                              ? 'border-accent bg-accent-soft/50'
+                              : 'border-hairline hover:border-control hover:bg-sunken'
                           }`}
                         >
                           <input
@@ -765,27 +765,27 @@ export default function ProfilePage() {
                             onChange={() => setFormData({ ...formData, role: 'OEM' })}
                           />
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            formData.role === 'OEM' ? 'bg-indigo-500' : 'bg-slate-100'
+                            formData.role === 'OEM' ? 'bg-accent' : 'bg-surface-2'
                           }`}
                           >
-                            <Factory className={`w-6 h-6 ${formData.role === 'OEM' ? 'text-white' : 'text-slate-500'}`} />
+                            <Factory className={`w-6 h-6 ${formData.role === 'OEM' ? 'text-white' : 'text-ink-3'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-medium ${formData.role === 'OEM' ? 'text-indigo-900' : 'text-slate-900'}`}>
+                            <p className={`font-medium ${formData.role === 'OEM' ? 'text-accent-ink' : 'text-ink'}`}>
                               OEM Seller
                             </p>
-                            <p className="text-sm text-slate-500 truncate">Original equipment manufacturer</p>
+                            <p className="text-sm text-ink-3 truncate">Original equipment manufacturer</p>
                           </div>
                           {formData.role === 'OEM' && (
-                            <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
+                            <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
                           )}
                         </label>
 
                         <label
                           className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             formData.role === 'Reseller'
-                              ? 'border-indigo-500 bg-indigo-50/50'
-                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                              ? 'border-accent bg-accent-soft/50'
+                              : 'border-hairline hover:border-control hover:bg-sunken'
                           }`}
                         >
                           <input
@@ -796,26 +796,26 @@ export default function ProfilePage() {
                             onChange={() => setFormData({ ...formData, role: 'Reseller' })}
                           />
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            formData.role === 'Reseller' ? 'bg-indigo-500' : 'bg-slate-100'
+                            formData.role === 'Reseller' ? 'bg-accent' : 'bg-surface-2'
                           }`}
                           >
-                            <Store className={`w-6 h-6 ${formData.role === 'Reseller' ? 'text-white' : 'text-slate-500'}`} />
+                            <Store className={`w-6 h-6 ${formData.role === 'Reseller' ? 'text-white' : 'text-ink-3'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-medium ${formData.role === 'Reseller' ? 'text-indigo-900' : 'text-slate-900'}`}>
+                            <p className={`font-medium ${formData.role === 'Reseller' ? 'text-accent-ink' : 'text-ink'}`}>
                               Reseller
                             </p>
-                            <p className="text-sm text-slate-500 truncate">Channel partner or distributor</p>
+                            <p className="text-sm text-ink-3 truncate">Channel partner or distributor</p>
                           </div>
                           {formData.role === 'Reseller' && (
-                            <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
+                            <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
                           )}
                         </label>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+                  <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-hairline">
                     <Link href="/dashboard">
                       <Button type="button" variant="outline" size="lg">
                         Cancel
@@ -833,16 +833,16 @@ export default function ProfilePage() {
                     </Button>
                   </div>
 
-                  <div className="mt-10 pt-8 border-t border-slate-200">
-                    <h3 className="text-sm font-semibold text-slate-900">Danger zone</h3>
-                    <p className="mt-1 text-sm text-slate-500">
+                  <div className="mt-10 pt-8 border-t border-hairline">
+                    <h3 className="text-sm font-semibold text-ink">Danger zone</h3>
+                    <p className="mt-1 text-sm text-ink-3">
                       Permanently delete your account and all associated data (lists, connections, invites). You will not be able to sign in again.
                     </p>
                     <Button
                       type="button"
                       variant="outline"
                       size="lg"
-                      className="mt-4 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                      className="mt-4 text-danger border-danger hover:bg-danger-soft hover:border-danger"
                       onClick={() => setShowDeleteAccountModal(true)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -884,7 +884,7 @@ export default function ProfilePage() {
         createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
             <div
-              className={`absolute inset-0 bg-slate-900/50 transition-opacity duration-300 ${
+              className={`absolute inset-0 bg-[rgba(25,28,27,0.50)] transition-opacity duration-300 ${
                 modalAnimate ? 'opacity-100' : 'opacity-0'
               }`}
               onClick={() => setShowVerifyPhoneModal(false)}
@@ -902,21 +902,21 @@ export default function ProfilePage() {
               aria-modal="true"
               aria-labelledby="verify-modal-title"
             >
-              <div className="bg-white rounded-2xl shadow-2xl shadow-black/25 ring-1 ring-slate-200/80 overflow-hidden">
+              <div className="bg-surface rounded-2xl shadow-2xl shadow-black/25 ring-1 ring-hairline overflow-hidden">
                 {/* Header */}
-                <div className="relative bg-linear-to-br from-indigo-600 via-indigo-500 to-violet-500 px-6 py-6 overflow-hidden">
-                  <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
-                  <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-white/5 rounded-full" />
+                <div className="relative bg-accent px-6 py-6 overflow-hidden">
+                  <div className="absolute -top-8 -right-8 w-32 h-32 bg-surface/10 rounded-full" />
+                  <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-surface/5 rounded-full" />
                   <div className="relative flex items-start justify-between">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
+                      <div className="w-12 h-12 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
                         <Phone className="w-6 h-6 text-white" />
                       </div>
                       <div>
                         <h2 id="verify-modal-title" className="text-lg font-bold text-white">
                           Verify your phone
                         </h2>
-                        <p className="text-indigo-200 text-sm mt-0.5">
+                        <p className="text-accent-soft text-sm mt-0.5">
                           Code sent to {formData.phoneNumber || 'your phone'}
                         </p>
                       </div>
@@ -927,7 +927,7 @@ export default function ProfilePage() {
                         setVerifyCodeInput('');
                         setErrors((prev) => ({ ...prev, verifyCode: '' }));
                       }}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-indigo-200 hover:text-white hover:bg-white/15 transition-all"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-accent-soft hover:text-white hover:bg-surface/15 transition-all"
                       aria-label="Close"
                     >
                       <X className="w-5 h-5" />
@@ -937,7 +937,7 @@ export default function ProfilePage() {
 
                 {/* Body */}
                 <div className="px-6 py-6">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-ink-2 mb-2">
                     Enter 6-digit code
                   </label>
                   {/* Same field as activation, so the phone offers the code
@@ -961,16 +961,16 @@ export default function ProfilePage() {
                     <p
                       id="profile-verify-code-error"
                       role="alert"
-                      className="mt-2 text-sm text-red-600"
+                      className="mt-2 text-sm text-danger"
                     >
                       {errors.verifyCode}
                     </p>
                   )}
-                  <p className="mt-3 text-sm text-slate-500 flex items-center justify-between">
+                  <p className="mt-3 text-sm text-ink-3 flex items-center justify-between">
                     <span>Code expires in 10 minutes</span>
                     <button
                       type="button"
-                      className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                      className="text-accent hover:text-accent-ink font-medium transition-colors"
                       onClick={async () => {
                         await handleSendPhoneVerificationCode(false);
                         setShowVerifyPhoneModal(true);
@@ -981,7 +981,7 @@ export default function ProfilePage() {
                     </button>
                   </p>
 
-                  <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100">
+                  <div className="flex gap-3 mt-6 pt-4 border-t border-hairline">
                     <Button
                       type="button"
                       variant="outline"

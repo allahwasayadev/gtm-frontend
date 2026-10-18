@@ -132,7 +132,7 @@ export function CountryCodeSelect({ value, onChange }: CountryCodeSelectProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-surface border border-hairline rounded-xl shadow-lg shadow-slate-200/50 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-surface border border-hairline rounded-xl shadow-e2 overflow-hidden">
           {/* Search */}
           <div className="p-2 border-b border-hairline">
             <div className="relative">

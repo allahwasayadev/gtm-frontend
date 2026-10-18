@@ -320,7 +320,7 @@ export function NotificationBell() {
             role="dialog"
             aria-modal="true"
             aria-label="Notifications"
-            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-2xl border border-hairline bg-surface shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
+            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-2xl border border-hairline bg-surface shadow-e2 ring-1 ring-black/5">
           <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-ink">
