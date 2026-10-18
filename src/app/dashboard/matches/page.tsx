@@ -348,21 +348,14 @@ function MatchesContent() {
 
   return (
     <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4 lg:py-8">
-      <div className="hidden lg:block">
-        <PageHeader
-          title="Account Matches"
-          description="View overlaps across all partners, then drill into any reseller"
-          backHref="/dashboard"
-        />
-      </div>
-      <div className="mb-3 lg:hidden">
-        <h1 className="text-xl leading-tight font-bold text-ink tracking-tight">
-          Account Matches
-        </h1>
-        <p className="mt-1 text-[13px] leading-snug text-ink-2 max-[359px]:hidden">
-          Accounts you and a partner both work. Pick a partner to review their suggested matches.
-        </p>
-      </div>
+      {/* One header at every width. PageHeader already scales its title and
+          carries the back link, so the phone-only h1 copy was a second header
+          to keep in step for no gain. */}
+      <PageHeader
+        title="Account Matches"
+        description="Accounts you and a partner both work. Pick a partner to review their suggested matches."
+        backHref="/dashboard"
+      />
 
       <PageTransition>
         {loadFailed ? (
