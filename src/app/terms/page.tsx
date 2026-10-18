@@ -331,10 +331,10 @@ export default function TermsPage() {
                 <p className="text-ink-3 text-sm">
                   &copy; {new Date().getFullYear()} Ovrlap. All rights reserved.
                 </p>
-                <div className="flex items-center gap-6">
-                  <Link href="/about" className="text-sm text-ink-3 hover:text-ink-2 transition-colors">About</Link>
-                  <Link href="/privacy" className="text-sm text-ink-3 hover:text-ink-2 transition-colors">Privacy</Link>
-                  <Link href="/sms-opt-in" className="text-sm text-ink-3 hover:text-ink-2 transition-colors">SMS Terms</Link>
+                <div className="-mx-3 flex flex-wrap items-center gap-x-1">
+                  <Link href="/about" className="flex min-h-[44px] items-center rounded-xs px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">About</Link>
+                  <Link href="/privacy" className="flex min-h-[44px] items-center rounded-xs px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">Privacy</Link>
+                  <Link href="/sms-opt-in" className="flex min-h-[44px] items-center rounded-xs px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">SMS Terms</Link>
                 </div>
               </div>
             </div>
