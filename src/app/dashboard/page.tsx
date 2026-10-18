@@ -19,7 +19,6 @@ import {
   Building2,
   FileText,
   Users,
-  Clock,
   CloudUpload,
   Mail,
   ClipboardCheck,
@@ -251,130 +250,64 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-            {/* Narrow screens: the same three metrics as one compact summary. */}
-            <div className="md:hidden mb-3 grid grid-cols-3 bg-surface rounded-md border border-hairline shadow-card overflow-hidden">
-              <div className="px-2 py-2.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-                  <span className="text-xl font-extrabold tracking-tight text-ink leading-none">
-                    {activeList ? 1 : 0}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs font-semibold text-ink-2 leading-tight">
-                  Account List
-                </p>
-                <p className="mt-0.5 text-xs text-ink-3 leading-tight min-h-[24px]">
-                  {activeList?.status === 'active'
+            {/* One renderer at every width. Phones join the three metrics into a
+                single banded card; from md they separate into their own cards and
+                the numbers grow. Same markup, same order, same copy throughout. */}
+            {(() => {
+              const metrics = [
+                {
+                  dot: 'bg-accent',
+                  value: activeList ? 1 : 0,
+                  label: 'Account List',
+                  note: activeList?.status === 'active'
                     ? 'Published'
                     : activeList
                       ? 'Draft'
-                      : 'No list yet'}
-                </p>
-              </div>
-              <div className="px-2 py-2.5 border-l border-hairline">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-ok shrink-0" />
-                  <span className="text-xl font-extrabold tracking-tight text-ink leading-none">
-                    {activeConnections.length}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs font-semibold text-ink-2 leading-tight">
-                  Active Connections
-                </p>
-                <p className="mt-0.5 text-xs text-ink-3 leading-tight min-h-[24px]">
-                  {activeConnections.length === 0
+                      : 'No list yet',
+                },
+                {
+                  dot: 'bg-ok',
+                  value: activeConnections.length,
+                  label: 'Active Connections',
+                  note: activeConnections.length === 0
                     ? 'Send your first invite'
-                    : 'Collaboration partners'}
-                </p>
-              </div>
-              <div className="px-2 py-2.5 border-l border-hairline">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-warn shrink-0" />
-                  <span className="text-xl font-extrabold tracking-tight text-ink leading-none">
-                    {pendingReceived.length}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs font-semibold text-ink-2 leading-tight">
-                  Pending Requests
-                </p>
-                <p className="mt-0.5 text-xs text-ink-3 leading-tight min-h-[24px]">
-                  {pendingReceived.length === 0
+                    : 'Collaboration partners',
+                },
+                {
+                  dot: 'bg-warn',
+                  value: pendingReceived.length,
+                  label: 'Pending Requests',
+                  note: pendingReceived.length === 0
                     ? 'All caught up'
-                    : 'Awaiting response'}
-                </p>
-              </div>
-            </div>
-
-            <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
-              <Card
-                className="border-t-4 border-t-accent rounded-none cursor-default"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 bg-accent rounded-md flex items-center justify-center shadow-e2">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-ink-3 mb-1">
-                      Account List
-                    </p>
-                    <p className="text-4xl font-extrabold tracking-tight text-ink">
-                      {activeList ? 1 : 0}
-                    </p>
-                    <p className="text-xs text-ink-3 mt-1">
-                      {activeList?.status === 'active'
-                        ? 'Published'
-                        : activeList
-                          ? 'Draft'
-                          : 'No list yet'}
-                    </p>
-                  </div>
+                    : 'Awaiting response',
+                },
+              ];
+              return (
+                <div className="mb-3 md:mb-8 grid grid-cols-3 md:gap-5 bg-surface md:bg-transparent rounded-md md:rounded-none border md:border-0 border-hairline shadow-card md:shadow-none overflow-hidden md:overflow-visible">
+                  {metrics.map((m, index) => (
+                    <div
+                      key={m.label}
+                      className={`px-2 py-2.5 md:p-5 md:bg-surface md:rounded-md md:border md:border-hairline md:shadow-card ${
+                        index > 0 ? 'border-l border-hairline' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 md:gap-2.5">
+                        <span className={`w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full shrink-0 ${m.dot}`} />
+                        <span className="text-xl md:text-4xl font-extrabold tracking-tight text-ink leading-none">
+                          {m.value}
+                        </span>
+                      </div>
+                      <p className="mt-1 md:mt-3 text-xs md:text-sm font-semibold text-ink-2 leading-tight">
+                        {m.label}
+                      </p>
+                      <p className="mt-0.5 text-xs md:text-[13px] text-ink-3 leading-tight min-h-[24px] md:min-h-0">
+                        {m.note}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              </Card>
-              <Card
-                className="border-t-4 border-t-ok rounded-none cursor-default"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 bg-ok rounded-md flex items-center justify-center shadow-e2">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-ink-3 mb-1">
-                      Active Connections
-                    </p>
-                    <p className="text-4xl font-extrabold tracking-tight text-ink">
-                      {activeConnections.length}
-                    </p>
-                    <p className="text-xs text-ink-3 mt-1">
-                      {activeConnections.length === 0
-                        ? 'Send your first invite'
-                        : 'Collaboration partners'}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-              <Card
-                className="border-t-4 border-t-warn rounded-none cursor-default"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 bg-warn rounded-md flex items-center justify-center shadow-e2">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-ink-3 mb-1">
-                      Pending Requests
-                    </p>
-                    <p className="text-4xl font-extrabold tracking-tight text-ink">
-                      {pendingReceived.length}
-                    </p>
-                    <p className="text-xs text-ink-3 mt-1">
-                      {pendingReceived.length === 0
-                        ? 'All caught up'
-                        : 'Awaiting response'}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </div>
+              );
+            })()}
             </>
           )}
 
