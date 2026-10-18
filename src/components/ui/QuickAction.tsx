@@ -37,7 +37,7 @@ export function QuickAction({
     <Link
       href={href}
       data-tour={dataTour}
-      className="group flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-md border border-hairline bg-surface px-2 py-4 text-center shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-accent hover:shadow-e2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="group flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-md border border-hairline bg-surface px-0.5 @[420px]:px-2 py-4 text-center shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-accent hover:shadow-e2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-sm ${iconTone}`}
@@ -46,7 +46,7 @@ export function QuickAction({
         <Icon className="h-[18px] w-[18px]" />
       </span>
       <span className="flex min-h-[34px] w-full flex-col items-center justify-center">
-        <span className="text-[13.5px] font-bold leading-tight text-ink">{label}</span>
+        <span className="text-[12.5px] @[420px]:text-[13.5px] font-bold leading-tight text-ink">{label}</span>
         {detail && (
           <span className="mt-0.5 hidden w-full truncate text-xs text-ink-3 sm:block">
             {detail}
@@ -59,9 +59,14 @@ export function QuickAction({
 
 /** The grid the tiles sit in: 2×2 below 360, four across from 360 up. */
 export function QuickActionGrid({ children }: { children: React.ReactNode }) {
+  // A container query, not a viewport one: the rule is about the width the
+  // tiles actually get, which is the page container minus its gutters, not the
+  // width of the screen.
   return (
-    <div className="mb-3 grid grid-cols-2 gap-2 min-[360px]:grid-cols-4 md:mb-8 md:gap-4">
-      {children}
+    <div className="@container mb-3 md:mb-8">
+      <div className="grid grid-cols-2 gap-1.5 @[360px]:grid-cols-4 @[420px]:gap-4">
+        {children}
+      </div>
     </div>
   );
 }
