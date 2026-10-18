@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { invitesApi } from '@/features/invites/invites.api';
 import type { InviteValidation } from '@/features/invites/types';
 import { Button, LoadingScreen, ButtonLink } from '@/components/ui';
 import { motion } from 'framer-motion';
-import { X, Users, Handshake } from 'lucide-react';
+import { X, Handshake } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/error-utils';
 
 export default function InviteAcceptPage() {
   return (
@@ -26,46 +27,75 @@ function InviteAcceptContent() {
 
   const token = searchParams.get('token');
 
-  const [validation, setValidation] = useState<InviteValidation | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetched, setFetched] = useState<InviteValidation | null>(null);
+  const [fetching, setFetching] = useState(true);
   const [accepting, setAccepting] = useState(false);
 
-  useEffect(() => {
-    if (!token) {
-      setValidation({ valid: false, status: 'missing', message: 'No invite token provided.' });
-      setLoading(false);
-      return;
-    }
+  /* A missing token is not something to discover asynchronously — it is known
+     from the URL on the first render, so it is derived rather than written
+     into state by an effect. */
+  const validation: InviteValidation | null = useMemo(
+    () =>
+      token
+        ? fetched
+        : { valid: false, status: 'missing', message: 'No invite token provided.' },
+    [token, fetched],
+  );
+  const loading = token ? fetching : false;
 
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
     invitesApi
       .validate(token)
-      .then((res) => setValidation(res.data))
-      .catch(() =>
-        setValidation({ valid: false, status: 'error', message: 'Failed to validate invite.' }),
-      )
-      .finally(() => setLoading(false));
+      .then((res) => { if (!cancelled) setFetched(res.data); })
+      .catch(() => {
+        if (!cancelled) {
+          setFetched({ valid: false, status: 'error', message: 'Failed to validate invite.' });
+        }
+      })
+      .finally(() => { if (!cancelled) setFetching(false); });
+    return () => { cancelled = true; };
   }, [token]);
 
-  const handleAccept = async () => {
-    if (!token) return;
-    setAccepting(true);
+  /* The request itself. It deliberately performs no synchronous state write,
+     so the auto-accept effect below does not start a cascading render; the
+     pending flag is set by the click handler, which is an event. */
+  const acceptInvite = useCallback(async (): Promise<boolean> => {
+    if (!token) return false;
     try {
       const res = await invitesApi.accept(token);
       toast.success(res.data.message);
       router.push('/dashboard');
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'Failed to accept invite.';
-      toast.error(msg);
-      setAccepting(false);
+      return true;
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to accept invite.'));
+      return false;
     }
+  }, [token, router]);
+
+  const handleAccept = () => {
+    setAccepting(true);
+    void acceptInvite().then((ok) => {
+      // On success the router is already leaving, so the control stays pending.
+      if (!ok) setAccepting(false);
+    });
   };
 
-  // Auto-accept when logged-in user lands on valid invite (e.g. after signup/login redirect)
+  /* Auto-accept when a signed-in user lands on a valid invite, for example
+     after being redirected back from signup or login.
+
+     The ref is what makes this idempotent: `validation` and `user` can both
+     settle more than once, and without the guard a second pass would POST the
+     same token again. It latches before the request starts, so a re-render
+     during the request cannot queue a duplicate. `acceptInvite` holds no state
+     write of its own, so this effect starts none either. */
+  const autoAccepted = useRef(false);
   useEffect(() => {
-    if (user && validation?.valid && !accepting) {
-      handleAccept();
-    }
-  }, [user, validation]);
+    if (!user || !validation?.valid || autoAccepted.current) return;
+    autoAccepted.current = true;
+    void acceptInvite();
+  }, [user, validation, acceptInvite]);
 
   if (loading || authLoading) {
     return <LoadingScreen message="Validating invite..." />;

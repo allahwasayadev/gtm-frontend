@@ -110,7 +110,7 @@ export default function SmsOptInPage() {
           </p>
           <p>
             Replies to <strong>STOP</strong>, <strong>START</strong> and{' '}
-            <strong>HELP</strong> are handled by our messaging provider's
+            <strong>HELP</strong> are handled by our messaging provider&apos;s
             standard keyword processing, not by Ovrlap. Whether a confirmation
             message is returned, and its exact wording, are determined by the
             provider and your carrier.
@@ -145,7 +145,7 @@ export default function SmsOptInPage() {
             </Bullet>
             <Bullet>
               <strong>Reply STOP</strong> to any Ovrlap message. This is handled
-              by our messaging provider's standard opt-out processing and stops
+              by our messaging provider&apos;s standard opt-out processing and stops
               delivery at the carrier level. The provider also recognises the
               usual variants, including STOPALL, UNSUBSCRIBE, CANCEL, END and
               QUIT.
