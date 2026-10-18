@@ -20,7 +20,6 @@ import toast from 'react-hot-toast';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
-import { authApi } from '@/features/auth/auth.api';
 import type { User as AuthUser } from '@/features/auth/types';  // `User` is a lucide icon here
 import {
   Button, CodeInput, ConfirmationModal, FadeIn, Input, LoadingScreen,
@@ -391,17 +390,21 @@ export default function ProfilePage() {
          Consent belongs to the number that was consented to: it is only carried
          when the number is unchanged, and anything the server did return wins. */
       const samePhone = (updatedUser.phoneNumber ?? null) === (user?.phoneNumber ?? null);
+      /* The PATCH reply may omit the consent record, so fall back to what is
+         already known for this same number rather than dropping it. */
       let carried: Pick<AuthUser, 'smsConsent' | 'smsConsentAt' | 'smsOptedOut'> = {
-        smsConsent: user?.smsConsent,
-        smsConsentAt: user?.smsConsentAt,
-        smsOptedOut: user?.smsOptedOut,
+        smsConsent: updatedUser.smsConsent ?? user?.smsConsent,
+        smsConsentAt: updatedUser.smsConsentAt ?? user?.smsConsentAt,
+        smsOptedOut: updatedUser.smsOptedOut ?? user?.smsOptedOut,
       };
       if (!samePhone) {
         /* The number changed, so the old consent no longer describes it. Ask the
            authoritative profile rather than guessing; if that call fails, leave
            the fields unset, which reads as "no consent on record". */
         try {
-          const fresh = (await authApi.getProfile()).data;
+          /* users/profile is the authoritative consent record and sits in the
+             same domain as the update that just ran. */
+          const fresh = (await usersApi.getProfile()).data;
           carried = {
             smsConsent: fresh.smsConsent,
             smsConsentAt: fresh.smsConsentAt,

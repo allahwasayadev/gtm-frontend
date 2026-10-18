@@ -51,7 +51,7 @@ export default function LandingPage() {
         <div className="text-center">
           <motion.div
             className="flex justify-center mb-6"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
           >
@@ -59,7 +59,7 @@ export default function LandingPage() {
           </motion.div>
           <motion.p
             className="text-xl md:text-2xl font-medium text-ink-2 mb-4"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: 0.06, ease: [0.25, 0.1, 0.25, 1] }}
           >
@@ -67,7 +67,7 @@ export default function LandingPage() {
           </motion.p>
           <motion.p
             className="text-base text-ink-3 max-w-2xl mx-auto mb-10"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: 0.06, ease: [0.25, 0.1, 0.25, 1] }}
           >
@@ -77,7 +77,7 @@ export default function LandingPage() {
 
           <motion.div
             className="flex flex-col sm:flex-row gap-3 justify-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: 0.06, ease: [0.25, 0.1, 0.25, 1] }}
           >
@@ -97,7 +97,7 @@ export default function LandingPage() {
             animate="visible"
             variants={{
               hidden: { opacity: 0 },
-              visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.4 } },
+              visible: { opacity: 1, transition: { staggerChildren: 0.03, delayChildren: 0 } },
             }}
           >
             {steps.map((step) => (
@@ -105,7 +105,7 @@ export default function LandingPage() {
                 key={step.title}
                 className="bg-surface rounded-lg p-6 shadow-card border border-hairline hover:shadow-card-hover transition-all duration-200"
                 variants={{
-                  hidden: { opacity: 0, y: 24 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
@@ -126,7 +126,7 @@ export default function LandingPage() {
           animate="visible"
           variants={{
             hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.7 } },
+            visible: { opacity: 1, transition: { staggerChildren: 0.03, delayChildren: 0 } },
           }}
         >
           {features.map((feature) => {
@@ -136,7 +136,7 @@ export default function LandingPage() {
                 key={feature.title}
                 className="text-center p-6"
                 variants={{
-                  hidden: { opacity: 0, y: 24 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >

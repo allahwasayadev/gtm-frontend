@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
-import { ReactNode } from 'react';
+import { Children, ReactNode } from 'react';
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -42,13 +42,17 @@ interface StaggerListProps {
   staggerDelay?: number;
 }
 
+/* The interval alone is not enough: at 0.03s a hundred rows still take three
+   seconds to finish arriving. The whole reveal is budgeted instead, so the last
+   row is on screen within TOTAL_REVEAL however long the list is. */
+const TOTAL_REVEAL = 0.24;
+
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
-  visible: (staggerDelay: number) => ({
+  visible: ({ staggerDelay, count }: { staggerDelay: number; count: number }) => ({
     opacity: 1,
     transition: {
-      // Capped so a long list cannot accumulate a visible wait at the end.
-      staggerChildren: Math.min(staggerDelay, 0.03),
+      staggerChildren: Math.min(staggerDelay, TOTAL_REVEAL / Math.max(count, 1)),
       delayChildren: 0,
     },
   }),
@@ -76,7 +80,7 @@ export function StaggerList({ children, className = '', staggerDelay = 0.03 }: S
     <motion.div
       initial="hidden"
       animate="visible"
-      custom={staggerDelay}
+      custom={{ staggerDelay, count: Children.count(children) }}
       variants={staggerContainer}
       className={className}
     >

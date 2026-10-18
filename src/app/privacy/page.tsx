@@ -19,7 +19,7 @@ import { Header } from '@/components/ui';
 import Link from 'next/link';
 
 const sectionVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 };
 
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
             <div className="relative px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-16 sm:py-24">
               <motion.div
                 className="max-w-4xl mx-auto text-center"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
               >
@@ -93,7 +93,7 @@ export default function PrivacyPage() {
               animate="visible"
               variants={{
                 hidden: { opacity: 0 },
-                visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.2 } },
+                visible: { opacity: 1, transition: { staggerChildren: 0.03, delayChildren: 0 } },
               }}
             >
               {/* Introduction */}

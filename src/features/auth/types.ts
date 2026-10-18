@@ -35,6 +35,10 @@ export interface UpdateProfileResponse {
   hasCompletedOnboarding: boolean;
   phoneNumber?: string | null;
   isPhoneVerified: boolean;
+  /** GET /users/profile returns the consent record; the PATCH reply may not. */
+  smsConsent?: boolean;
+  smsConsentAt?: string | null;
+  smsOptedOut?: boolean;
   createdAt: string;
   token?: string;
 }

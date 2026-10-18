@@ -58,7 +58,7 @@ export default function AboutPage() {
             <div className="relative px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-16 sm:py-24">
               <motion.div
                 className="max-w-4xl mx-auto text-center"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
               >
@@ -80,14 +80,14 @@ export default function AboutPage() {
               animate="visible"
               variants={{
                 hidden: { opacity: 0 },
-                visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
+                visible: { opacity: 1, transition: { staggerChildren: 0.03, delayChildren: 0 } },
               }}
             >
               {/* The Problem Section */}
               <motion.section
                 className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
@@ -111,7 +111,7 @@ export default function AboutPage() {
               {/* Old Way vs New Way Section */}
               <motion.section
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
@@ -170,7 +170,7 @@ export default function AboutPage() {
               <motion.section
                 className="grid sm:grid-cols-3 gap-6"
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
@@ -192,7 +192,7 @@ export default function AboutPage() {
               <motion.section
                 className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
@@ -216,7 +216,7 @@ export default function AboutPage() {
               <motion.section
                 className="bg-ink rounded-lg p-8 sm:p-10 shadow-xl"
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >
@@ -242,7 +242,7 @@ export default function AboutPage() {
               <motion.div
                 className="text-center"
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 8 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
                 }}
               >

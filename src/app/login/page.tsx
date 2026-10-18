@@ -100,7 +100,7 @@ function LoginContent() {
       <div className="flex-1 min-h-screen lg:h-screen bg-canvas lg:bg-sunken/80 flex items-center justify-center p-4 sm:p-8 lg:overflow-y-auto">
         <motion.div
           className="w-full max-w-md lg:py-8"
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
         >

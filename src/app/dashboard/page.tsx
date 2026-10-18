@@ -492,10 +492,10 @@ export default function DashboardPage() {
                     {dashboardRepGroups.map((group, groupIndex) => (
                       <motion.div
                         key={group.connectionId || group.partnerName}
-                        initial={{ opacity: 0, y: 14 }}
+                        initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
-                          delay: groupIndex * 0.06,
+                          delay: Math.min(groupIndex * 0.03, 0.12),
                           duration: 0.18,
                           ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
                         }}
@@ -526,7 +526,7 @@ export default function DashboardPage() {
                               initial={{ opacity: 0, x: -6 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{
-                                delay: accountIndex * 0.03,
+                                delay: Math.min(accountIndex * 0.02, 0.12),
                                 duration: 0.18,
                                 ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
                               }}
