@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 import { Button } from './Button';
 import { Dropdown } from './Dropdown';
+import { Modal } from './Modal';
 
 interface FilterSheetOption {
   value: string;
@@ -40,61 +39,31 @@ export function FilterSheet({
   onClear,
   activeCount,
 }: FilterSheetProps) {
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const frame = requestAnimationFrame(() => setAnimate(true));
-    // Reset on close so the next open animates in again.
-    return () => {
-      cancelAnimationFrame(frame);
-      setAnimate(false);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  // Escape, scroll lock, focus trap, focus return and the entry animation all
+  // come from Modal's sheet variant now.
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:hidden">
-      <div
-        className={`absolute inset-0 bg-[rgba(25,28,27,0.50)] transition-opacity duration-200 ${
-          animate ? 'opacity-100' : 'opacity-0'
-        }`}
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Filter accounts"
-        className={`relative w-full bg-surface rounded-t-2xl shadow-2xl transition-transform duration-200 ${
-          animate ? 'translate-y-0' : 'translate-y-full'
-        }`}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    <div className="sm:hidden">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Filters"
+        variant="sheet"
+        showClose
+        footer={
+          <>
+            <Button variant="outline" className="flex-1" onClick={onClear} disabled={activeCount === 0}>
+              Clear
+            </Button>
+            <Button variant="primary" className="flex-1" onClick={onClose}>
+              Done
+            </Button>
+          </>
+        }
       >
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-hairline">
-          <h2 className="text-base font-semibold text-ink">Filters</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close filters"
-            className="w-9 h-9 -mr-2 flex items-center justify-center rounded-lg text-ink-3 hover:bg-surface-2 hover:text-ink-2 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="px-5 py-4 space-y-4">
+        <div className="space-y-4 pb-[env(safe-area-inset-bottom)]">
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-ink-3 mb-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.07em] text-ink-3">
               Company
             </label>
             <Dropdown
@@ -106,7 +75,7 @@ export function FilterSheet({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-ink-3 mb-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.07em] text-ink-3">
               Matches
             </label>
             <Dropdown
@@ -117,21 +86,7 @@ export function FilterSheet({
             />
           </div>
         </div>
-
-        <div className="flex gap-3 px-5 pb-5 pt-1">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={onClear}
-            disabled={activeCount === 0}
-          >
-            Clear
-          </Button>
-          <Button variant="primary" className="flex-1" onClick={onClose}>
-            Done
-          </Button>
-        </div>
-      </div>
+      </Modal>
     </div>
   );
 }
