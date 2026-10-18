@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, LoadingScreen, ButtonLink } from '@/components/ui';
+import { LoadingScreen, ButtonLink } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { Zap, ShieldCheck, Smartphone, CloudUpload, Users, BarChart3, ArrowRight } from 'lucide-react';
 import Link from 'next/link';

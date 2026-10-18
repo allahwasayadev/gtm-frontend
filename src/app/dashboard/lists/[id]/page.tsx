@@ -243,20 +243,20 @@ export default function ListDetailPage() {
                     <tr className="bg-sunken/60 border-b border-hairline">
                       <th
                         scope="col"
-                        className="hidden sm:table-cell px-4 py-2.5 text-left text-[11px] font-semibold text-ink-3 uppercase tracking-wider w-14"
+                        className="hidden sm:table-cell px-4 py-2.5 text-left text-xs font-semibold text-ink-3 uppercase tracking-wider w-14"
                       >
                         #
                       </th>
                       <th
                         scope="col"
-                        className="px-3 sm:px-5 py-2.5 text-left text-[11px] font-semibold text-ink-3 uppercase tracking-wider"
+                        className="px-3 sm:px-5 py-2.5 text-left text-xs font-semibold text-ink-3 uppercase tracking-wider"
                       >
                         Account
                       </th>
                       {editing && (
                         <th
                           scope="col"
-                          className="px-2 sm:px-4 py-2.5 text-center text-[11px] font-semibold text-ink-3 uppercase tracking-wider w-10 sm:w-16"
+                          className="px-2 sm:px-4 py-2.5 text-center text-xs font-semibold text-ink-3 uppercase tracking-wider w-10 sm:w-16"
                         >
                           <span className="sr-only sm:not-sr-only">
                             Del

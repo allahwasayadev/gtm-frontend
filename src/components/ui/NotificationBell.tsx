@@ -298,7 +298,7 @@ export function NotificationBell() {
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute right-0.5 top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+          <span className="absolute right-0.5 top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-xs font-bold leading-none text-white ring-2 ring-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -385,7 +385,7 @@ export function NotificationBell() {
                       </Link>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-ink-3">
+                  <p className="mt-1.5 text-xs text-ink-3">
                     {formatTimestamp(notification.createdAt)}
                   </p>
                 </div>

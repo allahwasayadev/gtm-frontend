@@ -5,23 +5,33 @@ interface QuickActionProps {
   href: string;
   icon: LucideIcon;
   label: string;
-  /** Second line on wider screens; hidden where the tile is narrow. */
+  /** Second line, shown only where the tile is wide enough to carry it. */
   detail?: string;
   tone?: 'accent' | 'ok';
   dataTour?: string;
 }
 
 /**
- * A dashboard quick-action tile.
+ * A dashboard quick-action tile, in two shapes.
  *
- * Centred icon above a centred label at every width, with the label slot
- * reserved so a one-line and a two-line tile end up the same height and the
- * row does not step. The whole tile is the target and clears 44px on its own.
+ * **Below a 332px container** the tiles are a 2×2 of *horizontal* rows — icon
+ * beside the label — because four labels cannot hold their measure there.
+ * Stacking the icon above the label in that layout made every tile 112px tall
+ * and pushed the account list off the first screen entirely.
  *
- * The grid around it is four across from 360 and a deliberate 2×2 below that:
- * at 320 four labels cannot hold their measure side by side, and "Connections"
- * is a single unbreakable word that needs about 73px in Lato and more in the
- * system fallback, against a tile of roughly 65px.
+ * **From a 332px container** they become a single compact row of four, icon
+ * above a centred label.
+ *
+ * The threshold is a container query and the number comes from the widest
+ * unbreakable label. "Connections" is one word: about 67px in Lato at 12px and
+ * about 75px in the system fallback. With 4px gaps and no horizontal padding a
+ * tile gets `(container - 12) / 4`, so a 332px container yields 80px — enough
+ * for the fallback with room to spare — while 280px, which is what a 320
+ * screen leaves once the scrollbar and gutters are taken, yields 67px and
+ * correctly stays 2×2.
+ *
+ * Measuring the *container* rather than the viewport is the point: a 393 screen
+ * with a classic 8px scrollbar and 16px gutters leaves 353px, not 393px.
  */
 export function QuickAction({
   href,
@@ -37,18 +47,20 @@ export function QuickAction({
     <Link
       href={href}
       data-tour={dataTour}
-      className="group flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-md border border-hairline bg-surface px-0.5 @[420px]:px-2 py-4 text-center shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-accent hover:shadow-e2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="group flex min-h-[56px] items-center gap-2.5 rounded-md border border-hairline bg-surface px-3 py-2 text-left shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-accent hover:shadow-e2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent @[332px]:min-h-[84px] @[332px]:flex-col @[332px]:justify-center @[332px]:gap-1.5 @[332px]:px-0 @[332px]:py-3 @[332px]:text-center @[420px]:min-h-[96px] @[420px]:gap-2 @[420px]:px-2"
     >
       <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-sm ${iconTone}`}
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-sm @[420px]:h-9 @[420px]:w-9 ${iconTone}`}
         aria-hidden="true"
       >
-        <Icon className="h-[18px] w-[18px]" />
+        <Icon className="h-[17px] w-[17px]" />
       </span>
-      <span className="flex min-h-[34px] w-full flex-col items-center justify-center">
-        <span className="text-[12.5px] @[420px]:text-[13.5px] font-bold leading-tight text-ink">{label}</span>
+      <span className="flex min-w-0 flex-col @[332px]:min-h-[30px] @[332px]:w-full @[332px]:items-center @[332px]:justify-center">
+        <span className="text-[13px] font-bold leading-tight text-ink @[332px]:text-xs @[420px]:text-[13.5px]">
+          {label}
+        </span>
         {detail && (
-          <span className="mt-0.5 hidden w-full truncate text-xs text-ink-3 sm:block">
+          <span className="mt-0.5 hidden w-full truncate text-xs text-ink-3 @[420px]:block">
             {detail}
           </span>
         )}
@@ -57,14 +69,11 @@ export function QuickAction({
   );
 }
 
-/** The grid the tiles sit in: 2×2 below 360, four across from 360 up. */
+/** 2×2 below a 332px container, four across from there up. */
 export function QuickActionGrid({ children }: { children: React.ReactNode }) {
-  // A container query, not a viewport one: the rule is about the width the
-  // tiles actually get, which is the page container minus its gutters, not the
-  // width of the screen.
   return (
-    <div className="@container mb-3 md:mb-8">
-      <div className="grid grid-cols-2 gap-1.5 @[360px]:grid-cols-4 @[420px]:gap-4">
+    <div className="@container mb-3 md:mb-6">
+      <div className="grid grid-cols-2 gap-2 @[332px]:grid-cols-4 @[332px]:gap-1 @[420px]:gap-3">
         {children}
       </div>
     </div>

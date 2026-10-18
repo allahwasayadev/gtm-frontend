@@ -2,7 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
   AlertTriangle,
@@ -660,8 +659,8 @@ function PartnerChips({
       <span className={`text-[17px] font-extrabold leading-none tracking-tight ${selected ? 'text-accent-ink' : 'text-ink'}`}>
         {count}
       </span>
-      <span className="mt-1 w-full truncate text-[11px] font-bold leading-tight text-ink-2">{title}</span>
-      <span className="w-full truncate text-[10.5px] leading-tight text-ink-3">{sub}</span>
+      <span className="mt-1 w-full truncate text-xs font-bold leading-tight text-ink-2">{title}</span>
+      <span className="w-full truncate text-xs leading-tight text-ink-3">{sub}</span>
     </button>
   );
 
@@ -693,7 +692,7 @@ function PartnerChips({
         <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-7 to-transparent" />
       )}
       {edges.end && (
-        <span className="pointer-events-none absolute -bottom-4 right-0 text-[10.5px] font-bold text-ink-3">
+        <span className="pointer-events-none absolute -bottom-4 right-0 text-xs font-bold text-ink-3">
           scroll for more &rarr;
         </span>
       )}
@@ -782,10 +781,10 @@ function AllPartnersPanel({
 
       <Card padding="none" className="overflow-hidden lg:hidden">
         <div className="flex items-center justify-between border-b border-hairline px-3 py-2.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-ink-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-ink-3">
             Overlapping accounts &middot; {accounts.length}
           </span>
-          <span className="text-[11px] text-ink-3">
+          <span className="text-xs text-ink-3">
             {totalPartnerOverlaps} overlap{totalPartnerOverlaps !== 1 ? 's' : ''}
           </span>
         </div>
@@ -796,7 +795,7 @@ function AllPartnersPanel({
                 <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-ink">
                   {account.yourAccountName}
                 </span>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
                   account.partners.length > 2
                     ? 'bg-accent text-white'
                     : 'border border-ok bg-ok-soft text-ok'
@@ -811,7 +810,7 @@ function AllPartnersPanel({
                     type="button"
                     onClick={() => onSelectConnection(partner.connectionId)}
                     title={`Their list: ${partner.theirAccountName}`}
-                    className="inline-flex min-h-8 max-w-full items-center truncate rounded-md bg-surface-2 px-2 py-1 text-[11px] font-semibold text-ink-2"
+                    className="inline-flex min-h-8 max-w-full items-center truncate rounded-md bg-surface-2 px-2 py-1 text-xs font-semibold text-ink-2"
                   >
                     {partner.partnerName}
                   </button>
@@ -996,7 +995,7 @@ function PartnerPanel({
                         {connection.otherUser.company ??
                           connection.otherUser.email}
                       </div>
-                      <div className="mt-2 inline-flex rounded-full bg-surface-2 px-3 py-1 text-[11px] font-medium text-ink-2">
+                      <div className="mt-2 inline-flex rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-ink-2">
                         Suggested match
                       </div>
                     </div>

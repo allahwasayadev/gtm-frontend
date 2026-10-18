@@ -14,24 +14,7 @@ import type {
   AccountMatchesMap,
   PartnerRelationshipType,
 } from '@/features/matching/types';
-import {
-  Button,
-  Card,
-  Badge,
-  Dropdown,
-  SkeletonCard,
-  SkeletonTable,
-  EmptyState,
-  PageTransition,
-  FadeIn,
-  LoadingScreen,
-  AccountMatchTooltip,
-  QuickAction,
-  QuickActionGrid,
-  InviteModal,
-  FilterSheet,
-  OnboardingTour,
-  useOnboardingTour, ButtonLink } from '@/components/ui';
+import { Card, Badge, Dropdown, SkeletonCard, SkeletonTable, EmptyState, PageTransition, FadeIn, LoadingScreen, AccountMatchTooltip, QuickAction, QuickActionGrid, InviteModal, FilterSheet, OnboardingTour, useOnboardingTour, ButtonLink } from '@/components/ui';
 import {
   Building2,
   FileText,
@@ -277,10 +260,10 @@ export default function DashboardPage() {
                     {activeList ? 1 : 0}
                   </span>
                 </div>
-                <p className="mt-1 text-[11.5px] font-semibold text-ink-2 leading-tight">
+                <p className="mt-1 text-xs font-semibold text-ink-2 leading-tight">
                   Account List
                 </p>
-                <p className="mt-0.5 text-[11px] text-ink-3 leading-tight min-h-[24px]">
+                <p className="mt-0.5 text-xs text-ink-3 leading-tight min-h-[24px]">
                   {activeList?.status === 'active'
                     ? 'Published'
                     : activeList
@@ -295,10 +278,10 @@ export default function DashboardPage() {
                     {activeConnections.length}
                   </span>
                 </div>
-                <p className="mt-1 text-[11.5px] font-semibold text-ink-2 leading-tight">
+                <p className="mt-1 text-xs font-semibold text-ink-2 leading-tight">
                   Active Connections
                 </p>
-                <p className="mt-0.5 text-[11px] text-ink-3 leading-tight min-h-[24px]">
+                <p className="mt-0.5 text-xs text-ink-3 leading-tight min-h-[24px]">
                   {activeConnections.length === 0
                     ? 'Send your first invite'
                     : 'Collaboration partners'}
@@ -311,10 +294,10 @@ export default function DashboardPage() {
                     {pendingReceived.length}
                   </span>
                 </div>
-                <p className="mt-1 text-[11.5px] font-semibold text-ink-2 leading-tight">
+                <p className="mt-1 text-xs font-semibold text-ink-2 leading-tight">
                   Pending Requests
                 </p>
-                <p className="mt-0.5 text-[11px] text-ink-3 leading-tight min-h-[24px]">
+                <p className="mt-0.5 text-xs text-ink-3 leading-tight min-h-[24px]">
                   {pendingReceived.length === 0
                     ? 'All caught up'
                     : 'Awaiting response'}
@@ -396,7 +379,7 @@ export default function DashboardPage() {
           )}
 
           <FadeIn delay={0.15}>
-            <p className="md:hidden mb-1.5 px-0.5 text-[11px] font-bold uppercase tracking-wider text-ink-3">
+            <p className="md:hidden mb-1.5 px-0.5 text-xs font-bold uppercase tracking-wider text-ink-3">
               Quick actions
             </p>
             <QuickActionGrid>
@@ -443,9 +426,9 @@ export default function DashboardPage() {
 
           <FadeIn delay={0.2}>
             <Card padding="none" className="p-3 md:p-6 mb-4 md:mb-8">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-3 pb-3 md:mb-6 md:pb-6 border-b border-hairline">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5 md:gap-4 mb-2.5 pb-2.5 md:mb-6 md:pb-6 border-b border-hairline">
                 <div className="flex items-center gap-2.5 md:gap-4 min-w-0">
-                  <div className="w-9 h-9 md:w-11 md:h-11 bg-accent rounded-xl flex items-center justify-center shrink-0 shadow-e2">
+                  <div className="hidden md:flex w-11 h-11 bg-accent rounded-sm items-center justify-center shrink-0 shadow-e1">
                     <FileText className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div className="min-w-0">
@@ -466,16 +449,17 @@ export default function DashboardPage() {
                           </Badge>
                         ))}
                     </div>
-                    <p className="text-xs md:text-sm text-ink-3 mt-1">
+                    <p className="text-xs md:text-sm text-ink-3 mt-0.5 md:mt-1">
                       {activeList
                         ? `${activeAccounts.length} account${activeAccounts.length !== 1 ? 's' : ''}`
                         : 'Upload an account list to get started'}
                       {matchedAccountsCount > 0 && (
                         <span className="ml-1.5 text-accent">
                           {'\u2022'}{' '}
-                          <span className="md:hidden">Tap</span>
-                          <span className="hidden md:inline">Hover</span>{' '}
-                          match count to see partners
+                          <span className="md:hidden">Tap a match count</span>
+                          <span className="hidden md:inline">
+                            Hover match count to see partners
+                          </span>
                         </span>
                       )}
                     </p>
@@ -497,7 +481,7 @@ export default function DashboardPage() {
                         Filters
                       </span>
                       {activeFilterCount > 0 && (
-                        <span className="bg-accent-soft text-accent-ink text-[11px] rounded-full px-1.5 py-px">
+                        <span className="bg-accent-soft text-accent-ink text-xs font-bold rounded-full px-1.5 py-px">
                           {activeFilterCount}
                         </span>
                       )}
@@ -666,35 +650,38 @@ export default function DashboardPage() {
                   </div>
                 </>
               ) : (
-                <div className="overflow-hidden rounded-xl border mx-auto w-full max-w-440 border-hairline">
-                  <table className="w-full min-w-0">
+                <div className="overflow-x-auto overflow-y-hidden rounded-md border mx-auto w-full border-hairline">
+                  {/* Its own horizontal scroller: the Matches cell holds the
+                      popover trigger, and overflow-hidden here cut it off at
+                      narrow widths, making the action unreachable. */}
+                  <table className="w-full table-fixed">
                     <thead>
-                      <tr className="/80/40">
+                      <tr className="bg-sunken">
                         <th
                           scope="col"
-                          className="px-2 md:px-4 py-2 md:py-3.5 text-left w-9 md:w-14"
+                          className="px-1.5 md:px-4 py-2 md:py-3.5 text-left w-8 md:w-14"
                         >
                           <div className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-lg bg-surface-2/60 text-ink-3">
-                            <span className="text-[10px] font-bold">#</span>
+                            <span className="text-xs font-bold">#</span>
                           </div>
                         </th>
                         <th
                           scope="col"
-                          className="px-3 md:px-5 py-2 md:py-3.5 text-left"
+                          className="px-2 md:px-5 py-2 md:py-3.5 text-left"
                         >
                           <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                            <span className="text-xs font-semibold text-ink-2 tracking-wide">
+                            <span className="text-xs font-bold uppercase text-ink-2 tracking-[0.07em]">
                               Account
                             </span>
                           </div>
                         </th>
                         <th
                           scope="col"
-                          className="px-3 md:px-4 py-2 md:py-3.5 text-right w-24 md:w-32"
+                          className="px-2 md:px-4 py-2 md:py-3.5 text-right w-[86px] md:w-32"
                         >
                           <div className="flex items-center justify-end gap-2">
-                            <span className="text-xs font-semibold text-ink-2 tracking-wide">
+                            <span className="text-xs font-bold uppercase text-ink-2 tracking-[0.07em]">
                               Matches
                             </span>
                             <div className="w-1.5 h-1.5 rounded-full bg-ok" />
@@ -719,7 +706,7 @@ export default function DashboardPage() {
                           >
                             <td className="px-2 md:px-4 py-2.5 md:py-3 whitespace-nowrap">
                               <span
-                                className={`inline-flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-lg text-[11px] md:text-xs font-semibold transition-colors ${
+                                className={`inline-flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-lg text-xs md:text-xs font-semibold transition-colors ${
                                   isTopMatch
                                     ? 'bg-accent-soft text-accent'
                                     : 'bg-surface-2 text-ink-3 group-hover:bg-surface-2/80 group-hover:text-ink-3'
@@ -732,7 +719,8 @@ export default function DashboardPage() {
                               <div className="flex items-center gap-2 md:gap-3 max-md:min-w-0">
                                 <div className="min-w-0 max-md:flex-1">
                                   <span
-                                    className={`max-md:block max-md:truncate font-medium text-sm md:text-base ${isTopMatch ? 'text-ink' : 'text-ink'}`}
+                                    className="block truncate font-medium text-sm md:text-base text-ink"
+                                    title={account.accountName}
                                   >
                                     {account.accountName}
                                   </span>
@@ -743,7 +731,7 @@ export default function DashboardPage() {
                               {partners.length > 0 ? (
                                 <AccountMatchTooltip partners={partners}>
                                   {isTopMatch ? (
-                                    <span className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3.5 py-1 md:py-1.5 rounded-full text-white text-[10px] md:text-xs font-bold cursor-pointer transition-all whitespace-nowrap bg-accent shadow-e2 hover:shadow-lg hover: hover:scale-105">
+                                    <span className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3.5 py-1.5 rounded-full text-white text-xs font-bold whitespace-nowrap bg-accent shadow-e1 transition-colors hover:bg-accent-hover">
                                       <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2 shrink-0">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-surface opacity-75" />
                                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-surface" />
@@ -751,7 +739,7 @@ export default function DashboardPage() {
                                       {partners.length} match{partners.length === 1 ? '' : 'es'}
                                     </span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold cursor-pointer transition-colors whitespace-nowrap bg-ok-soft text-ok ring-1 ring-ok-soft/80 hover:bg-ok-soft hover:ring-ok">
+                                    <span className="inline-flex items-center gap-1 px-2 md:px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-ok-soft text-ok ring-1 ring-ok-soft transition-colors hover:ring-ok">
                                       {partners.length} match{partners.length === 1 ? '' : 'es'}
                                     </span>
                                   )}

@@ -36,8 +36,8 @@ function MobileGroup({
     <section className="overflow-hidden rounded-xl border border-hairline bg-surface shadow-card">
       <div className="flex items-center justify-between gap-2 border-b border-hairline px-3 py-2.5">
         <div className="min-w-0">
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-ink-3">{label}</h2>
-          {note && <p className="mt-0.5 text-[11px] leading-snug text-ink-3">{note}</p>}
+          <h2 className="text-xs font-bold uppercase tracking-wider text-ink-3">{label}</h2>
+          {note && <p className="mt-0.5 text-xs leading-snug text-ink-3">{note}</p>}
         </div>
         {action}
       </div>
@@ -105,7 +105,7 @@ function MobileEmpty({
           {actionLabel}
         </Button>
       )}
-      {footnote && <p className="mt-2.5 text-[11.5px] text-ink-3">{footnote}</p>}
+      {footnote && <p className="mt-2.5 text-xs text-ink-3">{footnote}</p>}
     </div>
   );
 }
@@ -143,12 +143,12 @@ function MobilePartnerRow({
             </span>
             {muted && <Badge variant="warning" size="sm">Muted</Badge>}
           </span>
-          <span className="block truncate text-[11.5px] text-ink-3">
+          <span className="block truncate text-xs text-ink-3">
             {connection.otherUser.company || connection.otherUser.email}
             {role ? ` · ${role}` : ''}
           </span>
         </span>
-        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-bold ${
+        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${
           sharedMatchCount > 0
             ? 'border-ok bg-ok-soft text-ok'
             : 'border-hairline bg-sunken text-ink-3'
@@ -375,7 +375,7 @@ function ConnectionsPageInner() {
                   }`}
                 >
                   {label}
-                  <span className={`rounded-full px-1.5 text-[10.5px] leading-[1.45] ${
+                  <span className={`rounded-full px-1.5 text-xs leading-[1.45] ${
                     value === 'pending' && count > 0
                       ? 'bg-warn-soft text-warn'
                       : selected ? 'bg-accent-soft text-accent-ink' : 'bg-surface-2 text-ink-2'
@@ -500,7 +500,7 @@ function ConnectionsPageInner() {
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[13.5px] font-bold leading-tight text-ink">{connection.otherUser.name}</span>
-                          <span className="block truncate text-[11.5px] text-ink-3">{connection.otherUser.company || connection.otherUser.email}</span>
+                          <span className="block truncate text-xs text-ink-3">{connection.otherUser.company || connection.otherUser.email}</span>
                         </span>
                       </div>
                       <div className="flex gap-2 px-3 pb-3 pt-2.5">
@@ -542,7 +542,7 @@ function ConnectionsPageInner() {
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[13.5px] font-bold leading-tight text-ink">{connection.otherUser.name}</span>
-                          <span className="block truncate text-[11.5px] text-ink-3">{connection.otherUser.company || connection.otherUser.email}</span>
+                          <span className="block truncate text-xs text-ink-3">{connection.otherUser.company || connection.otherUser.email}</span>
                         </span>
                         <Button
                           onClick={() => handleDeleteConnection(connection.id, connection.otherUser.name, 'cancel')}
@@ -570,7 +570,7 @@ function ConnectionsPageInner() {
                             {invite.invitedName || invite.invitedEmail}
                           </span>
                           {invite.invitedName && (
-                            <span className="block truncate text-[11.5px] text-ink-3">{invite.invitedEmail}</span>
+                            <span className="block truncate text-xs text-ink-3">{invite.invitedEmail}</span>
                           )}
                           <span className="mt-0.5 flex items-center gap-2">
                             <Badge
@@ -579,7 +579,7 @@ function ConnectionsPageInner() {
                             >
                               {invite.status.charAt(0).toUpperCase() + invite.status.slice(1)}
                             </Badge>
-                            <span className="text-[11px] text-ink-3">
+                            <span className="text-xs text-ink-3">
                               {new Date(invite.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </span>
                           </span>
