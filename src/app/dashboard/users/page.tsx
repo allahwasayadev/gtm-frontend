@@ -135,8 +135,8 @@ export default function UsersPage() {
                       {stats?.totalOverlaps ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-accent rounded-md flex items-center justify-center shrink-0" aria-hidden>
-                    <Layers className="w-6 h-6 text-accent" />
+                  <div className="w-11 h-11 bg-accent-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
+                    <Layers className="w-6 h-6 text-accent-ink" />
                   </div>
                 </div>
               </Card>

@@ -144,8 +144,8 @@ export default function TermsPage() {
                 <p>
                   Users are responsible for maintaining the confidentiality of their account credentials and for all activity associated with their account.
                 </p>
-                <div className="bg-accent rounded-md p-5 border border-accent">
-                  <p className="font-medium text-ink text-sm">
+                <div className="bg-accent-soft rounded-md p-5 border border-accent-soft">
+                  <p className="font-medium text-accent-ink text-sm">
                     You agree to provide accurate and complete information when creating an account.
                   </p>
                 </div>

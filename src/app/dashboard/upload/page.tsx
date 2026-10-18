@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
-import { Button, PageHeader, PageTransition, Input } from '@/components/ui';
+import { Button, PageHeader, PageTransition, Input, buttonClasses } from '@/components/ui';
 import { CloudUpload, Check, Info, FileSpreadsheet, ArrowRight, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -210,7 +210,10 @@ export default function UploadPage() {
                             Drag and drop your file here
                           </p>
                           <p className="text-sm text-ink-3 mb-4">or</p>
-                          <label className="cursor-pointer inline-flex items-center justify-center px-5 py-2.5 text-white font-medium rounded-md hover: hover: transition-all duration-200 shadow-e2">
+                          {/* A label, not a button, because it wraps the file input — so it borrows
+                              the shared button classes rather than keeping its own. The palette
+                              pass had stripped its background and left white text on cream. */}
+                          <label className={buttonClasses('primary', 'md', 'cursor-pointer')}>
                             Browse Files
                             <input
                               type="file"

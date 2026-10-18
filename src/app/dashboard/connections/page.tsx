@@ -84,10 +84,12 @@ function MobileEmpty({
   onAction?: () => void;
   footnote?: string;
 }) {
+  /* Soft fill, ink glyph. The palette pass had mapped two of these to the same
+     token on both sides, which paints the icon out of existence. */
   const tones = {
-    violet: 'bg-accent text-accent',
+    violet: 'bg-accent-soft text-accent-ink',
     amber: 'bg-warn-soft text-warn',
-    sky: 'bg-accent text-accent',
+    sky: 'bg-accent-soft text-accent-ink',
   } as const;
   return (
     <div className="rounded-md border border-hairline bg-surface px-5 py-6 text-center shadow-card">

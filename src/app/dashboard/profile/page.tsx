@@ -173,6 +173,13 @@ export default function ProfilePage() {
     Boolean(user?.smsConsent) &&
     normalizedUserPhone !== '' &&
     enteredPhoneNumber === normalizedUserPhone;
+  const initials = (user?.name ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('') || '\u2014';
+
   const isPhoneVerifiedForCurrentPhone = Boolean(
     user?.isPhoneVerified
       && normalizedUserPhone
@@ -465,10 +472,19 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <FadeIn delay={0.04}>
               <div className="bg-surface rounded-lg border border-hairline overflow-hidden">
-                <div className=" px-6 py-8">
+                {/* The identity band. Its background had been stripped, leaving
+                    white type on cream; it also lost the avatar the status badge
+                    was meant to sit on. Both restored, nothing else changed. */}
+                <div className="bg-accent px-6 py-8">
                   <div className="flex flex-col sm:flex-row items-center gap-5">
-                    <div className="relative">
-                      <div className="w-6 h-6 bg-ok rounded-lg border-2 border-white flex items-center justify-center">
+                    <div className="relative shrink-0">
+                      <div
+                        aria-hidden
+                        className="w-16 h-16 rounded-lg bg-surface/15 border border-surface/25 flex items-center justify-center text-xl font-bold text-white"
+                      >
+                        {initials}
+                      </div>
+                      <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-ok rounded-lg border-2 border-accent flex items-center justify-center">
                         <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                       </div>
                     </div>

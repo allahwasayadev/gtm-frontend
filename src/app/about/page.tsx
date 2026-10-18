@@ -129,7 +129,7 @@ export default function AboutPage() {
                     <ul className="space-y-4">
                       {oldWay.map((item, index) => (
                         <li key={index} className="flex items-start gap-3 text-ink-2">
-                          <X className="w-5 h-5 text-danger-soft shrink-0 mt-0.5" />
+                          <X className="w-5 h-5 text-danger shrink-0 mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}
