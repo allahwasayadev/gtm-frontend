@@ -66,7 +66,7 @@ export function FilterSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:hidden">
       <div
-        className={`absolute inset-0 bg-slate-900/50 transition-opacity duration-200 ${
+        className={`absolute inset-0 bg-[rgba(25,28,27,0.50)] transition-opacity duration-200 ${
           animate ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={onClose}
@@ -75,18 +75,18 @@ export function FilterSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Filter accounts"
-        className={`relative w-full bg-white rounded-t-2xl shadow-2xl transition-transform duration-200 ${
+        className={`relative w-full bg-surface rounded-t-2xl shadow-2xl transition-transform duration-200 ${
           animate ? 'translate-y-0' : 'translate-y-full'
         }`}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100">
-          <h2 className="text-base font-semibold text-slate-900">Filters</h2>
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-hairline">
+          <h2 className="text-base font-semibold text-ink">Filters</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close filters"
-            className="w-9 h-9 -mr-2 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="w-9 h-9 -mr-2 flex items-center justify-center rounded-lg text-ink-3 hover:bg-surface-2 hover:text-ink-2 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -94,7 +94,7 @@ export function FilterSheet({
 
         <div className="px-5 py-4 space-y-4">
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-slate-500 mb-2">
+            <label className="block text-xs font-semibold tracking-wide uppercase text-ink-3 mb-2">
               Company
             </label>
             <Dropdown
@@ -106,7 +106,7 @@ export function FilterSheet({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-slate-500 mb-2">
+            <label className="block text-xs font-semibold tracking-wide uppercase text-ink-3 mb-2">
               Matches
             </label>
             <Dropdown

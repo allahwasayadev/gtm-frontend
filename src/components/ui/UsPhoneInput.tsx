@@ -98,27 +98,27 @@ export const UsPhoneInput = forwardRef<HTMLInputElement, UsPhoneInputProps>(
         {label && (
           <label
             htmlFor={id}
-            className="block text-sm font-medium text-slate-700 mb-1.5"
+            className="block text-sm font-medium text-ink-2 mb-1.5"
           >
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-danger ml-1">*</span>}
           </label>
         )}
 
         <div
-          className={`flex items-stretch bg-white border rounded-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-offset-0 focus-within:shadow-sm ${
+          className={`flex items-stretch bg-surface border rounded-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-offset-0 focus-within:shadow-sm ${
             error
-              ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/20'
-              : 'border-slate-200 focus-within:border-indigo-500 focus-within:ring-indigo-500/20'
-          } ${disabled ? 'bg-slate-50' : ''}`}
+              ? 'border-danger focus-within:border-danger focus-within:ring-danger'
+              : 'border-hairline focus-within:border-accent focus-within:ring-accent'
+          } ${disabled ? 'bg-sunken' : ''}`}
         >
           {/* The country code, fixed. Announced through the input's own
               description rather than read out as a stray "+1" before it. */}
           <div
             aria-hidden="true"
-            className="flex items-center gap-2 pl-3.5 pr-3 py-2.5 text-sm font-medium text-slate-500 border-r border-slate-200 rounded-l-xl bg-slate-50/80 select-none shrink-0"
+            className="flex items-center gap-2 pl-3.5 pr-3 py-2.5 text-sm font-medium text-ink-3 border-r border-hairline rounded-l-xl bg-sunken/80 select-none shrink-0"
           >
-            <Phone className="w-4 h-4 text-slate-400" />
+            <Phone className="w-4 h-4 text-ink-3" />
             {US_DIAL_CODE}
           </div>
 
@@ -145,7 +145,7 @@ export const UsPhoneInput = forwardRef<HTMLInputElement, UsPhoneInputProps>(
               onChange(edit.digits);
               pendingCaretRef.current = edit.caret;
             }}
-            className="block w-full min-w-0 px-3.5 py-2.5 text-base sm:text-sm text-slate-900 bg-transparent rounded-r-xl placeholder:text-slate-400 focus:outline-none disabled:text-slate-500 disabled:cursor-not-allowed"
+            className="block w-full min-w-0 px-3.5 py-2.5 text-base sm:text-sm text-ink bg-transparent rounded-r-xl placeholder:text-ink-3 focus:outline-none disabled:text-ink-3 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -159,14 +159,14 @@ export const UsPhoneInput = forwardRef<HTMLInputElement, UsPhoneInputProps>(
         {error ? (
           <p
             role="alert"
-            className="mt-1.5 text-sm text-red-600 flex items-center gap-1.5"
+            className="mt-1.5 text-sm text-danger flex items-center gap-1.5"
           >
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             {error}
           </p>
         ) : (
           helperText && (
-            <p id={`${id}-helper`} className="mt-1.5 text-sm text-slate-500">
+            <p id={`${id}-helper`} className="mt-1.5 text-sm text-ink-3">
               {helperText}
             </p>
           )

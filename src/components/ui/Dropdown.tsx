@@ -211,17 +211,17 @@ export function Dropdown({
           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0
           disabled:opacity-50 disabled:cursor-not-allowed
           ${variant === 'light'
-            ? `bg-white/15 border-white/20 text-white hover:bg-white/25 hover:border-white/30 focus:ring-white/30 ${isOpen ? 'border-white/40 ring-2 ring-white/20' : ''} disabled:hover:bg-white/15`
-            : `bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 focus:ring-indigo-500/20 focus:border-indigo-500 ${isOpen ? 'border-indigo-400 ring-2 ring-indigo-500/20' : ''} disabled:hover:bg-white`
+            ? `bg-surface/15 border-white/20 text-white hover:bg-surface/25 hover:border-white/30 focus:ring-white/30 ${isOpen ? 'border-white/40 ring-2 ring-white/20' : ''} disabled:hover:bg-surface/15`
+            : `bg-surface border border-hairline hover:border-control hover:bg-sunken/50 focus:ring-accent focus:border-accent ${isOpen ? 'border-accent ring-2 ring-accent' : ''} disabled:hover:bg-surface`
           }
           ${triggerClassName}
         `}
       >
-        <span className={`truncate ${variant === 'light' ? 'text-white' : selectedOption ? 'text-slate-700' : 'text-slate-400'}`}>
+        <span className={`truncate ${variant === 'light' ? 'text-white' : selectedOption ? 'text-ink-2' : 'text-ink-3'}`}>
           {selectedOption?.label || placeholder}
         </span>
         <ChevronDown
-          className={`w-4 h-4 shrink-0 transition-transform duration-200 ${variant === 'light' ? 'text-white/90' : 'text-slate-400'} ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 shrink-0 transition-transform duration-200 ${variant === 'light' ? 'text-white/90' : 'text-ink-3'} ${isOpen ? 'rotate-180' : ''}`}
           aria-hidden
         />
       </button>
@@ -236,7 +236,7 @@ export function Dropdown({
             role="listbox"
             aria-label={ariaLabel}
             tabIndex={-1}
-            className="fixed z-1000 py-1.5 px-1.5 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-300/30 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
+            className="fixed z-1000 py-1.5 px-1.5 bg-surface rounded-xl border border-hairline shadow-xl shadow-slate-300/30 overflow-y-auto overflow-x-hidden max-h-60 focus:outline-none"
             style={{
               top: listPosition.top,
               left: listPosition.left,
@@ -261,14 +261,14 @@ export function Dropdown({
                     w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-left rounded-lg min-w-0
                     transition-colors duration-150
                     ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
-                    ${isSelected && !isDisabled ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-slate-700'}
-                    ${!isDisabled && (isHighlighted || (isSelected && isHighlighted)) ? 'bg-indigo-50' : ''}
-                    ${!isDisabled && !isSelected && !isHighlighted ? 'hover:bg-slate-50' : ''}
+                    ${isSelected && !isDisabled ? 'bg-accent-soft text-accent-ink font-medium' : 'text-ink-2'}
+                    ${!isDisabled && (isHighlighted || (isSelected && isHighlighted)) ? 'bg-accent-soft' : ''}
+                    ${!isDisabled && !isSelected && !isHighlighted ? 'hover:bg-sunken' : ''}
                   `}
                 >
                   <span className="truncate">{option.label}</span>
                   {isSelected && (
-                    <Check className="w-4 h-4 text-indigo-600 shrink-0" aria-hidden />
+                    <Check className="w-4 h-4 text-accent shrink-0" aria-hidden />
                   )}
                 </div>
               );

@@ -77,7 +77,7 @@ export function InviteModal({ isOpen, onClose, onSuccess }: InviteModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 ${
+        className={`absolute inset-0 bg-[rgba(25,28,27,0.60)] backdrop-blur-sm transition-opacity duration-200 ${
           animate ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={handleClose}
@@ -93,26 +93,26 @@ export function InviteModal({ isOpen, onClose, onSuccess }: InviteModalProps) {
         style={{ transitionTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1)' }}
       >
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl ring-1 ring-slate-200/60 overflow-hidden">
+        <div className="bg-surface rounded-2xl shadow-2xl ring-1 ring-hairline overflow-hidden">
           {/* Premium Header */}
-          <div className="bg-linear-to-br from-indigo-600 via-indigo-500 to-violet-500 px-6 py-6 relative overflow-hidden">
+          <div className="bg-accent px-6 py-6 relative overflow-hidden">
             {/* Decorative circles */}
-            <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full" />
-            <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/5 rounded-full" />
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-surface/10 rounded-full" />
+            <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-surface/5 rounded-full" />
 
             <div className="relative flex items-start justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
+                <div className="w-11 h-11 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
                   <Send className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-white">Invite Partner</h2>
-                  <p className="text-indigo-200 text-sm mt-0.5">Send a collaboration invite</p>
+                  <p className="text-accent-soft text-sm mt-0.5">Send a collaboration invite</p>
                 </div>
               </div>
               <button
                 onClick={handleClose}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-indigo-200 hover:text-white hover:bg-white/15 transition-all"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-accent-soft hover:text-white hover:bg-surface/15 transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -122,12 +122,12 @@ export function InviteModal({ isOpen, onClose, onSuccess }: InviteModalProps) {
           {/* Body */}
           <div className="px-6 py-6">
             {/* Info Banner */}
-            <div className="flex items-start gap-3 p-3.5 bg-slate-50 rounded-xl mb-6">
-              <div className="w-8 h-8 bg-linear-to-br from-amber-400 to-orange-400 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
+            <div className="flex items-start gap-3 p-3.5 bg-sunken rounded-xl mb-6">
+              <div className="w-8 h-8 bg-warn-soft rounded-sm flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                If they already have an account, they&apos;ll receive a connection request and can <span className="font-medium text-slate-800">accept or reject</span> it. If not, they&apos;ll get an email invite and must sign up and confirm before you&apos;re connected.
+              <p className="text-sm text-ink-2 leading-relaxed">
+                If they already have an account, they&apos;ll receive a connection request and can <span className="font-medium text-ink">accept or reject</span> it. If not, they&apos;ll get an email invite and must sign up and confirm before you&apos;re connected.
               </p>
             </div>
 

@@ -17,7 +17,7 @@ export function BackendStatus() {
   if (error) {
     return (
       <div
-        className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+        className="rounded-lg border border-warn bg-warn-soft p-4 text-warn dark:border-warn dark:bg-warn-bg/30 dark:text-warn"
         data-testid="backend-status-error"
       >
         <p className="font-medium">Backend unavailable</p>
@@ -29,23 +29,23 @@ export function BackendStatus() {
   if (!health) {
     return (
       <div
-        className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50"
+        className="rounded-lg border border-hairline bg-sunken p-4 dark:border-hairline dark:bg-surface-2/50"
         data-testid="backend-status-loading"
       >
-        <p className="text-slate-600 dark:text-slate-400">Checking backend…</p>
+        <p className="text-ink-2 dark:text-ink-3">Checking backend…</p>
       </div>
     );
   }
 
   return (
     <div
-      className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30"
+      className="rounded-lg border border-ok bg-ok-soft p-4 dark:border-ok dark:bg-ok-soft/30"
       data-testid="backend-status-ok"
     >
-      <p className="font-medium text-emerald-800 dark:text-emerald-200">
+      <p className="font-medium text-ok dark:text-ok">
         Backend connected
       </p>
-      <p className="text-sm text-emerald-700 dark:text-emerald-300">
+      <p className="text-sm text-ok dark:text-ok">
         {health.service} v{health.version}
       </p>
     </div>

@@ -23,7 +23,7 @@ const tourSteps: TourStep[] = [
     id: 'upload',
     targetSelector: '[data-tour="upload-list"]',
     icon: CloudUpload,
-    iconBg: 'bg-indigo-500',
+    iconBg: 'bg-accent',
     title: 'Upload Your List',
     body: 'Upload your account list once to start mapping. Overlap automatically re-maps as connections update, so your overlaps stay current.',
     buttonText: 'Upload List',
@@ -32,7 +32,7 @@ const tourSteps: TourStep[] = [
     id: 'overlaps',
     targetSelector: '[data-tour="view-matches"]',
     icon: BarChart3,
-    iconBg: 'bg-emerald-500',
+    iconBg: 'bg-ok',
     title: 'See Your Shared Overlaps',
     body: "Once your list is uploaded, you'll see shared accounts between you and each connection. Overlaps update automatically as your network grows.",
     buttonText: 'View Overlaps',
@@ -41,7 +41,7 @@ const tourSteps: TourStep[] = [
     id: 'invite',
     targetSelector: '[data-tour="invite-partner"]',
     icon: Mail,
-    iconBg: 'bg-violet-500',
+    iconBg: 'bg-accent',
     title: 'Invite a Partner',
     body: 'Send an invite by email to connect with colleagues or partners. Once they accept, you can compare lists and see overlapping accounts.',
     buttonText: 'Invite Partner',
@@ -177,7 +177,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-9999"
       >
-        <div className="absolute inset-0 bg-slate-950/70" onClick={handleClose} aria-hidden />
+        <div className="absolute inset-0 bg-[rgba(25,28,27,1)]/70" onClick={handleClose} aria-hidden />
 
         {spotlightRect && (
           <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
@@ -233,8 +233,8 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
             aria-labelledby="onboarding-title"
             aria-describedby="onboarding-body"
           >
-            <div className="bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
-              <div className="px-6 pt-5 pb-4 border-b border-slate-100">
+            <div className="bg-surface rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
+              <div className="px-6 pt-5 pb-4 border-b border-hairline">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     {tourSteps.map((_, index) => (
@@ -244,16 +244,16 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                         onClick={() => setCurrentStep(index)}
                         className={`w-2 h-2 rounded-full transition-all duration-300 ${
                           index === currentStep
-                            ? 'w-6 bg-indigo-500'
+                            ? 'w-6 bg-accent'
                             : index < currentStep
-                              ? 'bg-indigo-300'
-                              : 'bg-slate-200'
+                              ? 'bg-accent-soft'
+                              : 'bg-surface-2'
                         }`}
                         aria-label={`Go to step ${index + 1}`}
                       />
                     ))}
                   </div>
-                  <span className="text-xs font-medium text-slate-400">
+                  <span className="text-xs font-medium text-ink-3">
                     {currentStep + 1} / {tourSteps.length}
                   </span>
                 </div>
@@ -263,16 +263,16 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                   >
                     <StepIcon className="w-6 h-6 text-white" aria-hidden />
                   </div>
-                  <h3 id="onboarding-title" className="text-lg font-semibold text-slate-900">
+                  <h3 id="onboarding-title" className="text-lg font-semibold text-ink">
                     {step.title}
                   </h3>
                 </div>
               </div>
               <div id="onboarding-body" className="px-6 py-5">
-                <p className="text-sm text-slate-600 leading-relaxed">{step.body}</p>
+                <p className="text-sm text-ink-2 leading-relaxed">{step.body}</p>
                 {step.hint && (
-                  <p className="mt-3 text-xs text-slate-400 italic flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                  <p className="mt-3 text-xs text-ink-3 italic flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-surface-2" />
                     {step.hint}
                   </p>
                 )}
@@ -289,7 +289,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                       variant="ghost"
                       size="sm"
                       onClick={handleClose}
-                      className="text-slate-400"
+                      className="text-ink-3"
                     >
                       Skip tour
                     </Button>
@@ -322,7 +322,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
             </div>
             {spotlightRect && (
               <div
-                className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-lg"
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-surface rotate-45 shadow-lg"
                 style={{ boxShadow: '-2px -2px 4px rgba(0,0,0,0.05)' }}
                 aria-hidden
               />

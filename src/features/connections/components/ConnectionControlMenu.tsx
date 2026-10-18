@@ -126,8 +126,8 @@ export function ConnectionControlMenu({
           onClick={() => setIsMenuOpen((prev) => !prev)}
           className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
             variant === 'light'
-              ? 'text-white hover:text-white hover:bg-white/20'
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+              ? 'text-white hover:text-white hover:bg-surface/20'
+              : 'text-ink-3 hover:text-ink-2 hover:bg-surface-2'
           }`}
           aria-label="Connection actions"
           aria-expanded={isMenuOpen}
@@ -141,7 +141,7 @@ export function ConnectionControlMenu({
         <div
           ref={dropdownRef}
           role="menu"
-          className="fixed z-50 w-52 rounded-xl border border-slate-200/70 bg-white shadow-lg ring-1 ring-slate-200/40 p-1.5"
+          className="fixed z-50 w-52 rounded-xl border border-hairline bg-surface shadow-lg ring-1 ring-hairline p-1.5"
           style={{
             top: menuPosition.top,
             left: menuPosition.left,
@@ -153,9 +153,9 @@ export function ConnectionControlMenu({
               role="menuitem"
               onClick={handleUnmute}
               disabled={isUnmuting}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-60"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-2 hover:bg-surface-2 rounded-lg transition-colors disabled:opacity-60"
             >
-              <Bell className="w-4 h-4 text-slate-500 shrink-0" />
+              <Bell className="w-4 h-4 text-ink-3 shrink-0" />
               Unmute Connection
             </button>
           ) : (
@@ -166,9 +166,9 @@ export function ConnectionControlMenu({
                 setIsMenuOpen(false);
                 setIsMuteModalOpen(true);
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-2 hover:bg-surface-2 rounded-lg transition-colors"
             >
-              <BellOff className="w-4 h-4 text-slate-500 shrink-0" />
+              <BellOff className="w-4 h-4 text-ink-3 shrink-0" />
               Mute Connection
             </button>
           )}
@@ -180,9 +180,9 @@ export function ConnectionControlMenu({
               setIsMenuOpen(false);
               setIsRemoveModalOpen(true);
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger-soft rounded-lg transition-colors"
           >
-            <UserMinus className="w-4 h-4 text-red-600 shrink-0" />
+            <UserMinus className="w-4 h-4 text-danger shrink-0" />
             Remove Connection
           </button>
         </div>,

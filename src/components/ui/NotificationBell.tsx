@@ -291,14 +291,14 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={handleBellClick}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-3 transition-all duration-200 hover:bg-surface-2 hover:text-ink-2"
         aria-label="Notifications"
         aria-haspopup="dialog"
         aria-expanded={isOpen}
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute right-0.5 top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+          <span className="absolute right-0.5 top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -312,7 +312,7 @@ export function NotificationBell() {
             aria-hidden="true"
             onClick={() => setIsOpen(false)}
             style={{ top: 'var(--hdr-bottom)' }}
-            className="fixed inset-x-0 bottom-0 z-[55] bg-slate-900/40 motion-safe:animate-[ovrlapFade_.15s_ease-out] lg:hidden"
+            className="fixed inset-x-0 bottom-0 z-[55] bg-[rgba(25,28,27,0.40)] motion-safe:animate-[ovrlapFade_.15s_ease-out] lg:hidden"
           />
           <div
             ref={panelRef}
@@ -320,13 +320,13 @@ export function NotificationBell() {
             role="dialog"
             aria-modal="true"
             aria-label="Notifications"
-            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
+            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-2xl border border-hairline bg-surface shadow-xl shadow-slate-200/50 ring-1 ring-black/5">
+          <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-ink">
                 Notifications
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-ink-3">
                 {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
               </p>
             </div>
@@ -334,7 +334,7 @@ export function NotificationBell() {
               type="button"
               onClick={() => void handleRefresh()}
               disabled={refreshing}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline text-ink-3 transition-colors hover:bg-sunken hover:text-ink-2"
               aria-label="Refresh notifications"
             >
               <RefreshCw
@@ -349,11 +349,11 @@ export function NotificationBell() {
             className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3 lg:max-h-96 lg:flex-none"
           >
             {loading ? (
-              <p className="px-1 py-4 text-center text-sm text-slate-500">
+              <p className="px-1 py-4 text-center text-sm text-ink-3">
                 Loading notifications...
               </p>
             ) : notifications.length === 0 ? (
-              <p className="px-1 py-4 text-center text-sm text-slate-500">
+              <p className="px-1 py-4 text-center text-sm text-ink-3">
                 You have no notifications yet.
               </p>
             ) : (
@@ -362,16 +362,16 @@ export function NotificationBell() {
                   key={notification.id}
                   className={`rounded-2xl border px-3 py-2.5 transition-colors ${
                     unreadAtOpen.has(notification.id) || !notification.isRead
-                      ? 'border-indigo-200 bg-indigo-50/60'
-                      : 'border-slate-200 bg-slate-50'
+                      ? 'border-accent-soft bg-accent-soft/60'
+                      : 'border-hairline bg-sunken'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-900 line-clamp-2">
+                      <p className="text-sm font-medium text-ink line-clamp-2">
                         {notification.title}
                       </p>
-                      <p className="mt-0.5 text-xs text-slate-600 line-clamp-2">
+                      <p className="mt-0.5 text-xs text-ink-2 line-clamp-2">
                         {notification.message}
                       </p>
                     </div>
@@ -379,31 +379,31 @@ export function NotificationBell() {
                       <Link
                         href={notification.ctaUrl}
                         onClick={() => setIsOpen(false)}
-                        className="inline-flex items-center justify-center rounded-lg bg-linear-to-r from-indigo-600 to-indigo-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-indigo-700 hover:to-indigo-600 hover:shadow-md shrink-0"
+                        className="inline-flex items-center justify-center rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-accent-hover shrink-0"
                       >
                         View
                       </Link>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-slate-400">
+                  <p className="mt-1.5 text-[11px] text-ink-3">
                     {formatTimestamp(notification.createdAt)}
                   </p>
                 </div>
               ))
             )}
             {!loading && loadingMore && (
-              <p className="px-1 py-2 text-center text-xs text-slate-500">
+              <p className="px-1 py-2 text-center text-xs text-ink-3">
                 Loading more...
               </p>
             )}
             {!loading && !loadingMore && notifications.length > 0 && !hasMore && (
-              <p className="px-1 py-2 text-center text-xs text-slate-400">
+              <p className="px-1 py-2 text-center text-xs text-ink-3">
                 End of notifications
               </p>
             )}
           </div>
 
-          <div className="shrink-0 border-t border-slate-100 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:pb-3">
+          <div className="shrink-0 border-t border-hairline px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:pb-3">
             <Button
               type="button"
               variant="outline"
