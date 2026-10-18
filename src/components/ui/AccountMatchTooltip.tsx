@@ -177,9 +177,10 @@ export function AccountMatchTooltip({
     return <>{children}</>;
   }
 
+  const n = partners.length;
   const label = accountName
-    ? `${partners.length} partner${partners.length === 1 ? '' : 's'} also work ${accountName}`
-    : `Show the ${partners.length} matched partner${partners.length === 1 ? '' : 's'}`;
+    ? `${n} partner${n === 1 ? '' : 's'} also work${n === 1 ? 's' : ''} ${accountName}`
+    : `Show the ${n} matched partner${n === 1 ? '' : 's'}`;
 
   return (
     <>
