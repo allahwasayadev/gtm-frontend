@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -16,7 +15,6 @@ import {
   Store,
   Trash2,
   User,
-  X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
@@ -24,7 +22,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
 import {
   Button, CodeInput, ConfirmationModal, FadeIn, Input, LoadingScreen,
-  PageTransition, UsPhoneInput, ButtonLink } from '@/components/ui';
+  PageTransition, UsPhoneInput, ButtonLink, Modal } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
 import { rearmWebOtp } from '@/lib/web-otp';
 import {
@@ -109,21 +107,9 @@ export default function ProfilePage() {
    * cost of losing that race is two attempts burnt out of five on one code.
    */
   const verifyInFlightRef = useRef(false);
-  const [mounted, setMounted] = useState(false);
-  const [modalAnimate, setModalAnimate] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (showVerifyPhoneModal) {
-      const id = requestAnimationFrame(() => setModalAnimate(true));
-      return () => cancelAnimationFrame(id);
-    } else {
-      setModalAnimate(false);
-    }
-  }, [showVerifyPhoneModal]);
+  // The mount flag and the animation state that used to live here belonged to
+  // the hand-rolled portal. The shared Modal owns portalling and entry motion
+  // now, and it also carried the setState-in-effect lint error.
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -875,140 +861,82 @@ export default function ProfilePage() {
         onClose={() => !isDeletingAccount && setShowDeleteAccountModal(false)}
       />
 
-      {mounted &&
-        showVerifyPhoneModal &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
-            <div
-              className={`absolute inset-0 bg-[rgba(25,28,27,0.50)] transition-opacity duration-300 ${
-                modalAnimate ? 'opacity-100' : 'opacity-0'
-              }`}
-              onClick={() => setShowVerifyPhoneModal(false)}
-              aria-hidden="true"
-            />
-
-            <div
-              className={`relative w-full max-w-md transition-all duration-300 ease-out ${
-                modalAnimate
-                  ? 'opacity-100 scale-100 translate-y-0'
-                  : 'opacity-0 scale-95 translate-y-4'
-              }`}
-              style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="verify-modal-title"
+      <Modal
+        isOpen={showVerifyPhoneModal}
+        onClose={() => {
+          setShowVerifyPhoneModal(false);
+          setVerifyCodeInput('');
+          setErrors((prev) => ({ ...prev, verifyCode: '' }));
+        }}
+        title="Verify your phone"
+        description={`Code sent to ${formData.phoneNumber || 'your phone'}`}
+        size="sm"
+        showClose
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => {
+                setShowVerifyPhoneModal(false);
+                setVerifyCodeInput('');
+                setErrors((prev) => ({ ...prev, verifyCode: '' }));
+              }}
             >
-              <div className="bg-surface rounded-2xl shadow-2xl shadow-black/25 ring-1 ring-hairline overflow-hidden">
-                {/* Header */}
-                <div className="relative bg-accent px-6 py-6 overflow-hidden">
-                  <div className="absolute -top-8 -right-8 w-32 h-32 bg-surface/10 rounded-full" />
-                  <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-surface/5 rounded-full" />
-                  <div className="relative flex items-start justify-between">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 bg-surface/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-e2">
-                        <Phone className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h2 id="verify-modal-title" className="text-lg font-bold text-white">
-                          Verify your phone
-                        </h2>
-                        <p className="text-accent-soft text-sm mt-0.5">
-                          Code sent to {formData.phoneNumber || 'your phone'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setShowVerifyPhoneModal(false);
-                        setVerifyCodeInput('');
-                        setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                      }}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-accent-soft hover:text-white hover:bg-surface/15 transition-all"
-                      aria-label="Close"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Body */}
-                <div className="px-6 py-6">
-                  <label className="block text-sm font-medium text-ink-2 mb-2">
-                    Enter 6-digit code
-                  </label>
-                  {/* Same field as activation, so the phone offers the code
-                      here too. It submits on its own once six digits land; the
-                      button below stays for anyone who would rather press it. */}
-                  <CodeInput
-                    key={verifyCodeResetKey}
-                    onChange={(code) => {
-                      setVerifyCodeInput(code);
-                      setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                    }}
-                    onComplete={(code) => {
-                      void handleVerifyPhoneCode(code);
-                    }}
-                    disabled={isVerifyingPhoneCode}
-                    describedBy={
-                      errors.verifyCode ? 'profile-verify-code-error' : undefined
-                    }
-                  />
-                  {errors.verifyCode && (
-                    <p
-                      id="profile-verify-code-error"
-                      role="alert"
-                      className="mt-2 text-sm text-danger"
-                    >
-                      {errors.verifyCode}
-                    </p>
-                  )}
-                  <p className="mt-3 text-sm text-ink-3 flex items-center justify-between">
-                    <span>Code expires in 10 minutes</span>
-                    <button
-                      type="button"
-                      className="text-accent hover:text-accent-ink font-medium transition-colors"
-                      onClick={async () => {
-                        await handleSendPhoneVerificationCode(false);
-                        setShowVerifyPhoneModal(true);
-                      }}
-                      disabled={isSendingPhoneCode}
-                    >
-                      {isSendingPhoneCode ? 'Sending…' : 'Resend code'}
-                    </button>
-                  </p>
-
-                  <div className="flex gap-3 mt-6 pt-4 border-t border-hairline">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      className="flex-1"
-                      onClick={() => {
-                        setShowVerifyPhoneModal(false);
-                        setVerifyCodeInput('');
-                        setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="lg"
-                      className="flex-1"
-                      onClick={() => void handleVerifyPhoneCode()}
-                      isLoading={isVerifyingPhoneCode}
-                    >
-                      Verify
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              className="flex-1"
+              onClick={() => void handleVerifyPhoneCode()}
+              isLoading={isVerifyingPhoneCode}
+            >
+              Verify
+            </Button>
+          </>
+        }
+      >
+        <p className="mb-2 text-[12.5px] text-ink-3">Enter 6-digit code</p>
+        {/* Same field as activation, so the phone offers the code here too. It
+            submits on its own once six digits land; the button below stays for
+            anyone who would rather press it. */}
+        <CodeInput
+          key={verifyCodeResetKey}
+          onChange={(code) => {
+            setVerifyCodeInput(code);
+            setErrors((prev) => ({ ...prev, verifyCode: '' }));
+          }}
+          onComplete={(code) => {
+            void handleVerifyPhoneCode(code);
+          }}
+          disabled={isVerifyingPhoneCode}
+          label="Enter 6-digit code"
+          describedBy={errors.verifyCode ? 'profile-verify-code-error' : undefined}
+        />
+        {errors.verifyCode && (
+          <p id="profile-verify-code-error" role="alert" className="mt-2 text-sm text-danger">
+            {errors.verifyCode}
+          </p>
         )}
+        <p className="mt-3 flex items-center justify-between gap-3 text-sm text-ink-3">
+          <span>Code expires in 10 minutes</span>
+          <button
+            type="button"
+            className="min-h-[44px] rounded-sm px-2 font-bold text-accent transition-colors hover:text-accent-ink disabled:text-disabled-outline"
+            onClick={async () => {
+              await handleSendPhoneVerificationCode(false);
+              setShowVerifyPhoneModal(true);
+            }}
+            disabled={isSendingPhoneCode}
+          >
+            {isSendingPhoneCode ? 'Sending…' : 'Resend code'}
+          </button>
+        </p>
+      </Modal>
     </main>
   );
 }
