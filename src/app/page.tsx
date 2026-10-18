@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, LoadingScreen } from '@/components/ui';
+import { Button, LoadingScreen, ButtonLink } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { Zap, ShieldCheck, Smartphone, CloudUpload, Users, BarChart3, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -81,17 +81,13 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <Link href="/signup">
-              <Button variant="primary" size="lg" className="w-full sm:w-auto px-8">
+            <ButtonLink href="/signup" variant="primary" size="lg" className="w-full sm:w-auto px-8">
                 Get Started Free
                 <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto px-8">
+              </ButtonLink>
+            <ButtonLink href="/login" variant="outline" size="lg" className="w-full sm:w-auto px-8">
                 Sign In
-              </Button>
-            </Link>
+              </ButtonLink>
           </motion.div>
 
           {/* Steps */}

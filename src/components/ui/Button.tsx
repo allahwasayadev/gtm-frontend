@@ -1,9 +1,52 @@
-import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { AnchorHTMLAttributes, ButtonHTMLAttributes, forwardRef } from 'react';
+import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
+type Variant = 'primary' | 'secondary' | 'success' | 'danger' | 'outline' | 'ghost';
+type Size = 'sm' | 'md' | 'lg';
+
+const BASE =
+  'relative inline-flex items-center justify-center font-bold transition-colors duration-150 ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ' +
+  'disabled:cursor-not-allowed disabled:shadow-none ' +
+  'active:translate-y-px disabled:active:translate-y-0 motion-reduce:active:translate-y-0';
+
+const VARIANTS: Record<Variant, string> = {
+  primary:
+    'bg-accent text-white shadow-e1 hover:bg-accent-hover active:bg-accent-pressed ' +
+    'disabled:bg-disabled-fill disabled:text-disabled-ink',
+  secondary:
+    'bg-accent-soft text-accent-ink hover:bg-[#cfe0dd] active:bg-[#c3d8d4] ' +
+    'disabled:bg-disabled-fill disabled:text-disabled-ink',
+  success:
+    'bg-ok text-white shadow-e1 hover:bg-[#115a3f] active:bg-[#0e4b35] ' +
+    'disabled:bg-disabled-fill disabled:text-disabled-ink',
+  danger:
+    'bg-transparent text-danger border border-danger hover:bg-danger hover:text-white ' +
+    'active:bg-danger-pressed active:border-danger-pressed active:text-white ' +
+    'focus-visible:outline-danger disabled:bg-transparent disabled:text-disabled-danger disabled:border-disabled-border',
+  outline:
+    'bg-surface text-ink border border-control hover:bg-surface-2 active:bg-sunken ' +
+    'disabled:bg-surface disabled:text-disabled-outline disabled:border-disabled-border',
+  ghost:
+    'bg-transparent text-ink-2 hover:bg-surface-2 hover:text-ink active:bg-sunken ' +
+    'disabled:bg-transparent disabled:text-disabled-outline',
+};
+
+const SIZES: Record<Size, string> = {
+  sm: 'min-h-[44px] px-3.5 text-sm rounded-sm gap-1.5',
+  md: 'min-h-[44px] px-4 text-[15px] rounded-sm gap-2',
+  lg: 'min-h-[48px] px-5 text-base rounded-md gap-2',
+};
+
+/** The shared look, so a button and a link-that-looks-like-one cannot drift. */
+export function buttonClasses(variant: Variant = 'primary', size: Size = 'md', className = '') {
+  return `${BASE} ${VARIANTS[variant]} ${SIZES[size]} ${className}`;
+}
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: Variant;
+  size?: Size;
   isLoading?: boolean;
 }
 
@@ -23,46 +66,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', isLoading, disabled, className = '', children, ...props }, ref) => {
-    const baseStyles =
-      'relative inline-flex items-center justify-center font-bold transition-colors duration-150 ' +
-      'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ' +
-      'disabled:cursor-not-allowed disabled:shadow-none ' +
-      'active:translate-y-px disabled:active:translate-y-0 motion-reduce:active:translate-y-0';
-
-    const variants = {
-      primary:
-        'bg-accent text-white shadow-e1 hover:bg-accent-hover active:bg-accent-pressed ' +
-        'disabled:bg-disabled-fill disabled:text-disabled-ink',
-      secondary:
-        'bg-accent-soft text-accent-ink hover:bg-[#cfe0dd] active:bg-[#c3d8d4] ' +
-        'disabled:bg-disabled-fill disabled:text-disabled-ink',
-      success:
-        'bg-ok text-white shadow-e1 hover:bg-[#115a3f] active:bg-[#0e4b35] ' +
-        'disabled:bg-disabled-fill disabled:text-disabled-ink',
-      danger:
-        'bg-transparent text-danger border border-danger hover:bg-danger hover:text-white ' +
-        'active:bg-danger-pressed active:border-danger-pressed active:text-white ' +
-        'focus-visible:outline-danger disabled:bg-transparent disabled:text-disabled-danger disabled:border-disabled-border',
-      outline:
-        'bg-surface text-ink border border-control hover:bg-surface-2 active:bg-sunken ' +
-        'disabled:bg-surface disabled:text-disabled-outline disabled:border-disabled-border',
-      ghost:
-        'bg-transparent text-ink-2 hover:bg-surface-2 hover:text-ink active:bg-sunken ' +
-        'disabled:bg-transparent disabled:text-disabled-outline',
-    };
-
-    const sizes = {
-      sm: 'min-h-[44px] px-3.5 text-sm rounded-sm gap-1.5',
-      md: 'min-h-[44px] px-4 text-[15px] rounded-sm gap-2',
-      lg: 'min-h-[48px] px-5 text-base rounded-md gap-2',
-    };
-
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
         aria-busy={isLoading || undefined}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+        className={buttonClasses(variant, size, className)}
         {...props}
       >
         {/* The label keeps occupying its space so the button's width is the
@@ -83,3 +92,31 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+
+interface ButtonLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+  href: string;
+  variant?: Variant;
+  size?: Size;
+}
+
+/**
+ * A link that looks like a button.
+ *
+ * `<Link><Button/></Link>` nests an anchor and a button, which is invalid and
+ * gives the row two tab stops and two roles for one action. This is one
+ * element: an anchor that navigates, styled from the same tables as Button, so
+ * keyboard, focus ring, hover, pressed and destination all behave once.
+ *
+ * Anything that performs an action rather than navigating stays a Button —
+ * that is where `isLoading` and `disabled` belong.
+ */
+export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
+  ({ href, variant = 'primary', size = 'md', className = '', children, ...props }, ref) => (
+    <Link ref={ref} href={href} className={buttonClasses(variant, size, className)} {...props}>
+      {children}
+    </Link>
+  )
+);
+
+ButtonLink.displayName = 'ButtonLink';

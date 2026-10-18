@@ -31,8 +31,7 @@ import {
   InviteModal,
   FilterSheet,
   OnboardingTour,
-  useOnboardingTour,
-} from '@/components/ui';
+  useOnboardingTour, ButtonLink } from '@/components/ui';
 import {
   Building2,
   FileText,
@@ -542,17 +541,13 @@ export default function DashboardPage() {
                   />
                   <div className="flex gap-2">
                     {activeList && (
-                      <Link href={`/dashboard/lists/${activeList.id}`}>
-                        <Button variant="outline" size="sm">
-                          Edit List
-                        </Button>
-                      </Link>
+                      <ButtonLink href={`/dashboard/lists/${activeList.id}`} variant="outline" size="sm">
+                        Edit List
+                      </ButtonLink>
                     )}
-                    <Link href="/dashboard/upload">
-                      <Button variant="primary" size="sm">
+                    <ButtonLink href="/dashboard/upload" variant="primary" size="sm">
                         + Upload New
-                      </Button>
-                    </Link>
+                      </ButtonLink>
                   </div>
                 </div>
               </div>
@@ -652,11 +647,9 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <Link href="/dashboard/upload" className="block">
-                      <Button variant="primary" className="w-full">
+                    <ButtonLink href="/dashboard/upload" variant="primary" className="block w-full">
                         Upload Your First List
-                      </Button>
-                    </Link>
+                      </ButtonLink>
                   </div>
 
                   <div className="hidden md:block border-2 border-dashed border-hairline rounded-xl">
@@ -665,11 +658,9 @@ export default function DashboardPage() {
                       title="No accounts yet"
                       description="Get started by uploading your first account list"
                       action={
-                        <Link href="/dashboard/upload">
-                          <Button variant="primary" size="lg">
+                        <ButtonLink href="/dashboard/upload" variant="primary" size="lg">
                             Upload Your First List
-                          </Button>
-                        </Link>
+                          </ButtonLink>
                       }
                     />
                   </div>

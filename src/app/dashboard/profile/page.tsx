@@ -24,8 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
 import {
   Button, CodeInput, ConfirmationModal, FadeIn, Input, LoadingScreen,
-  PageTransition, UsPhoneInput,
-} from '@/components/ui';
+  PageTransition, UsPhoneInput, ButtonLink } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
 import { rearmWebOtp } from '@/lib/web-otp';
 import {
@@ -816,11 +815,9 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-hairline">
-                    <Link href="/dashboard">
-                      <Button type="button" variant="outline" size="lg">
+                    <ButtonLink href="/dashboard" variant="outline" size="lg">
                         Cancel
-                      </Button>
-                    </Link>
+                      </ButtonLink>
                     <Button
                       type="submit"
                       variant="primary"

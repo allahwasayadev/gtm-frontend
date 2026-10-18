@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { CodeInput, LoadingScreen, Button, UsPhoneInput } from '@/components/ui';
+import { CodeInput, LoadingScreen, Button, UsPhoneInput, ButtonLink } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { Smartphone, ArrowLeftRight, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -170,11 +170,9 @@ export default function VerifyPhonePage() {
           <p className="text-ink-3 text-sm mb-6">
             Sign in with your password to pick up where you left off.
           </p>
-          <Link href="/login">
-            <Button variant="primary" size="lg" className="w-full">
+          <ButtonLink href="/login" variant="primary" size="lg" className="w-full">
               Sign in
-            </Button>
-          </Link>
+            </ButtonLink>
         </div>
       </div>
     );

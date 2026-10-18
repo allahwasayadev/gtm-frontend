@@ -10,8 +10,7 @@ import type { Invite } from '@/features/invites/types';
 import { ConnectionControlMenu } from '@/features/connections/components/ConnectionControlMenu';
 import {
   Button, Badge, EmptyState, PageHeader, InviteModal, ConfirmationModal,
-  Skeleton, PageTransition, FadeIn,
-} from '@/components/ui';
+  Skeleton, PageTransition, FadeIn, ButtonLink } from '@/components/ui';
 import { Users, Clock, Mail, ArrowLeftRight, Bell, CheckCircle2, Send, Plus, AlertTriangle, RefreshCw } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { getUserInitials } from '@/lib/user-initials';
@@ -767,13 +766,16 @@ function ConnectionsPageInner() {
                               </span>
                             </div>
                             <div className="flex gap-2 shrink-0 md:ml-2">
-                              <Link href={`/dashboard/matches?connection=${connection.id}`} className="flex-1 md:flex-none">
-                                <Button variant="primary" size="sm" className="w-full md:w-auto text-xs md:text-sm">
-                                  <ArrowLeftRight className="w-3.5 h-3.5 md:mr-1" />
-                                  <span className="hidden md:inline">Matches</span>
-                                  <span className="md:hidden">View Matches</span>
-                                </Button>
-                              </Link>
+                              <ButtonLink
+                                href={`/dashboard/matches?connection=${connection.id}`}
+                                variant="primary"
+                                size="sm"
+                                className="flex-1 md:flex-none w-full md:w-auto text-xs md:text-sm"
+                              >
+                                <ArrowLeftRight className="w-3.5 h-3.5 md:mr-1" />
+                                <span className="hidden md:inline">Matches</span>
+                                <span className="md:hidden">View Matches</span>
+                              </ButtonLink>
                               <ConnectionControlMenu
                                 connection={connection}
                                 onMute={handleMuteConnection}
@@ -838,13 +840,16 @@ function ConnectionsPageInner() {
                         </div>
                       </div>
                       <div className="flex gap-2 shrink-0 md:ml-2">
-                        <Link href={`/dashboard/matches?connection=${connection.id}`} className="flex-1 md:flex-none">
-                          <Button variant="outline" size="sm" className="w-full md:w-auto text-xs md:text-sm">
-                            <ArrowLeftRight className="w-3.5 h-3.5 md:mr-1" />
-                            <span className="hidden md:inline">Matches</span>
-                            <span className="md:hidden">View Matches</span>
-                          </Button>
-                        </Link>
+                        <ButtonLink
+                          href={`/dashboard/matches?connection=${connection.id}`}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 md:flex-none w-full md:w-auto text-xs md:text-sm"
+                        >
+                          <ArrowLeftRight className="w-3.5 h-3.5 md:mr-1" />
+                          <span className="hidden md:inline">Matches</span>
+                          <span className="md:hidden">View Matches</span>
+                        </ButtonLink>
                         <ConnectionControlMenu
                           connection={connection}
                           onMute={handleMuteConnection}

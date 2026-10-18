@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { invitesApi } from '@/features/invites/invites.api';
 import type { InviteValidation } from '@/features/invites/types';
-import { Button, LoadingScreen } from '@/components/ui';
+import { Button, LoadingScreen, ButtonLink } from '@/components/ui';
 import { motion } from 'framer-motion';
 import { X, Users, Handshake } from 'lucide-react';
 import Link from 'next/link';
@@ -108,11 +108,9 @@ function InviteAcceptContent() {
               <p className="text-ink-3 mb-6">
                 {validation?.message || 'This invite link is not valid.'}
               </p>
-              <Link href="/login">
-                <Button variant="primary" size="lg" className="w-full">
+              <ButtonLink href="/login" variant="primary" size="lg" className="w-full">
                   Go to Login
-                </Button>
-              </Link>
+                </ButtonLink>
             </div>
           ) : (
             /* Valid Invite */
@@ -153,11 +151,9 @@ function InviteAcceptContent() {
               ) : (
                 /* Flow 2 & 3: Not logged in */
                 <div className="space-y-3">
-                  <Link href={`/login?redirect=${encodeURIComponent(redirectPath)}`}>
-                    <Button variant="primary" size="lg" className="w-full">
-                      Sign In to Accept
-                    </Button>
-                  </Link>
+                  <ButtonLink href={`/login?redirect=${encodeURIComponent(redirectPath)}`} variant="primary" size="lg" className="w-full">
+                    Sign In to Accept
+                  </ButtonLink>
                   <Link
                     href={`/signup?redirect=${encodeURIComponent(redirectPath)}&email=${encodeURIComponent(validation.invitedEmail || '')}`}
                   >

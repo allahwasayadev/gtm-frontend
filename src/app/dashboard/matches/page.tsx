@@ -35,8 +35,7 @@ import {
   LoadingScreen,
   PageHeader,
   PageTransition,
-  Skeleton,
-} from '@/components/ui';
+  Skeleton, ButtonLink } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
 
 const EMPTY_ALL_MATCHES: AllMatchesResponse = {
@@ -400,11 +399,9 @@ function MatchesContent() {
               title="No Active Connections"
               description="You need active connections to see account matches."
               action={
-                <Link href="/dashboard/connections">
-                  <Button variant="primary" size="lg">
+                <ButtonLink href="/dashboard/connections" variant="primary" size="lg">
                     Manage Connections
-                  </Button>
-                </Link>
+                  </ButtonLink>
               }
             />
           </Card>
