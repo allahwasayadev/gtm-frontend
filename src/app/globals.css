@@ -271,3 +271,12 @@ body {
 * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* A file input has to stay focusable to be reachable by keyboard, but it is
+   visually hidden inside its label, so the label shows the ring on its behalf.
+   Written here rather than as a utility because the ring must be the accent
+   colour, not the label's own white text colour. */
+.file-trigger:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

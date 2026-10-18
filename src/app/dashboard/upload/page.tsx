@@ -217,13 +217,24 @@ export default function UploadPage() {
                           {/* A label, not a button, because it wraps the file input — so it borrows
                               the shared button classes rather than keeping its own. The palette
                               pass had stripped its background and left white text on cream. */}
-                          <label className={buttonClasses('primary', 'md', 'cursor-pointer')}>
+                          {/* The input is visually hidden but still focusable:
+                              display:none would take it out of the tab order
+                              entirely, and then no keyboard could ever open the
+                              file chooser. The label carries the button styling
+                              and shows the focus ring on the input's behalf. */}
+                          <label
+                            className={buttonClasses(
+                              'primary',
+                              'md',
+                              'file-trigger relative cursor-pointer',
+                            )}
+                          >
                             Browse Files
                             <input
                               type="file"
                               onChange={handleFileInput}
                               accept=".csv,.xlsx,.xls"
-                              className="hidden"
+                              className="sr-only"
                             />
                           </label>
                           <p className="text-xs text-ink-3 mt-4">
