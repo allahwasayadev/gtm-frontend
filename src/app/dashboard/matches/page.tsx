@@ -779,91 +779,66 @@ function AllPartnersPanel({
         </div>
       </Card>
 
-      <Card padding="none" className="overflow-hidden lg:hidden">
-        <div className="flex items-center justify-between border-b border-hairline px-3 py-2.5">
-          <span className="text-xs font-bold uppercase tracking-wider text-ink-3">
+      {/* One responsive renderer for the overlapping accounts.
+          There used to be two — a card list below lg and a wider row layout
+          above it — rendering the same data from the same handler. This keeps
+          the wide layout's detail (partner company and their list name) and
+          the narrow layout's compactness, by letting the row stack. */}
+      <Card padding="none" className="overflow-hidden">
+        <div className="flex items-center justify-between border-b border-hairline bg-sunken px-3 py-2.5 sm:px-5">
+          <span className="text-xs font-bold uppercase tracking-[0.07em] text-ink-3">
             Overlapping accounts &middot; {accounts.length}
           </span>
-          <span className="text-xs text-ink-3">
+          <span className="text-xs text-ink-3 tabular">
             {totalPartnerOverlaps} overlap{totalPartnerOverlaps !== 1 ? 's' : ''}
           </span>
         </div>
         <div className="divide-y divide-hairline">
           {accounts.map((account) => (
-            <div key={account.yourAccountId} className="px-3 py-2.5">
-              <div className="flex items-center gap-2.5">
-                <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-ink">
-                  {account.yourAccountName}
-                </span>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
-                  account.partners.length > 2
-                    ? 'bg-accent text-white'
-                    : 'border border-ok bg-ok-soft text-ok'
-                }`}>
-                  {account.partners.length}
-                </span>
-              </div>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {account.partners.map((partner) => (
-                  <button
-                    key={`${account.yourAccountId}-${partner.connectionId}`}
-                    type="button"
-                    onClick={() => onSelectConnection(partner.connectionId)}
-                    title={`Their list: ${partner.theirAccountName}`}
-                    className="inline-flex min-h-8 max-w-full items-center truncate rounded-md bg-surface-2 px-2 py-1 text-xs font-semibold text-ink-2"
-                  >
-                    {partner.partnerName}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="p-0 overflow-hidden hidden lg:block">
-        <div className="divide-y divide-hairline">
-          {accounts.map((account) => (
-            <div key={account.yourAccountId} className="p-4 sm:p-5">
-              <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                <div className="min-w-0 lg:w-72">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center shrink-0">
-                      <Building2 className="w-4 h-4 text-accent" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-ink truncate">
-                        {account.yourAccountName}
-                      </div>
-                      <div className="text-xs text-ink-3">
-                        {account.partners.length} partner overlap
-                        {account.partners.length !== 1 ? 's' : ''}
-                      </div>
-                    </div>
-                  </div>
+            <div key={account.yourAccountId} className="px-3 py-3 sm:px-5 sm:py-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
+                <div className="flex min-w-0 items-center gap-2.5 lg:w-72 lg:shrink-0">
+                  <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-accent-soft sm:flex">
+                    <Building2 className="h-4 w-4 text-accent-ink" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13.5px] font-bold text-ink sm:text-[15px]">
+                      {account.yourAccountName}
+                    </span>
+                    <span className="hidden text-xs text-ink-3 sm:block">
+                      {account.partners.length} partner overlap
+                      {account.partners.length !== 1 ? 's' : ''}
+                    </span>
+                  </span>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold tabular lg:hidden ${
+                    account.partners.length > 2
+                      ? 'bg-accent text-white'
+                      : 'border border-ok bg-ok-soft text-ok'
+                  }`}>
+                    {account.partners.length}
+                  </span>
                 </div>
 
-                <div className="flex-1 flex flex-col gap-3">
+                <div className="flex min-w-0 flex-1 flex-wrap gap-2 lg:flex-col lg:flex-nowrap lg:gap-3">
                   {account.partners.map((partner) => (
                     <button
                       key={`${account.yourAccountId}-${partner.connectionId}`}
                       type="button"
                       onClick={() => onSelectConnection(partner.connectionId)}
-                      className="group w-full text-left rounded-lg border border-hairline bg-surface shadow-[0_6px_18px_rgba(15,23,42,0.04)] px-4 py-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent-soft hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft/70"
+                      title={`Their list: ${partner.theirAccountName}`}
+                      className="group inline-flex min-h-[44px] max-w-full flex-1 items-center rounded-sm border border-hairline bg-surface px-3 text-left transition-colors hover:border-accent hover:bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:w-full lg:flex-none lg:py-3"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-ink truncate">
-                            {partner.partnerName}
-                          </div>
-                          <div className="text-xs text-ink-3 truncate">
-                            {partner.partnerCompany || 'Company not provided'}
-                          </div>
-                          <div className="mt-1 text-xs text-ink-3 truncate">
-                            Their list: {partner.theirAccountName}
-                          </div>
-                        </div>
-                      </div>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[13px] font-bold text-ink sm:text-sm">
+                          {partner.partnerName}
+                        </span>
+                        <span className="hidden truncate text-xs text-ink-3 lg:block">
+                          {partner.partnerCompany || 'Company not provided'}
+                        </span>
+                        <span className="hidden truncate text-xs text-ink-3 lg:block">
+                          Their list: {partner.theirAccountName}
+                        </span>
+                      </span>
                     </button>
                   ))}
                 </div>
