@@ -3,54 +3,77 @@
 import { useEffect, useRef, useId, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
-
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+import { getFocusable } from '@/lib/focus';
 
 /**
  * Shared overlay behaviour for every dialog and sheet in the app.
  *
  * Escape closes, a click on the scrim closes, the page behind cannot scroll,
- * Tab is trapped inside the dialog, focus starts on the first control marked
- * `data-autofocus` (or the first focusable element), and on close it returns
- * to whatever had focus before the dialog opened.
+ * Tab is trapped inside the dialog, focus starts on the control marked
+ * `data-autofocus` (or the first genuinely focusable one), and on close it
+ * returns to whatever had focus before the dialog opened.
  *
- * Positioning is fixed to the viewport and the body scrolls inside itself, so
- * a dialog opened at the bottom of a long page is still on screen.
+ * The opening lifecycle runs on `isOpen` alone. Call sites pass inline arrow
+ * functions for `onClose`, so a dependency on the handler's identity would
+ * re-run this on every keystroke: the effect would restore focus to the
+ * trigger, relock the body and move focus back to the first control, which
+ * drags the caret out of whatever field is being typed into. The handler is
+ * read through a ref instead, so a new closure each render changes nothing.
  */
-function useOverlayBehaviour(isOpen: boolean, onClose: () => void, ref: React.RefObject<HTMLDivElement | null>) {
+function useOverlayBehaviour(
+  isOpen: boolean,
+  onClose: () => void,
+  panelRef: React.RefObject<HTMLDivElement | null>
+) {
+  const onCloseRef = useRef(onClose);
   const restoreTo = useRef<HTMLElement | null>(null);
+
+  // Written in an effect, never during render.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
 
     restoreTo.current = document.activeElement as HTMLElement | null;
 
-    const node = ref.current;
+    const node = panelRef.current;
+    const candidates = getFocusable(node);
+    const preferred = node?.querySelector<HTMLElement>('[data-autofocus]');
     const initial =
-      node?.querySelector<HTMLElement>('[data-autofocus]') ??
-      node?.querySelector<HTMLElement>(FOCUSABLE);
-    initial?.focus();
+      preferred && candidates.includes(preferred) ? preferred : candidates[0];
+    // A dialog can legitimately have nothing enabled in it — every action
+    // disabled while a request is in flight, for instance. Focus the panel so
+    // Escape still works and the trap has something to hold.
+    (initial ?? node)?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !node) return;
 
-      const items = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => el.offsetParent !== null || el === document.activeElement
-      );
-      if (items.length === 0) return;
+      const items = getFocusable(node);
+      if (items.length === 0) {
+        event.preventDefault();
+        node.focus();
+        return;
+      }
       const first = items[0];
       const last = items[items.length - 1];
+      const active = document.activeElement;
 
-      if (event.shiftKey && document.activeElement === first) {
+      if (event.shiftKey && (active === first || active === node)) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (active instanceof Node && !node.contains(active)) {
+        // Focus escaped the dialog some other way; pull it back.
         event.preventDefault();
         first.focus();
       }
@@ -68,9 +91,14 @@ function useOverlayBehaviour(isOpen: boolean, onClose: () => void, ref: React.Re
       document.removeEventListener('keydown', onKeyDown, true);
       document.body.style.overflow = overflow;
       document.body.style.paddingRight = paddingRight;
-      restoreTo.current?.focus?.();
+      // Only ever on a real close or unmount, because this effect does not
+      // re-run while the dialog stays open.
+      const target = restoreTo.current;
+      if (target && typeof target.focus === 'function' && target.isConnected) {
+        target.focus();
+      }
     };
-  }, [isOpen, onClose, ref]);
+  }, [isOpen, panelRef]);
 }
 
 interface ModalProps {
@@ -106,11 +134,22 @@ export function Modal({
 
   if (!isOpen || typeof document === 'undefined') return null;
 
-  const widths = { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl' };
+  const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' };
   const isSheet = variant === 'sheet';
 
+  // A sheet is deliberately edge to edge at the bottom of a phone; a dialog
+  // keeps a gutter at every width so it never touches the viewport edges.
+  const outerPadding = isSheet ? 'p-0 sm:p-4' : 'p-4';
+  const maxHeight = isSheet
+    ? 'max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)]'
+    : 'max-h-[calc(100dvh-2rem)]';
+
   return createPortal(
-    <div className={`fixed inset-0 z-60 flex justify-center overflow-hidden ${isSheet ? 'items-end sm:items-center' : 'items-center'} p-0 sm:p-4`}>
+    <div
+      className={`fixed inset-0 z-60 flex justify-center overflow-hidden ${
+        isSheet ? 'items-end sm:items-center' : 'items-center'
+      } ${outerPadding}`}
+    >
       <div
         className="ovrlap-scrim absolute inset-0 bg-[rgba(25,28,27,0.45)]"
         onClick={onClose}
@@ -121,7 +160,8 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`${isSheet ? 'ovrlap-sheet' : 'ovrlap-rise'} relative flex w-full ${widths[size]} max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] flex-col overflow-hidden bg-surface shadow-e3 border border-hairline ${
+        tabIndex={-1}
+        className={`${isSheet ? 'ovrlap-sheet' : 'ovrlap-rise'} relative flex w-full ${widths[size]} ${maxHeight} flex-col overflow-hidden bg-surface shadow-e3 border border-hairline focus:outline-none ${
           isSheet ? 'rounded-t-[20px] sm:rounded-lg' : 'rounded-lg'
         }`}
       >

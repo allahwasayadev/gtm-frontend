@@ -17,16 +17,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * — not an opacity fade. A faded label is harder to read precisely when the
  * user is trying to work out why the control will not respond.
  *
- * While loading, the label stays put and a spinner joins it. Swapping the
- * label for "Loading…" changed the button's width mid-action, which moved
- * whatever sat next to it.
+ * While loading, the label keeps its space and the spinner is laid over it, so
+ * an auto-width button does not grow and shove the control beside it. The
+ * label stays in the accessible name; `aria-busy` carries the pending state.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', isLoading, disabled, className = '', children, ...props }, ref) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-bold transition-colors duration-150 ' +
+      'relative inline-flex items-center justify-center font-bold transition-colors duration-150 ' +
       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ' +
-      'disabled:cursor-not-allowed disabled:shadow-none active:translate-y-px disabled:active:translate-y-0';
+      'disabled:cursor-not-allowed disabled:shadow-none ' +
+      'active:translate-y-px disabled:active:translate-y-0 motion-reduce:active:translate-y-0';
 
     const variants = {
       primary:
@@ -64,8 +65,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
         {...props}
       >
-        {isLoading && <Loader2 className="w-4 h-4 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
-        {children}
+        {/* The label keeps occupying its space so the button's width is the
+            same pending as idle. Faded with opacity rather than `visibility`
+            or `display`, both of which would take the label out of the
+            accessibility tree and leave the button unnamed while it works. */}
+        <span className={`inline-flex items-center gap-2 ${isLoading ? 'opacity-0' : ''}`}>
+          {children}
+        </span>
+        {isLoading && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+          </span>
+        )}
       </button>
     );
   }

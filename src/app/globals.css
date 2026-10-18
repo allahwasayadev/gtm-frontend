@@ -192,8 +192,10 @@ body {
   animation: ovrlapDrop 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-/* One pass, not a perpetual shimmer. Skeleton geometry matches the content
-   it stands in for, so nothing jumps when the real rows arrive. */
+/* One pass, then a flat fill — not a perpetual shimmer. A wait that outlasts
+   the sweep settles into a calm placeholder instead of pulsing at the reader
+   indefinitely. `forwards` holds that final flat frame. Skeleton geometry
+   matches the content it stands in for, so nothing jumps when rows arrive. */
 @keyframes ovrlapShimmer {
   0% { background-position: -400px 0; }
   100% { background-position: 400px 0; }
@@ -207,34 +209,55 @@ body {
     var(--color-surface-2) 80%
   );
   background-size: 800px 100%;
-  animation: ovrlapShimmer 1.6s ease-in-out infinite;
+  background-position: 400px 0;
+  animation: ovrlapShimmer 1.6s ease-in-out 1 forwards;
 }
 
 /* Reduced motion: no translation, no scale, no shimmer. Overlays still
    resolve through a very short fade so their arrival is perceivable
    rather than a hard cut; nothing is delayed and nothing is gated. */
 @media (prefers-reduced-motion: reduce) {
-  .ovrlap-swap,
-  .ovrlap-leaving {
-    animation: none;
-    transition: none;
+  /* Blunt by design: this catches every transition and animation, including
+     the ones Tailwind utilities and third-party components introduce (hover
+     lifts, pressed nudges, rotating chevrons), not only the classes named
+     above. The exceptions below are added back deliberately. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
   }
+
   .ovrlap-leaving {
     opacity: 0.45;
     transform: none;
   }
+
+  /* Overlays keep a very short fade so their arrival is still perceivable
+     rather than a hard cut. No translation, no scale. */
   .ovrlap-scrim,
   .ovrlap-panel,
   .ovrlap-rise,
   .ovrlap-sheet,
   .ovrlap-toast {
-    animation-name: ovrlapFade;
-    animation-duration: 0.08s;
-    animation-timing-function: linear;
+    animation-name: ovrlapFade !important;
+    animation-duration: 0.08s !important;
+    animation-timing-function: linear !important;
   }
+
   .skeleton-shimmer {
-    animation: none;
+    animation: none !important;
     background: var(--color-surface-2);
+  }
+
+  /* A spinner is a status indicator, not decoration: a frozen one reads as a
+     hung request. It keeps turning, a little slower. */
+  .animate-spin {
+    animation: spin 1.1s linear infinite !important;
   }
 }
 
