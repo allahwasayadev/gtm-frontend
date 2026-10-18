@@ -540,13 +540,13 @@ function MatchesContent() {
                         }
                         options={partnerTypeFilterOptions}
                         className="w-40"
-                        triggerClassName="min-h-11 lg:min-h-0"
+                        triggerClassName="min-h-11"
                       />
                     )}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="min-h-11 lg:min-h-0"
+                      className="min-h-11"
                       onClick={refreshCurrentView}
                     >
                       <RefreshCw className="w-4 h-4" />
@@ -764,7 +764,7 @@ function AllPartnersPanel({
                 key={summary.connectionId}
                 type="button"
                 onClick={() => onSelectConnection(summary.connectionId)}
-                className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-2 hover:bg-sunken"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-hairline bg-surface px-3.5 text-sm text-ink-2 transition-colors hover:bg-sunken"
               >
                 <span className="font-medium">{summary.partnerName}</span>
                 <Badge
