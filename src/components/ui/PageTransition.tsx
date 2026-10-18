@@ -9,11 +9,11 @@ interface PageTransitionProps {
 }
 
 const pageVariants: Variants = {
-  hidden: { opacity: 0, y: 18 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] },
   },
 };
 
@@ -47,22 +47,23 @@ const staggerContainer: Variants = {
   visible: (staggerDelay: number) => ({
     opacity: 1,
     transition: {
-      staggerChildren: staggerDelay,
-      delayChildren: 0.05,
+      // Capped so a long list cannot accumulate a visible wait at the end.
+      staggerChildren: Math.min(staggerDelay, 0.03),
+      delayChildren: 0,
     },
   }),
 };
 
 const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 14 },
+  hidden: { opacity: 0, y: 6 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.18, ease: [0.25, 0.1, 0.25, 1] },
   },
 };
 
-export function StaggerList({ children, className = '', staggerDelay = 0.06 }: StaggerListProps) {
+export function StaggerList({ children, className = '', staggerDelay = 0.03 }: StaggerListProps) {
   const reduce = useReducedMotion();
 
   // Framer Motion animates through inline transforms, which CSS cannot switch
@@ -113,10 +114,10 @@ export function FadeIn({ children, className = '', delay = 0, direction = 'up' }
   }
 
   const offsets = {
-    up: { y: 20 },
-    down: { y: -20 },
-    left: { x: 20 },
-    right: { x: -20 },
+    up: { y: 8 },
+    down: { y: -8 },
+    left: { x: 8 },
+    right: { x: -8 },
     none: {},
   };
 
@@ -124,7 +125,7 @@ export function FadeIn({ children, className = '', delay = 0, direction = 'up' }
     <motion.div
       initial={{ opacity: 0, ...offsets[direction] }}
       animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration: 0.45, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{ duration: 0.2, delay: Math.min(delay, 0.06), ease: [0.25, 0.1, 0.25, 1] }}
       className={className}
     >
       {children}

@@ -432,7 +432,7 @@ export default function ProfilePage() {
           </FadeIn>
 
           <div className="space-y-6">
-            <FadeIn delay={0.1}>
+            <FadeIn delay={0.04}>
               <div className="bg-surface rounded-lg border border-hairline overflow-hidden">
                 <div className=" px-6 py-8">
                   <div className="flex flex-col sm:flex-row items-center gap-5">

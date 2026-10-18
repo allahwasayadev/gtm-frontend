@@ -378,7 +378,7 @@ export default function DashboardPage() {
             </>
           )}
 
-          <FadeIn delay={0.15}>
+          <FadeIn delay={0.04}>
             <p className="md:hidden mb-1.5 px-0.5 text-xs font-bold uppercase tracking-wider text-ink-3">
               Quick actions
             </p>
@@ -424,7 +424,7 @@ export default function DashboardPage() {
             </QuickActionGrid>
           </FadeIn>
 
-          <FadeIn delay={0.2}>
+          <FadeIn delay={0.06}>
             <Card padding="none" className="p-3 md:p-6 mb-4 md:mb-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5 md:gap-4 mb-2.5 pb-2.5 md:mb-6 md:pb-6 border-b border-hairline">
                 <div className="flex items-center gap-2.5 md:gap-4 min-w-0">
@@ -557,7 +557,7 @@ export default function DashboardPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
                           delay: groupIndex * 0.06,
-                          duration: 0.3,
+                          duration: 0.18,
                           ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
                         }}
                         className="rounded-md border border-hairline overflow-hidden"
@@ -588,7 +588,7 @@ export default function DashboardPage() {
                               animate={{ opacity: 1, x: 0 }}
                               transition={{
                                 delay: accountIndex * 0.03,
-                                duration: 0.2,
+                                duration: 0.18,
                                 ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
                               }}
                               className="px-4 py-2.5 bg-surface"
