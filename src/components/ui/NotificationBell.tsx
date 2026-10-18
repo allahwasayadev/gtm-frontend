@@ -291,7 +291,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={handleBellClick}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-3 transition-all duration-200 hover:bg-surface-2 hover:text-ink-2"
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-3 transition-all duration-200 hover:bg-surface-2 hover:text-ink-2"
         aria-label="Notifications"
         aria-haspopup="dialog"
         aria-expanded={isOpen}

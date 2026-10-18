@@ -124,7 +124,7 @@ export function ConnectionControlMenu({
           ref={buttonRef}
           type="button"
           onClick={() => setIsMenuOpen((prev) => !prev)}
-          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+          className={`w-11 h-11 rounded-sm flex items-center justify-center transition-colors ${
             variant === 'light'
               ? 'text-white hover:text-white hover:bg-surface/20'
               : 'text-ink-3 hover:text-ink-2 hover:bg-surface-2'
