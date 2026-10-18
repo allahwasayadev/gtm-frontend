@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import {
   AlertTriangle,
-  ArrowLeftRight,
   Building2,
   Check,
   CheckCircle2,
@@ -398,117 +397,20 @@ function MatchesContent() {
             />
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 gap-4 lg:gap-6">
             <PartnerChips
-              className="lg:hidden"
               allPartnersMode={allPartnersMode}
               allPartnersCount={filteredAccounts.length}
               items={partnerNavItems}
               selectedConnectionId={selectedConnectionId}
               onSelect={setSelectedConnectionId}
             />
-            <aside className="hidden lg:block space-y-4">
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center">
-                    <ArrowLeftRight className="w-4 h-4 text-accent" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-ink">
-                      Views
-                    </div>
-                    <div className="text-xs text-ink-3">
-                      All partners or reseller drilldown
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedConnectionId('')}
-                  className={`w-full text-left rounded-md border px-3 py-3 transition-colors ${
-                    allPartnersMode
-                      ? 'border-accent bg-accent-soft'
-                      : 'border-hairline bg-surface hover:bg-sunken'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-ink">
-                        {partnerTypeFilter === 'RESELLER'
-                          ? 'Reseller Overlaps'
-                          : partnerTypeFilter === 'OEM'
-                            ? 'OEM Overlaps'
-                            : 'All Partners'}
-                      </div>
-                      <div className="text-xs text-ink-3">
-                        {partnerTypeFilter === 'RESELLER'
-                          ? 'Account-centric reseller overlap view'
-                          : partnerTypeFilter === 'OEM'
-                            ? 'Account-centric OEM overlap view'
-                            : 'Account-centric overlap view'}
-                      </div>
-                    </div>
-                    <Badge variant="info">{filteredAccounts.length}</Badge>
-                  </div>
-                </button>
-
-                <div className="mt-3 space-y-2">
-                  {partnerNavItems.map(({ connection, matchCount }) => {
-                    const isSelected = connection.id === selectedConnectionId;
-                    return (
-                      <button
-                        key={connection.id}
-                        type="button"
-                        onClick={() => setSelectedConnectionId(connection.id)}
-                        className={`w-full text-left rounded-md border px-3 py-3 transition-colors ${
-                          isSelected
-                            ? 'border-accent bg-accent-soft'
-                            : 'border-hairline bg-surface hover:bg-sunken'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="text-sm font-semibold text-ink truncate">
-                              {connection.otherUser.name}
-                            </div>
-                            <div className="text-xs text-ink-3 truncate">
-                              {connection.otherUser.company ||
-                                connection.otherUser.email}
-                            </div>
-                            {connection.isMuted && (
-                              <div className="mt-1">
-                                <Badge variant="warning">Muted</Badge>
-                              </div>
-                            )}
-                          </div>
-                          <Badge
-                            variant={matchCount > 0 ? 'success' : 'outline'}
-                          >
-                            {matchCount}
-                          </Badge>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </Card>
-            </aside>
 
             <section className="space-y-4 min-w-0">
               <Card padding="none" className="p-3 lg:p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5 lg:gap-3">
                   <div className="min-w-0">
-                    <h2 className="hidden lg:block text-lg font-semibold text-ink">
-                      {allPartnersMode
-                        ? partnerTypeFilter === 'RESELLER'
-                          ? 'Reseller Overlaps (Account-Centric)'
-                          : partnerTypeFilter === 'OEM'
-                            ? 'OEM Overlaps (Account-Centric)'
-                            : 'All Partners Overlap (Account-Centric)'
-                        : `${selectedConnection?.otherUser.name ?? 'Partner'} Matches`}
-                    </h2>
-                    <h2 className="lg:hidden text-[15px] font-bold leading-tight text-ink">
+                    <h2 className="text-[15px] lg:text-lg font-bold lg:font-semibold leading-tight text-ink">
                       {allPartnersMode
                         ? 'Overlapping accounts'
                         : selectedConnection?.otherUser.name ?? 'Partner matches'}
