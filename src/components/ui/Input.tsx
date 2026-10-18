@@ -18,13 +18,28 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  * aria-describedby so a screen reader reaches them in order.
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, icon: Icon, className = '', id, ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      helperText,
+      icon: Icon,
+      className = '',
+      id,
+      'aria-describedby': describedByProp,
+      ...props
+    },
+    ref,
+  ) => {
     const generatedId = useId();
     const inputId = id ?? `input-${generatedId}`;
     const errorId = `${inputId}-error`;
     const helperId = `${inputId}-helper`;
+    /* A caller may point the field at its own hint. Merge rather than let the
+       spread below replace this, or supplying one would silently unhook the
+       error and helper text from the field. */
     const describedBy =
-      [error ? errorId : null, helperText && !error ? helperId : null]
+      [describedByProp, error ? errorId : null, helperText && !error ? helperId : null]
         .filter(Boolean)
         .join(' ') || undefined;
 

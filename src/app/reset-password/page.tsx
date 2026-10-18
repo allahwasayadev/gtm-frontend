@@ -118,10 +118,8 @@ function ResetPasswordContent() {
         <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-ink-2 mb-1.5">
-                Email address or mobile number
-              </label>
               <Input
+                label="Email address or mobile number"
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
@@ -131,14 +129,12 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-ink-2 mb-1.5">
-                6-digit code
-              </label>
               {/* No maxLength: it counts characters, so a pasted "123 456"
                   would arrive as "123 45". toOtpDigits caps the digits
                   instead, which also lets the OS fill it in one go. This form
                   still needs a new password, so it never self-submits. */}
               <Input
+                label="6-digit code"
                 type="text"
                 inputMode="numeric"
                 pattern="\d*"
@@ -158,10 +154,8 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-ink-2 mb-1.5">
-                New password
-              </label>
               <Input
+                label="New password"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -171,10 +165,8 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-ink-2 mb-1.5">
-                Confirm new password
-              </label>
               <Input
+                label="Confirm new password"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

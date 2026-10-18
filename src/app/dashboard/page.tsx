@@ -553,41 +553,18 @@ export default function DashboardPage() {
                   </div>
                 )
               ) : !activeList || activeAccounts.length === 0 ? (
-                <>
-                  {/* Phones: the same words, laid out so the primary action
-                      stays on the first screen instead of below the fold. */}
-                  <div className="md:hidden border-2 border-dashed border-hairline rounded-md p-3">
-                    <div className="flex items-start gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-md bg-accent-soft flex items-center justify-center shrink-0">
-                        <FileText className="w-5 h-5 text-accent" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-[15px] font-semibold text-ink leading-tight">
-                          No accounts yet
-                        </h3>
-                        <p className="mt-0.5 text-[13px] text-ink-3 leading-snug">
-                          Get started by uploading your first account list
-                        </p>
-                      </div>
-                    </div>
-                    <ButtonLink href="/dashboard/upload" variant="primary" className="block w-full">
+                <div className="border-2 border-dashed border-hairline rounded-md">
+                  <EmptyState
+                    icon={FileText}
+                    title="No accounts yet"
+                    description="Get started by uploading your first account list"
+                    action={
+                      <ButtonLink href="/dashboard/upload" variant="primary" size="lg">
                         Upload Your First List
                       </ButtonLink>
-                  </div>
-
-                  <div className="hidden md:block border-2 border-dashed border-hairline rounded-md">
-                    <EmptyState
-                      icon={FileText}
-                      title="No accounts yet"
-                      description="Get started by uploading your first account list"
-                      action={
-                        <ButtonLink href="/dashboard/upload" variant="primary" size="lg">
-                            Upload Your First List
-                          </ButtonLink>
-                      }
-                    />
-                  </div>
-                </>
+                    }
+                  />
+                </div>
               ) : (
                 <div className="overflow-x-auto overflow-y-hidden rounded-md border mx-auto w-full border-hairline">
                   {/* Its own horizontal scroller: the Matches cell holds the

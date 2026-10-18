@@ -131,13 +131,17 @@ export default function UploadPage() {
                     <div className={`w-px flex-1 mt-3 transition-colors duration-300 ${listName.trim() ? 'bg-ok-soft' : 'bg-surface-2'}`} />
                   </div>
                   <div className="flex-1 pb-8">
-                    <h3 className="font-semibold text-ink mb-0.5">Name your list</h3>
-                    <p className="text-sm text-ink-3 mb-4">Choose a descriptive name for easy identification</p>
+                    <h3 id="upload-name-step" className="font-semibold text-ink mb-0.5">Name your list</h3>
+                    <p id="upload-name-hint" className="text-sm text-ink-3 mb-4">Choose a descriptive name for easy identification</p>
                     {/* The shared field, so this one gets the same 44px height,
-                        16px type and focus treatment as every other input. */}
+                        16px type and focus treatment as every other input. The
+                        step heading is the field's name: a placeholder is not
+                        one, and it disappears as soon as anything is typed. */}
                     <Input
                       type="text"
                       required
+                      aria-labelledby="upload-name-step"
+                      aria-describedby="upload-name-hint"
                       value={listName}
                       onChange={(e) => setListName(e.target.value)}
                       placeholder="e.g., Q1 2025 Target Accounts"
