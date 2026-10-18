@@ -86,6 +86,12 @@ export default function ProfilePage() {
   // A2P 10DLC: this screen previously sent SMS with no disclosure at all.
   const [smsConsent, setSmsConsent] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  /* AuthContext holds whatever was true at sign-in. Consent and opt-out are
+     decisions a user can make elsewhere — including by replying STOP — so this
+     screen asks the authoritative profile before it shows any of them. */
+  const [consentLoading, setConsentLoading] = useState(true);
+  const [consentLoadFailed, setConsentLoadFailed] = useState(false);
+  const [consentReloadKey, setConsentReloadKey] = useState(0);
   const [verifyCodeInput, setVerifyCodeInput] = useState('');
   /**
    * The ten national digits, for the +1 field. Kept beside formData.phoneNumber
@@ -115,23 +121,30 @@ export default function ProfilePage() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  /* Fills the form from the account, once per account.
+     This used to depend on the whole `user` object, so anything that replaced
+     it — including the consent refresh below, which must run on this screen —
+     re-ran the effect and overwrote whatever had been typed but not saved. The
+     account identity is what this actually cares about. */
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
-    } else if (user) {
-      const businessRole = user.roles?.includes('OEM') ? 'OEM' : 'Reseller';
-      setFormData({
-        name: user.name,
-        email: user.email,
-        phoneNumber: user.phoneNumber || '',
-        company: user.company || '',
-        role: businessRole,
-      });
-      setPhoneDigits(usNationalDigitsFromE164(user.phoneNumber || ''));
-      setIsEmailEditingEnabled(false);
-      setVerifyCodeInput('');
+      return;
     }
-  }, [user, loading, router]);
+    if (!user) return;
+    const businessRole = user.roles?.includes('OEM') ? 'OEM' : 'Reseller';
+    setFormData({
+      name: user.name,
+      email: user.email,
+      phoneNumber: user.phoneNumber || '',
+      company: user.company || '',
+      role: businessRole,
+    });
+    setPhoneDigits(usNationalDigitsFromE164(user.phoneNumber || ''));
+    setIsEmailEditingEnabled(false);
+    setVerifyCodeInput('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, loading, router]);
 
   const useUsPhoneField = usesUsPhoneField(user?.phoneNumber || '');
 
@@ -375,6 +388,42 @@ export default function ProfilePage() {
 
     setIsEmailEditingEnabled(true);
   };
+
+  /* Only the consent metadata is taken from the response. The form fields are
+     deliberately left alone: a refresh landing mid-edit must not overwrite what
+     someone has typed but not saved. */
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) return;
+    setConsentLoading(true);
+    usersApi
+      .getProfile()
+      .then((res) => {
+        if (cancelled) return;
+        const fresh = res.data;
+        setConsentLoadFailed(false);
+        updateUser({
+          ...user,
+          smsConsent: fresh.smsConsent,
+          smsConsentAt: fresh.smsConsentAt,
+          smsOptedOut: fresh.smsOptedOut,
+          isPhoneVerified: fresh.isPhoneVerified,
+          phoneNumber: fresh.phoneNumber ?? null,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setConsentLoadFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setConsentLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Deliberately keyed on the reload button and the account only: re-running
+    // this on every `user` change would loop, because it calls updateUser.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, consentReloadKey]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -696,7 +745,40 @@ export default function ProfilePage() {
                         {/* Consent belongs to the number on file, not to whether it
                             has been verified yet: a verified user must still be able
                             to see that they consented and withdraw it. */}
-                        {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
+                        {hasPhoneNumber && consentLoading && (
+                          <p className="mt-3 text-sm text-ink-3">Checking your SMS settings…</p>
+                        )}
+
+                        {hasPhoneNumber && consentLoadFailed && (
+                          <div className="mt-3 rounded-md border border-danger-soft bg-danger-soft p-3.5" role="alert">
+                            <p className="text-sm font-medium text-danger">
+                              We couldn&rsquo;t check your SMS settings
+                            </p>
+                            <p className="mt-0.5 text-xs text-danger/90">
+                              Your consent and opt-out status are held back rather than shown out of date.
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="mt-2.5"
+                              onClick={() => setConsentReloadKey((k) => k + 1)}
+                            >
+                              Try again
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Shown only where an action will actually carry it: the
+                            send-a-code path posts smsConsent, Save does not. On a
+                            verified read-only number this used to render a control
+                            that Save silently ignored. */}
+                        {hasPhoneNumber &&
+                          !consentLoading &&
+                          !consentLoadFailed &&
+                          !alreadyConsented &&
+                          !user?.smsOptedOut &&
+                          !isPhoneVerifiedForCurrentPhone && (
                           <label className="mt-3 flex items-start gap-3 bg-sunken rounded-md p-3.5 border border-hairline cursor-pointer select-none">
                             <input
                               type="checkbox"
@@ -726,7 +808,25 @@ export default function ProfilePage() {
                         {/* SMS consent status — always visible when a number is
                             on file, so a user can see and revoke consent without
                             needing to have received a text first. */}
-                        {hasPhoneNumber && (alreadyConsented || user?.smsOptedOut) && (
+                        {/* A verified number with no consent record showed nothing
+                            at all, so there was no way to tell consent from an
+                            unread screen. */}
+                        {hasPhoneNumber &&
+                          !consentLoading &&
+                          !consentLoadFailed &&
+                          !alreadyConsented &&
+                          !user?.smsOptedOut &&
+                          isPhoneVerifiedForCurrentPhone && (
+                            <div className="mt-3 rounded-md border border-hairline bg-sunken p-3.5">
+                              <p className="text-sm font-medium text-ink">No SMS consent on record</p>
+                              <p className="mt-0.5 text-xs text-ink-2">
+                                Ovrlap will not send text messages to this number. Choose Update Email
+                                to request a code, which is where consent is captured.
+                              </p>
+                            </div>
+                          )}
+
+                        {hasPhoneNumber && !consentLoading && !consentLoadFailed && (alreadyConsented || user?.smsOptedOut) && (
                           <div className={`mt-3 rounded-md p-3.5 border ${user?.smsOptedOut ? 'bg-warn-soft border-warn-soft' : 'bg-ok-soft border-ok-soft'}`}>
                             <div className="flex items-start justify-between gap-3 flex-wrap">
                               <div className="min-w-0">
@@ -737,7 +837,7 @@ export default function ProfilePage() {
                                 </p>
                                 <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-warn/90' : 'text-ok/90'}`}>
                                   {user?.smsOptedOut
-                                    ? 'Ovrlap will not send text messages to this number. Tick the box above to opt in again.'
+                                    ? 'Ovrlap will not send text messages to this number. Reply START to the last Ovrlap message to resume.'
                                     : user?.smsConsentAt
                                       ? `Consent recorded ${new Date(user.smsConsentAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}. Account verification messages only — never marketing.`
                                       : 'Account verification messages only — never marketing.'}
