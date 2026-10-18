@@ -191,8 +191,11 @@ export function Header() {
             <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-12 w-auto object-contain" />
           </Link>
 
-          <nav aria-label="Primary" className="hidden lg:flex min-w-0 shrink items-center">
-            <div className="flex min-w-0 items-center gap-1 rounded-md bg-sunken p-1">
+          <nav aria-label="Primary" className="hidden xl:flex min-w-0 shrink items-center">
+            {/* The group scrolls inside its own box. Without this it painted past
+                  its right edge and over the bell and account control once an
+                  Admin without a list had five items. */}
+              <div className="flex min-w-0 items-center gap-1 overflow-x-auto scrollbar-hide rounded-md bg-sunken p-1">
               {navItems.map(item => {
                 const active = isActive(item.href);
                 return (
@@ -309,7 +312,7 @@ export function Header() {
           </div>
         </div>
 
-        <nav aria-label="Primary" className="flex lg:hidden items-center gap-1 pb-3 -mx-1 overflow-x-auto scrollbar-hide">
+        <nav aria-label="Primary" className="flex xl:hidden items-center gap-1 pb-3 -mx-1 overflow-x-auto scrollbar-hide">
           {navItems.map(item => {
             const active = isActive(item.href);
             return (
