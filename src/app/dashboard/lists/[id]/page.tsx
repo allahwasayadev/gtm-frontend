@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import type { AccountList, Account } from '@/features/accountLists/types';
@@ -22,6 +22,8 @@ export default function ListDetailPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const savingRef = useRef(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPublishSuccessModal, setShowPublishSuccessModal] = useState(false);
 
@@ -77,6 +79,11 @@ export default function ListDetailPage() {
   };
 
   const handleSaveEdits = async () => {
+    // One write at a time: without this, repeated clicks sent repeated PUTs and
+    // Cancel could land mid-write.
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setIsSaving(true);
     try {
       const accountsData = accounts.map((acc) => ({
         accountName: acc.accountName,
@@ -87,6 +94,9 @@ export default function ListDetailPage() {
       await loadList();
     } catch {
       toast.error('Failed to save changes');
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -213,6 +223,7 @@ export default function ListDetailPage() {
                     }}
                     variant="outline"
                     size="sm"
+                    disabled={isSaving}
                   >
                     Cancel
                   </Button>
@@ -220,9 +231,11 @@ export default function ListDetailPage() {
                     onClick={handleSaveEdits}
                     variant="primary"
                     size="sm"
+                    isLoading={isSaving}
+                    disabled={isSaving}
                   >
-                    <Save className="w-3.5 h-3.5 mr-1.5" />
-                    Save
+                    {!isSaving && <Save className="w-3.5 h-3.5 mr-1.5" />}
+                    {isSaving ? 'Saving…' : 'Save'}
                   </Button>
                 </div>
               )}
@@ -230,10 +243,20 @@ export default function ListDetailPage() {
 
             {accounts.length === 0 ? (
               <div className="border-2 border-dashed border-hairline rounded-md">
+                {/* While editing, removing the last row used to take the table
+                    and its Add Account footer with it, leaving no way back. */}
                 <EmptyState
                   icon={FileText}
                   title="No accounts yet"
-                  description='Click "Edit" to add accounts'
+                  description={editing ? 'Add your first account to this list.' : 'Click "Edit" to add accounts'}
+                  action={
+                    editing ? (
+                      <Button type="button" variant="primary" size="sm" onClick={handleAddAccount}>
+                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                        Add Account
+                      </Button>
+                    ) : undefined
+                  }
                 />
               </div>
             ) : (

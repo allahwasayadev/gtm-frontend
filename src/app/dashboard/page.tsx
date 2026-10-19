@@ -14,7 +14,7 @@ import type {
   AccountMatchesMap,
   PartnerRelationshipType,
 } from '@/features/matching/types';
-import { Card, Badge, Dropdown, SkeletonCard, SkeletonTable, EmptyState, PageTransition, FadeIn, LoadingScreen, AccountMatchTooltip, QuickAction, QuickActionGrid, InviteModal, FilterSheet, OnboardingTour, useOnboardingTour, ButtonLink } from '@/components/ui';
+import { Button, Card, Badge, Dropdown, SkeletonCard, SkeletonTable, EmptyState, PageTransition, FadeIn, LoadingScreen, AccountMatchTooltip, QuickAction, QuickActionGrid, InviteModal, FilterSheet, OnboardingTour, useOnboardingTour, ButtonLink } from '@/components/ui';
 import {
   Building2,
   FileText,
@@ -46,6 +46,8 @@ export default function DashboardPage() {
   const [activeList, setActiveList] = useState<AccountList | null>(null);
   const [matchesMap, setMatchesMap] = useState<AccountMatchesMap>({});
   const [loadingData, setLoadingData] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [matchesUnavailable, setMatchesUnavailable] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [matchViewFilter, setMatchViewFilter] =
@@ -84,8 +86,17 @@ export default function DashboardPage() {
       try {
         const matchesRes = await matchingApi.getAllMatches();
         setMatchesMap(matchesRes.data.matchesMap ?? {});
-      } catch {}
+        setMatchesUnavailable(false);
+      } catch {
+        // Overlaps could not be read. That is not the same as "no overlaps",
+        // and the table says so rather than printing a 0 that is not a count.
+        setMatchesUnavailable(true);
+      }
+      setLoadFailed(false);
     } catch {
+      // The lists and connections themselves failed. Showing the empty state
+      // here would tell the user they have no list, which may be untrue.
+      setLoadFailed(true);
     } finally {
       setLoadingData(false);
     }
@@ -247,6 +258,24 @@ export default function DashboardPage() {
               <SkeletonCard />
               <SkeletonCard />
               <SkeletonCard />
+            </div>
+          ) : loadFailed ? (
+            /* Say the load failed. The empty state here would claim the account
+               has no list, which a failed request is no evidence of. */
+            <div className="mb-3 md:mb-8 rounded-md border border-danger-soft bg-danger-soft p-5" role="alert">
+              <p className="text-sm font-bold text-danger">We couldn&rsquo;t load your dashboard</p>
+              <p className="mt-1 text-sm text-danger/90">
+                Your lists and connections are not shown rather than shown wrongly.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => { setLoadingData(true); void loadData(); }}
+              >
+                Try again
+              </Button>
             </div>
           ) : (
             <>
@@ -663,6 +692,15 @@ export default function DashboardPage() {
                                     </span>
                                   )}
                                 </AccountMatchTooltip>
+                              ) : matchesUnavailable ? (
+                                /* A blank cell reads as "no overlaps". When the
+                                   overlap request failed we do not know that. */
+                                <span
+                                  className="text-sm text-ink-3"
+                                  title="Overlaps could not be loaded for this account"
+                                >
+                                  &mdash;
+                                </span>
                               ) : null}
                             </td>
                           </tr>
@@ -677,12 +715,14 @@ export default function DashboardPage() {
                           {activeAccounts.length}
                         </span>{' '}
                         account{activeAccounts.length !== 1 ? 's' : ''}
-                        {matchedAccountsCount > 0 && (
+                        {matchesUnavailable ? (
+                          <span className="ml-3 text-warn">Overlaps unavailable</span>
+                        ) : matchedAccountsCount > 0 ? (
                           <span className="ml-3 text-ok">
                             <span className="inline-flex w-1.5 h-1.5 rounded-full bg-ok mr-1 align-middle" />
                             {matchedAccountsCount} matched
                           </span>
-                        )}
+                        ) : null}
                       </p>
                     </div>
                   </div>

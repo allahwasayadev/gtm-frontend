@@ -25,6 +25,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ListUserItem | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -34,9 +35,13 @@ export default function UsersPage() {
       ]);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
       setStats(statsRes.data ?? null);
+      setLoadFailed(false);
     } catch (e) {
       toast.error(getErrorMessage(e, 'Failed to load users'));
+      // Clearing the list and saying "No users" claims something a failed
+      // request cannot support.
       setUsers([]);
+      setLoadFailed(true);
     } finally {
       setLoading(false);
     }
@@ -149,6 +154,19 @@ export default function UsersPage() {
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-soft border-t-accent" />
                 <span className="text-sm font-medium">Loading users...</span>
               </div>
+            </Card>
+          ) : loadFailed ? (
+            <Card className="p-12">
+              <EmptyState
+                icon={UsersRound}
+                title="We couldn&rsquo;t load the users"
+                description="The request didn&rsquo;t complete, so nothing is listed rather than listing nothing."
+                action={
+                  <Button type="button" variant="outline" size="sm" onClick={() => void loadUsers()}>
+                    Try again
+                  </Button>
+                }
+              />
             </Card>
           ) : users.length === 0 ? (
             <Card className="p-12">
