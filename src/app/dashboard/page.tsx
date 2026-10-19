@@ -264,9 +264,7 @@ export default function DashboardPage() {
                has no list, which a failed request is no evidence of. */
             <div className="mb-3 md:mb-8 rounded-md border border-danger-soft bg-danger-soft p-5" role="alert">
               <p className="text-sm font-bold text-danger">We couldn&rsquo;t load your dashboard</p>
-              <p className="mt-1 text-sm text-danger/90">
-                Your lists and connections are not shown rather than shown wrongly.
-              </p>
+              <p className="mt-1 text-sm text-danger/90">Please try again in a moment.</p>
               <Button
                 type="button"
                 variant="outline"
@@ -716,7 +714,16 @@ export default function DashboardPage() {
                         </span>{' '}
                         account{activeAccounts.length !== 1 ? 's' : ''}
                         {matchesUnavailable ? (
-                          <span className="ml-3 text-warn">Overlaps unavailable</span>
+                          <span className="ml-3 inline-flex items-center gap-2 text-warn">
+                            Overlaps unavailable
+                            <button
+                              type="button"
+                              onClick={() => { setLoadingData(true); void loadData(); }}
+                              className="rounded-sm font-semibold underline underline-offset-2 hover:text-warn/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                            >
+                              Try again
+                            </button>
+                          </span>
                         ) : matchedAccountsCount > 0 ? (
                           <span className="ml-3 text-ok">
                             <span className="inline-flex w-1.5 h-1.5 rounded-full bg-ok mr-1 align-middle" />

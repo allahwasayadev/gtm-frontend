@@ -160,7 +160,7 @@ export default function UsersPage() {
               <EmptyState
                 icon={UsersRound}
                 title="We couldn&rsquo;t load the users"
-                description="The request didn&rsquo;t complete, so nothing is listed rather than listing nothing."
+                description="Please try again in a moment."
                 action={
                   <Button type="button" variant="outline" size="sm" onClick={() => void loadUsers()}>
                     Try again

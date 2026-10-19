@@ -325,9 +325,10 @@ export default function ListDetailPage() {
                           {editing && (
                             <td className="px-2 sm:px-4 py-3 text-center align-top">
                               <button
+                                type="button"
                                 onClick={() => handleRemoveAccount(index)}
-                                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-ink-3 hover:text-danger hover:bg-danger-soft transition-all duration-200"
-                                title="Remove"
+                                className="inline-flex items-center justify-center w-11 h-11 rounded-lg text-ink-3 hover:text-danger hover:bg-danger-soft transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                                aria-label={`Remove ${account.accountName || `row ${index + 1}`}`}
                               >
                                 <X className="w-4 h-4" />
                               </button>

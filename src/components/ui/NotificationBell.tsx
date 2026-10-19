@@ -50,7 +50,10 @@ export function NotificationBell() {
   const refetchUnreadCountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023.98px)');
+    /* The header keeps its own nav row until xl, so the panel has to stay a
+       sheet until then too. Switching at lg made it an absolute popover from
+       1024 while that nav row was still on screen, and it covered it. */
+    const mq = window.matchMedia('(max-width: 1279.98px)');
     const sync = () => setIsModalLayout(mq.matches);
     sync();
     mq.addEventListener('change', sync);
@@ -342,7 +345,7 @@ export function NotificationBell() {
             aria-hidden="true"
             onClick={() => setIsOpen(false)}
             style={{ top: 'var(--hdr-bottom)' }}
-            className="fixed inset-x-0 bottom-0 z-[55] bg-[rgba(25,28,27,0.40)] motion-safe:animate-[ovrlapFade_.15s_ease-out] lg:hidden"
+            className="fixed inset-x-0 bottom-0 z-[55] bg-[rgba(25,28,27,0.40)] motion-safe:animate-[ovrlapFade_.15s_ease-out] xl:hidden"
           />
           <div
             ref={panelRef}
@@ -350,7 +353,7 @@ export function NotificationBell() {
             role="dialog"
             aria-modal={isModalLayout ? true : undefined}
             aria-label="Notifications"
-            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] lg:absolute lg:inset-x-auto lg:right-0 lg:top-12 lg:z-50 lg:mx-0 lg:max-h-none lg:w-96 rounded-lg border border-hairline bg-surface shadow-e2 ring-1 ring-black/5">
+            className="fixed inset-x-0 top-[calc(var(--hdr-bottom)+8px)] z-[60] mx-3 flex max-h-[calc(100dvh-var(--hdr-bottom)-env(safe-area-inset-bottom)-24px)] flex-col overflow-hidden outline-none motion-safe:animate-[ovrlapPanelIn_.18s_cubic-bezier(.25,.1,.25,1)] xl:absolute xl:inset-x-auto xl:right-0 xl:top-[calc(100%+10px)] xl:z-50 xl:mx-0 xl:max-h-none xl:w-96 rounded-lg border border-hairline bg-surface shadow-e2 ring-1 ring-black/5">
           <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-ink">
@@ -376,7 +379,7 @@ export function NotificationBell() {
           <div
             ref={listRef}
             onScroll={handleListScroll}
-            className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3 lg:max-h-96 lg:flex-none"
+            className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3 xl:max-h-96 xl:flex-none"
           >
             {loading ? (
               <p className="px-1 py-4 text-center text-sm text-ink-3">
@@ -451,7 +454,7 @@ export function NotificationBell() {
             )}
           </div>
 
-          <div className="shrink-0 border-t border-hairline px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:pb-3">
+          <div className="shrink-0 border-t border-hairline px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] xl:pb-3">
             <Button
               type="button"
               variant="outline"
