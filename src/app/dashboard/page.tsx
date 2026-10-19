@@ -629,7 +629,11 @@ export default function DashboardPage() {
                         </th>
                         <th
                           scope="col"
-                          className="px-2 md:px-4 py-2 md:py-3.5 text-right w-[86px] md:w-32"
+                          /* Measured, not guessed: the widest trigger is the
+                             dark top-match pill reading "12 matches" — 87px on a
+                             phone and 103px from md. With the cell's 24/32px of
+                             padding the old 86px/w-32 column cut it off. */
+                          className="px-2 md:px-4 py-2 md:py-3.5 text-right w-[116px] md:w-[144px]"
                         >
                           <div className="flex items-center justify-end gap-2">
                             <span className="text-xs font-bold uppercase text-ink-2 tracking-[0.07em]">
