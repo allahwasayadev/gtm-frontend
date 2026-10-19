@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Bell, RefreshCw } from 'lucide-react';
+import { Bell, RefreshCw, X } from 'lucide-react';
 import { io, type Socket } from 'socket.io-client';
 import { apiBaseUrl } from '@/lib/axios';
 import { notificationsApi } from '@/features/notifications/notifications.api';
@@ -363,17 +363,33 @@ export function NotificationBell() {
                 {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => void handleRefresh()}
-              disabled={refreshing}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline text-ink-3 transition-colors hover:bg-sunken hover:text-ink-2"
-              aria-label="Refresh notifications"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`}
-              />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void handleRefresh()}
+                disabled={refreshing}
+                className={`inline-flex items-center justify-center rounded-full border border-hairline text-ink-3 transition-colors hover:bg-sunken hover:text-ink-2 ${
+                  isModalLayout ? 'h-11 w-11' : 'h-8 w-8'
+                }`}
+                aria-label="Refresh notifications"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`}
+                />
+              </button>
+              {/* As a trapped dialog the panel had no way out but Escape or the
+                  scrim, neither of which a touch user can see. */}
+              {isModalLayout && (
+                <button
+                  type="button"
+                  onClick={closePanel}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-ink-3 transition-colors hover:bg-sunken hover:text-ink-2"
+                  aria-label="Close notifications"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div

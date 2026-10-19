@@ -208,10 +208,11 @@ export default function UsersPage() {
             </Card>
           ) : (
             <>
-            {/* On a phone the 800px table pushed Roles and Delete off-screen
-                behind a horizontal scroll nobody finds. Same data, same
-                delete handler, stacked instead. */}
-            <ul className="sm:hidden space-y-3">
+            {/* The 800px table pushed Roles and Delete into an inner scroller
+                nobody finds — true on a phone and still true on an iPad. Cards
+                carry the same fields and the same delete handler until lg,
+                where the full table genuinely fits. */}
+            <ul className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-3">
               {users.map((u) => {
                 const isYou = isCurrentUser(u);
                 return (
@@ -268,7 +269,7 @@ export default function UsersPage() {
                 );
               })}
             </ul>
-            <div className="hidden sm:block rounded-md border border-hairline bg-surface shadow-sm ring-1 ring-hairline overflow-hidden">
+            <div className="hidden lg:block rounded-md border border-hairline bg-surface shadow-sm ring-1 ring-hairline overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[800px] text-left text-sm">
                   <colgroup>
