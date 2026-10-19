@@ -1,5 +1,6 @@
 export { Button, ButtonLink, buttonClasses } from './Button';
 export { Input } from './Input';
+export { BrandLockup } from './BrandLockup';
 export { Select } from './Select';
 export { Dropdown } from './Dropdown';
 export { Badge } from './Badge';

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
 import { getUserInitials } from '@/lib/user-initials';
 import { NotificationBell } from './NotificationBell';
+import { BrandLockup } from './BrandLockup';
 import { LEGAL_LINKS } from './SiteFooter';
 import { LayoutDashboard, Upload, Users, ClipboardCheck, ChevronDown, User, LogOut, Settings, ArrowLeft, Info, UsersRound, Shield, Scale, MessageSquare } from 'lucide-react';
 
@@ -186,10 +187,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-hairline bg-surface">
       <div className="mx-auto lg:px-14 px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between gap-2">
-          <Link href={user ? '/dashboard' : '/'} className="inline-flex shrink-0 items-center rounded-sm">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-12 w-auto object-contain" />
-          </Link>
+          <BrandLockup href={user ? '/dashboard' : '/'} />
 
           <nav aria-label="Primary" className="hidden xl:flex min-w-0 shrink items-center">
             {/* The group scrolls inside its own box. Without this it painted past

@@ -21,7 +21,7 @@ export default function SmsOptInPage() {
       <div className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
         <header className="mb-10">
           <Link href="/" className="inline-block mb-8">
-            <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-10 w-auto" />
+            <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-[52px] sm:h-[56px] lg:h-[60px] w-auto object-contain" />
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold text-ink mb-3">
             SMS Terms &amp; Opt-In

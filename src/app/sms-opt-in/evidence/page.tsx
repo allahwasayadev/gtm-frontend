@@ -24,7 +24,7 @@ export default function SmsEvidencePage() {
       <div className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
         <header className="mb-10">
           <Link href="/" className="inline-block mb-8">
-            <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-10 w-auto" />
+            <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-[52px] sm:h-[56px] lg:h-[60px] w-auto object-contain" />
           </Link>
           <p className="text-sm font-medium text-accent mb-2">
             <Link href="/sms-opt-in" className="hover:text-accent-ink">

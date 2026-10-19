@@ -86,6 +86,11 @@ export default function ProfilePage() {
   // A2P 10DLC: this screen previously sent SMS with no disclosure at all.
   const [smsConsent, setSmsConsent] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  /* The published SMS terms say STOP then START then tick the box here. This
+     is that box: it starts unchecked every time, and only an explicit tick plus
+     the button records consent. Ordinary Save never touches it. */
+  const [regrantChecked, setRegrantChecked] = useState(false);
+  const [isRegranting, setIsRegranting] = useState(false);
   /* AuthContext holds whatever was true at sign-in. Consent and opt-out are
      decisions a user can make elsewhere — including by replying STOP — so this
      screen asks the authoritative profile before it shows any of them. */
@@ -306,6 +311,26 @@ export default function ProfilePage() {
       toast.error(getErrorMessage(error, 'Failed to send verification code'));
     } finally {
       setIsSendingPhoneCode(false);
+    }
+  };
+
+  const handleGrantSmsConsent = async () => {
+    if (!regrantChecked || !user) return;
+    setIsRegranting(true);
+    try {
+      const res = await usersApi.grantSmsConsent();
+      updateUser({
+        ...user,
+        smsConsent: res.data.smsConsent,
+        smsOptedOut: res.data.smsOptedOut,
+        smsConsentAt: new Date().toISOString(),
+      });
+      setRegrantChecked(false);
+      toast.success(res.data.message);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to record your SMS consent'));
+    } finally {
+      setIsRegranting(false);
     }
   };
 
@@ -818,11 +843,40 @@ export default function ProfilePage() {
                           !user?.smsOptedOut &&
                           isPhoneVerifiedForCurrentPhone && (
                             <div className="mt-3 rounded-md border border-hairline bg-sunken p-3.5">
-                              <p className="text-sm font-medium text-ink">No SMS consent on record</p>
-                              <p className="mt-0.5 text-xs text-ink-2">
-                                Ovrlap will not send text messages to this number. Choose Update Email
-                                to request a code, which is where consent is captured.
+                              <p className="text-sm font-medium text-ink">
+                                SMS is off for this number
                               </p>
+                              <p className="mt-0.5 text-xs text-ink-2">
+                                Ovrlap will not send account security codes, including password
+                                resets. Agree below to turn them back on. Nothing is sent now.
+                              </p>
+                              <label className="mt-3 flex items-start gap-3 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={regrantChecked}
+                                  onChange={(e) => setRegrantChecked(e.target.checked)}
+                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-control accent-[#0E5955]"
+                                />
+                                <span className="text-xs text-ink-2 leading-relaxed">
+                                  {SMS_CONSENT_TEXT}
+                                </span>
+                              </label>
+                              <div className="mt-3 flex gap-3">
+                                <Link href="/terms" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink">Terms</Link>
+                                <Link href="/privacy" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink">Privacy Policy</Link>
+                                <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink">SMS Terms</Link>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="primary"
+                                size="sm"
+                                className="mt-3"
+                                disabled={!regrantChecked}
+                                isLoading={isRegranting}
+                                onClick={handleGrantSmsConsent}
+                              >
+                                Turn SMS back on
+                              </Button>
                             </div>
                           )}
 
