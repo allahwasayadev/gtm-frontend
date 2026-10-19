@@ -16,6 +16,18 @@ interface ConnectionControlMenuProps {
   variant?: 'default' | 'light';
 }
 
+/* Unmuting moves the row out of the muted section and into the active list.
+   Those are two separate maps in the parent, so this instance is unmounted and
+   a different one is mounted for the same connection. Focus therefore cannot be
+   restored from inside the instance that started the action — the connection id
+   is handed over instead, and whichever menu renders for that connection next
+   claims it. Identity, not a timer: nothing polls.
+
+   If the row never comes back (the connection is gone), the handover is simply
+   never claimed and is dropped by the next action. Focus then stays where the
+   browser left it rather than being moved somewhere arbitrary. */
+let pendingFocusConnectionId: string | null = null;
+
 const MENU_WIDTH = 208;
 const VIEWPORT_PADDING = 8;
 const TRIGGER_GAP = 8;
@@ -111,6 +123,15 @@ export function ConnectionControlMenu({
     menuItems()[0]?.focus();
   }, [menuNode, menuItems]);
 
+  // Claim a focus handover left by the instance this one replaced. No dep array
+  // on purpose: it returns immediately unless this is the awaited connection,
+  // and the mount after the unmute is the render that matters.
+  useLayoutEffect(() => {
+    if (pendingFocusConnectionId !== connection.id) return;
+    pendingFocusConnectionId = null;
+    buttonRef.current?.focus();
+  });
+
   useEffect(() => {
     if (!isMenuOpen) return;
 
@@ -181,6 +202,7 @@ export function ConnectionControlMenu({
   };
 
   const handleMute = async () => {
+    pendingFocusConnectionId = null;
     setIsMuting(true);
     try {
       await onMute(connection.id);
@@ -194,6 +216,7 @@ export function ConnectionControlMenu({
   };
 
   const handleRemove = async () => {
+    pendingFocusConnectionId = null;
     setIsRemoving(true);
     try {
       await onRemove(connection.id);
@@ -209,7 +232,10 @@ export function ConnectionControlMenu({
     setIsUnmuting(true);
     try {
       await onUnmute(connection.id);
-      closeMenu();
+      // Focusing the trigger here would target a node the parent is about to
+      // discard, so hand the connection id to its replacement instead.
+      setIsMenuOpen(false);
+      pendingFocusConnectionId = connection.id;
     } catch {
       // Already reported by the parent; leave the menu open for a retry.
     } finally {
