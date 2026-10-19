@@ -298,15 +298,16 @@ export function Header() {
                 </div>
               </>
             ) : (
-              /* Both actions stay reachable at 320: the pair plus the brand and
-                 the row's gutters came to 328 against a 320 viewport, so the
-                 padding and the gap tighten below 360 rather than anything
-                 being hidden, scaled or clipped. */
-              <div className="flex shrink-0 items-center gap-1 min-[360px]:gap-2">
-                <Link href="/login" className="flex min-h-[44px] items-center whitespace-nowrap rounded-sm px-2.5 min-[360px]:px-4 text-sm font-bold text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors">
+              /* Both actions stay reachable across phone widths. The compact
+                 padding and gap hold until sm rather than snapping back at
+                 360: at 360 the wide spacing put Sign up's edge on the
+                 viewport boundary, 16px outside the row's own gutter. The 44px
+                 target is kept, and nothing is hidden, scaled or clipped. */
+              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                <Link href="/login" className="flex min-h-[44px] items-center whitespace-nowrap rounded-sm px-2.5 sm:px-4 text-sm font-bold text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors">
                   Log in
                 </Link>
-                <Link href="/signup" className="flex min-h-[44px] items-center whitespace-nowrap rounded-sm px-2.5 min-[360px]:px-4 text-sm font-bold text-white bg-accent hover:bg-accent-hover transition-colors shadow-e1">
+                <Link href="/signup" className="flex min-h-[44px] items-center whitespace-nowrap rounded-sm px-2.5 sm:px-4 text-sm font-bold text-white bg-accent hover:bg-accent-hover transition-colors shadow-e1">
                   Sign up
                 </Link>
               </div>
