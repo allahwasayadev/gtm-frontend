@@ -40,6 +40,15 @@ export function ConnectionControlMenu({
   const triggerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  // menuPosition is a fresh object on every reposition, so depending on it
+  // re-focused the first item on every scroll and resize. This is the stable
+  // signal instead: it changes once when the portal mounts and once when it goes.
+  const [menuNode, setMenuNode] = useState<HTMLDivElement | null>(null);
+
+  const attachDropdown = useCallback((node: HTMLDivElement | null) => {
+    dropdownRef.current = node;
+    setMenuNode(node);
+  }, []);
 
   const updateMenuPosition = useCallback(() => {
     if (!buttonRef.current) return;
@@ -73,7 +82,11 @@ export function ConnectionControlMenu({
       );
     }
 
-    setMenuPosition({ top, left });
+    setMenuPosition((previous) =>
+      previous && previous.top === top && previous.left === left
+        ? previous
+        : { top, left },
+    );
   }, [align]);
 
   const menuItems = useCallback(
@@ -86,19 +99,17 @@ export function ConnectionControlMenu({
     if (returnFocus) buttonRef.current?.focus();
   }, []);
 
-  // The first pass positions from an estimate; once the menu is in the DOM its
-  // real height is known, so run the same clamp again before the browser paints.
+  // Re-measure with the menu's real height the moment it is in the DOM.
   useLayoutEffect(() => {
-    if (!isMenuOpen || !dropdownRef.current) return;
+    if (!menuNode) return;
     updateMenuPosition();
-  }, [isMenuOpen, updateMenuPosition]);
+  }, [menuNode, updateMenuPosition]);
 
-  // The portal only renders once menuPosition exists, so this has to wait for
-  // that second pass or it would focus an empty menu on the first open.
+  // Once per open, never again on reposition.
   useEffect(() => {
-    if (!isMenuOpen || !menuPosition || !dropdownRef.current) return;
+    if (!menuNode) return;
     menuItems()[0]?.focus();
-  }, [isMenuOpen, menuPosition, menuItems]);
+  }, [menuNode, menuItems]);
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -228,7 +239,7 @@ export function ConnectionControlMenu({
 
       {isMenuOpen && menuPosition && createPortal(
         <div
-          ref={dropdownRef}
+          ref={attachDropdown}
           role="menu"
           aria-label="Connection actions"
           onKeyDown={handleMenuKeyDown}
@@ -254,7 +265,9 @@ export function ConnectionControlMenu({
               type="button"
               role="menuitem"
               onClick={() => {
-                closeMenu(false);
+                // Focus goes back to the trigger first, so the confirmation
+                // records it and Cancel returns to Connection actions.
+                closeMenu();
                 setIsMuteModalOpen(true);
               }}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-2 hover:bg-surface-2 rounded-lg transition-colors"
@@ -268,7 +281,7 @@ export function ConnectionControlMenu({
             type="button"
             role="menuitem"
             onClick={() => {
-              closeMenu(false);
+              closeMenu();
               setIsRemoveModalOpen(true);
             }}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger-soft rounded-lg transition-colors"
