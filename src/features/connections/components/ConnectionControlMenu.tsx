@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, BellOff, MoreVertical, UserMinus } from 'lucide-react';
 import { ConfirmationModal } from '@/components/ui';
+import { getFocusable } from '@/lib/focus';
 import type { Connection } from '@/features/connections/types';
 
 interface ConnectionControlMenuProps {
@@ -17,6 +18,9 @@ interface ConnectionControlMenuProps {
 
 const MENU_WIDTH = 208;
 const VIEWPORT_PADDING = 8;
+const TRIGGER_GAP = 8;
+// Only used for the very first paint, before the menu can be measured.
+const ESTIMATED_MENU_HEIGHT = 96;
 
 export function ConnectionControlMenu({
   connection,
@@ -47,11 +51,54 @@ export function ConnectionControlMenu({
       Math.min(rawLeft, window.innerWidth - MENU_WIDTH - VIEWPORT_PADDING),
     );
 
-    setMenuPosition({
-      top: triggerRect.bottom + 8,
-      left,
-    });
+    // Dropping the menu below the trigger unconditionally put Mute and Remove
+    // under the fold for any row near the bottom of a short window. Flip it
+    // above when there is room there, and clamp to the viewport when neither
+    // side fits.
+    const menuHeight = dropdownRef.current?.offsetHeight || ESTIMATED_MENU_HEIGHT;
+    const below = triggerRect.bottom + TRIGGER_GAP;
+    const above = triggerRect.top - TRIGGER_GAP - menuHeight;
+    const fitsBelow = below + menuHeight <= window.innerHeight - VIEWPORT_PADDING;
+    const fitsAbove = above >= VIEWPORT_PADDING;
+
+    let top: number;
+    if (fitsBelow) {
+      top = below;
+    } else if (fitsAbove) {
+      top = above;
+    } else {
+      top = Math.max(
+        VIEWPORT_PADDING,
+        window.innerHeight - menuHeight - VIEWPORT_PADDING,
+      );
+    }
+
+    setMenuPosition({ top, left });
   }, [align]);
+
+  const menuItems = useCallback(
+    () => getFocusable(dropdownRef.current),
+    [],
+  );
+
+  const closeMenu = useCallback((returnFocus = true) => {
+    setIsMenuOpen(false);
+    if (returnFocus) buttonRef.current?.focus();
+  }, []);
+
+  // The first pass positions from an estimate; once the menu is in the DOM its
+  // real height is known, so run the same clamp again before the browser paints.
+  useLayoutEffect(() => {
+    if (!isMenuOpen || !dropdownRef.current) return;
+    updateMenuPosition();
+  }, [isMenuOpen, updateMenuPosition]);
+
+  // The portal only renders once menuPosition exists, so this has to wait for
+  // that second pass or it would focus an empty menu on the first open.
+  useEffect(() => {
+    if (!isMenuOpen || !menuPosition || !dropdownRef.current) return;
+    menuItems()[0]?.focus();
+  }, [isMenuOpen, menuPosition, menuItems]);
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -69,7 +116,10 @@ export function ConnectionControlMenu({
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsMenuOpen(false);
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        closeMenu();
+      }
     };
 
     const handleWindowChange = () => updateMenuPosition();
@@ -85,13 +135,48 @@ export function ConnectionControlMenu({
       window.removeEventListener('resize', handleWindowChange);
       window.removeEventListener('scroll', handleWindowChange, true);
     };
-  }, [isMenuOpen, updateMenuPosition]);
+  }, [isMenuOpen, updateMenuPosition, closeMenu]);
+
+  // Arrow/Home/End walk the items; Tab leaves the menu the way a menu should.
+  const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const items = menuItems();
+    if (items.length === 0) return;
+    const current = items.indexOf(document.activeElement as HTMLElement);
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        items[(current + 1 + items.length) % items.length]?.focus();
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        items[(current - 1 + items.length) % items.length]?.focus();
+        break;
+      case 'Home':
+        event.preventDefault();
+        items[0]?.focus();
+        break;
+      case 'End':
+        event.preventDefault();
+        items[items.length - 1]?.focus();
+        break;
+      case 'Tab':
+        // Let focus move on naturally, but do not leave the menu hanging open.
+        closeMenu(false);
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleMute = async () => {
     setIsMuting(true);
     try {
       await onMute(connection.id);
       setIsMuteModalOpen(false);
+    } catch {
+      // The parent already showed the error and rethrew. Swallowing it here
+      // stops an unhandled rejection and leaves the modal up to retry from.
     } finally {
       setIsMuting(false);
     }
@@ -102,6 +187,8 @@ export function ConnectionControlMenu({
     try {
       await onRemove(connection.id);
       setIsRemoveModalOpen(false);
+    } catch {
+      // Already reported by the parent; keep the modal open for a retry.
     } finally {
       setIsRemoving(false);
     }
@@ -111,7 +198,9 @@ export function ConnectionControlMenu({
     setIsUnmuting(true);
     try {
       await onUnmute(connection.id);
-      setIsMenuOpen(false);
+      closeMenu();
+    } catch {
+      // Already reported by the parent; leave the menu open for a retry.
     } finally {
       setIsUnmuting(false);
     }
@@ -141,7 +230,9 @@ export function ConnectionControlMenu({
         <div
           ref={dropdownRef}
           role="menu"
-          className="fixed z-50 w-52 rounded-md border border-hairline bg-surface shadow-lg ring-1 ring-hairline p-1.5"
+          aria-label="Connection actions"
+          onKeyDown={handleMenuKeyDown}
+          className="fixed z-50 w-52 max-h-[calc(100dvh-16px)] overflow-y-auto rounded-md border border-hairline bg-surface shadow-lg ring-1 ring-hairline p-1.5"
           style={{
             top: menuPosition.top,
             left: menuPosition.left,
@@ -163,7 +254,7 @@ export function ConnectionControlMenu({
               type="button"
               role="menuitem"
               onClick={() => {
-                setIsMenuOpen(false);
+                closeMenu(false);
                 setIsMuteModalOpen(true);
               }}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-2 hover:bg-surface-2 rounded-lg transition-colors"
@@ -177,7 +268,7 @@ export function ConnectionControlMenu({
             type="button"
             role="menuitem"
             onClick={() => {
-              setIsMenuOpen(false);
+              closeMenu(false);
               setIsRemoveModalOpen(true);
             }}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger-soft rounded-lg transition-colors"
