@@ -297,6 +297,18 @@ function MatchesContent() {
     [loadAllPartnersMatches, loadPartnerMatches, selectedConnectionId],
   );
 
+  /* Mute and Remove drop the selection, so the toolbar holding the actions
+     menu unmounts and the keyboard would be left on nothing. The fallback is
+     the rail's "All partners" chip — the view the page falls back to. */
+  const allChipRef = useRef<HTMLButtonElement>(null);
+  const [focusAllPartners, setFocusAllPartners] = useState(false);
+
+  useEffect(() => {
+    if (!focusAllPartners) return;
+    setFocusAllPartners(false);
+    allChipRef.current?.focus();
+  }, [focusAllPartners]);
+
   const handleMuteConnection = async (connectionId: string) => {
     try {
       await connectionsApi.mute(connectionId);
@@ -304,6 +316,7 @@ function MatchesContent() {
       await Promise.all([loadConnections(), loadAllPartnersMatches()]);
       if (selectedConnectionId === connectionId) {
         setSelectedConnectionId('');
+        setFocusAllPartners(true);
       }
     } catch (error) {
       toast.error('Failed to mute connection');
@@ -335,6 +348,7 @@ function MatchesContent() {
       setResolvedMatches([]);
       setSuggestedMatches([]);
       await Promise.all([loadConnections(), loadAllPartnersMatches()]);
+      setFocusAllPartners(true);
     } catch (error) {
       toast.error('Failed to remove connection');
       throw error;
@@ -404,6 +418,7 @@ function MatchesContent() {
               items={partnerNavItems}
               selectedConnectionId={selectedConnectionId}
               onSelect={setSelectedConnectionId}
+              allChipRef={allChipRef}
             />
 
             <section className="space-y-4 min-w-0">
@@ -503,6 +518,7 @@ function PartnerChips({
   items,
   selectedConnectionId,
   onSelect,
+  allChipRef,
 }: {
   className?: string;
   allPartnersMode: boolean;
@@ -510,6 +526,9 @@ function PartnerChips({
   items: Array<{ connection: Connection; matchCount: number }>;
   selectedConnectionId: string;
   onSelect: (connectionId: string) => void;
+  /* Muting or removing the selected partner closes this page's toolbar, which
+     takes the focused control with it. The page falls back to this chip. */
+  allChipRef?: React.Ref<HTMLButtonElement>;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });
@@ -541,6 +560,7 @@ function PartnerChips({
   const chip = (key: string, selected: boolean, count: number, title: string, sub: string, onClick: () => void) => (
     <button
       key={key}
+      ref={key === 'all' ? allChipRef : undefined}
       type="button"
       data-selected={selected}
       aria-pressed={selected}

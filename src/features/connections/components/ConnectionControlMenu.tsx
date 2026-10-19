@@ -105,7 +105,12 @@ export function ConnectionControlMenu({
 
   const closeMenu = useCallback((returnFocus = true) => {
     setIsMenuOpen(false);
-    if (returnFocus) buttonRef.current?.focus();
+    // On a page that relocates the row this node has already been replaced;
+    // focusing a detached element does nothing useful, and the page's own
+    // nomination focuses the replacement instead.
+    if (returnFocus && buttonRef.current?.isConnected) {
+      buttonRef.current.focus();
+    }
   }, []);
 
   // Re-measure with the menu's real height the moment it is in the DOM.
@@ -232,10 +237,10 @@ export function ConnectionControlMenu({
   const handleUnmute = async () => {
     setIsUnmuting(true);
     try {
-      // The parent refreshes its list before this resolves, so by now the row
-      // has already moved; it nominates the connection to focus.
       await onUnmute(connection.id);
-      setIsMenuOpen(false);
+      // Matches keeps this trigger mounted, so focus returns to it here. On
+      // Connections the row has moved and the guard above makes this a no-op.
+      closeMenu();
     } catch {
       // Already reported by the parent; leave the menu open for a retry.
     } finally {
