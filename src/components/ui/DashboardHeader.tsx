@@ -185,7 +185,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-hairline bg-surface">
-      <div className="mx-auto lg:px-14 px-4 sm:px-6">
+      <div className="mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-14">
         <div className="flex h-16 items-center justify-between gap-2">
           <BrandLockup href={user ? '/dashboard' : '/'} />
 

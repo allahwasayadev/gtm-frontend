@@ -11,6 +11,12 @@ import Link from 'next/link';
  *
  * One component rather than a repeated <img>, so the header, the public policy
  * pages and the export preview all move together.
+ *
+ * It steps down below 360px. At 320 the brand and the bell-plus-account group
+ * are both shrink-0, so a 182px lockup plus a 126px control group plus the
+ * row's padding added up to 332 against a 320 viewport and the page scrolled
+ * sideways. 44px keeps the lockup 154px wide and the row inside the viewport
+ * without hiding or scaling anything.
  */
 export function BrandLockup({
   href = '/',
@@ -28,7 +34,7 @@ export function BrandLockup({
       <img
         src="/ovrlap-logo.svg"
         alt="Ovrlap"
-        className="h-[52px] sm:h-[56px] lg:h-[60px] w-auto object-contain"
+        className="h-[44px] min-[360px]:h-[52px] sm:h-[56px] lg:h-[60px] w-auto object-contain"
       />
     </Link>
   );
