@@ -198,7 +198,7 @@ export default function DashboardPage() {
   // The same condition the account table uses for its empty state. Guarded on
   // loadingData so a fresh load does not flash the new-user greeting.
   const hasNoAccounts =
-    !loadingData && (!activeList || activeAccounts.length === 0);
+    !loadingData && !loadFailed && (!activeList || activeAccounts.length === 0);
   const activeFilterCount = (companyFilter ? 1 : 0) + (matchViewFilter !== 'ALL' ? 1 : 0);
 
   if (loading || !user) {
@@ -581,7 +581,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 )
-              ) : !activeList || activeAccounts.length === 0 ? (
+              ) : loadFailed ? null : !activeList || activeAccounts.length === 0 ? (
                 <div className="border-2 border-dashed border-hairline rounded-md">
                   <EmptyState
                     icon={FileText}
