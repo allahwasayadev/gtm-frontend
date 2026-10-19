@@ -126,6 +126,39 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
      focus returned on close, and the page behind it locked. */
   useOverlayBehaviour(isOpen, handleClose, panelRef);
 
+  /* Advancing a step replaces the content under the dialog, including whatever
+     was focused — the Next button that was just pressed. Without this, focus
+     lands on <body> until the next Tab pulls it back. Put it on the new step's
+     first control instead, so the keyboard carries on where it was. */
+  useEffect(() => {
+    if (!isOpen) return;
+    const node = panelRef.current;
+    if (!node) return;
+    /* The outgoing step animates away before the new one mounts, so this polls
+       briefly rather than guessing a delay: focusing during the exit would
+       land on content that is about to be removed, and focus would fall out
+       again. */
+    let tries = 0;
+    const id = window.setInterval(() => {
+      tries += 1;
+      /* Wait for THIS step's panel. While the previous one animates out it is
+         still in the tree, and focusing its buttons just loses focus again a
+         moment later when it unmounts. */
+      const incoming = node.querySelector<HTMLElement>(`[data-step="${currentStep}"]`);
+      if (incoming) {
+        if (incoming.contains(document.activeElement)) { window.clearInterval(id); return; }
+        const first = incoming.querySelector<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        );
+        (first ?? node).focus();
+        window.clearInterval(id);
+        return;
+      }
+      if (tries > 25) { node.focus(); window.clearInterval(id); }
+    }, 40);
+    return () => window.clearInterval(id);
+  }, [isOpen, currentStep]);
+
   useLayoutEffect(() => {
     if (!isOpen || typeof document === 'undefined') return;
 
@@ -243,23 +276,30 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
           />
         )}
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            ref={panelRef}
-            initial={{ opacity: 0, y: 8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            style={tooltipStyle}
-            className="z-10 flex flex-col focus:outline-none"
-            role="dialog"
-            aria-modal="true"
-            tabIndex={-1}
-            aria-labelledby="onboarding-title"
-            aria-describedby="onboarding-body"
-          >
-            <div className="flex min-h-0 flex-col bg-surface rounded-lg shadow-e3 overflow-hidden">
+        {/* The dialog node is stable across steps. It used to be keyed by
+            currentStep, so Next and Back remounted the very element the focus
+            trap had captured, leaving the trap pointing at a detached node.
+            Only the step's contents animate now. */}
+        <div
+          ref={panelRef}
+          style={tooltipStyle}
+          className="z-10 flex flex-col focus:outline-none"
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          aria-labelledby="onboarding-title"
+          aria-describedby="onboarding-body"
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+              data-step={currentStep}
+              className="flex min-h-0 flex-col bg-surface rounded-lg shadow-e3 overflow-hidden"
+            >
               <div className="px-6 pt-5 pb-4 border-b border-hairline">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -268,15 +308,23 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                         key={index}
                         type="button"
                         onClick={() => setCurrentStep(index)}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          index === currentStep
-                            ? 'w-6 bg-accent'
-                            : index < currentStep
-                              ? 'bg-accent-soft'
-                              : 'bg-surface-2'
-                        }`}
+                        className="flex h-6 w-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                         aria-label={`Go to step ${index + 1}`}
-                      />
+                        aria-current={index === currentStep ? 'step' : undefined}
+                      >
+                        {/* The dot is the picture; the button around it is the
+                            target. A 2px control is not something anyone can hit. */}
+                        <span
+                          aria-hidden
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            index === currentStep
+                              ? 'w-5 bg-accent'
+                              : index < currentStep
+                                ? 'w-2 bg-accent-soft'
+                                : 'w-2 bg-surface-2'
+                          }`}
+                        />
+                      </button>
                     ))}
                   </div>
                   <span className="text-xs font-medium text-ink-3">
@@ -294,7 +342,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                   </h3>
                 </div>
               </div>
-              <div id="onboarding-body" className="px-6 py-5">
+              <div id="onboarding-body" className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
                 <p className="text-sm text-ink-2 leading-relaxed">{step.body}</p>
                 {step.hint && (
                   <p className="mt-3 text-xs text-ink-3 italic flex items-center gap-1.5">
@@ -345,16 +393,16 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                   )}
                 </div>
               </div>
-            </div>
-            {spotlightRect && (
-              <div
-                className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-surface rotate-45 shadow-lg"
-                style={{ boxShadow: '-2px -2px 4px rgba(0,0,0,0.05)' }}
-                aria-hidden
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+          {spotlightRect && (
+            <div
+              className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-surface rotate-45 shadow-lg"
+              style={{ boxShadow: '-2px -2px 4px rgba(0,0,0,0.05)' }}
+              aria-hidden
+            />
+          )}
+        </div>
       </motion.div>
     </AnimatePresence>
   );
