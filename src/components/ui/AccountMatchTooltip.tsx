@@ -67,6 +67,11 @@ export function AccountMatchTooltip({
     }
   }, []);
 
+  /* Escape closes and then puts focus back on the pill — which is also the
+     thing that opens on focus, so without this the panel reopened on the very
+     keystroke meant to dismiss it. The flag covers only that one focus. */
+  const skipNextFocusOpen = useRef(false);
+
   const open = useCallback(() => {
     cancelClose();
     setIsOpen(true);
@@ -149,7 +154,10 @@ export function AccountMatchTooltip({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         closeNow();
+        skipNextFocusOpen.current = true;
         triggerRef.current?.focus();
+        // If that focus never lands, do not swallow a later genuine one.
+        window.setTimeout(() => { skipNextFocusOpen.current = false; }, 300);
       }
     };
     const onViewportChange = () => place();
@@ -195,7 +203,13 @@ export function AccountMatchTooltip({
         onTouchStart={() => { isTouchRef.current = true; }}
         onMouseEnter={() => { if (!isTouchRef.current) open(); }}
         onMouseLeave={() => { if (!isTouchRef.current) closeSoon(); }}
-        onFocus={() => { if (!isTouchRef.current) open(); }}
+        onFocus={() => {
+          if (skipNextFocusOpen.current) {
+            skipNextFocusOpen.current = false;
+            return;
+          }
+          if (!isTouchRef.current) open();
+        }}
         onBlur={() => { if (!isTouchRef.current) closeSoon(); }}
         onClick={() => {
           if (isOpen) closeNow(); else open();
@@ -232,8 +246,11 @@ export function AccountMatchTooltip({
               <span className="flex h-6 w-6 items-center justify-center rounded-xs bg-accent-soft">
                 <Users className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-[0.07em] text-ink-2">
-                Matched partners
+              {/* Name the account the panel is about. It is anchored to that
+                  row, but once it is open over the table the row behind it is
+                  no longer the obvious referent. */}
+              <span className="truncate text-xs font-bold uppercase tracking-[0.07em] text-ink-2">
+                {accountName || 'Matched partners'}
               </span>
               <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-xs bg-accent-soft px-1 text-xs font-bold tabular text-accent-ink">
                 {partners.length}
