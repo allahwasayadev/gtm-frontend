@@ -14,19 +14,14 @@ interface ConnectionControlMenuProps {
   onRemove: (connectionId: string) => Promise<void>;
   align?: 'left' | 'right';
   variant?: 'default' | 'light';
+  /* Mute and unmute move the row between two different lists, so this instance
+     is unmounted and another is mounted for the same connection. The page that
+     owns the list decides which connection should hold focus after the refresh
+     and tells its replacement through these; nothing is stored outside React,
+     so nothing can survive a route change and steal focus later. */
+  restoreFocus?: boolean;
+  onFocusRestored?: () => void;
 }
-
-/* Unmuting moves the row out of the muted section and into the active list.
-   Those are two separate maps in the parent, so this instance is unmounted and
-   a different one is mounted for the same connection. Focus therefore cannot be
-   restored from inside the instance that started the action — the connection id
-   is handed over instead, and whichever menu renders for that connection next
-   claims it. Identity, not a timer: nothing polls.
-
-   If the row never comes back (the connection is gone), the handover is simply
-   never claimed and is dropped by the next action. Focus then stays where the
-   browser left it rather than being moved somewhere arbitrary. */
-let pendingFocusConnectionId: string | null = null;
 
 const MENU_WIDTH = 208;
 const VIEWPORT_PADDING = 8;
@@ -41,6 +36,8 @@ export function ConnectionControlMenu({
   onRemove,
   align = 'right',
   variant = 'default',
+  restoreFocus = false,
+  onFocusRestored,
 }: ConnectionControlMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
@@ -123,14 +120,20 @@ export function ConnectionControlMenu({
     menuItems()[0]?.focus();
   }, [menuNode, menuItems]);
 
-  // Claim a focus handover left by the instance this one replaced. No dep array
-  // on purpose: it returns immediately unless this is the awaited connection,
-  // and the mount after the unmute is the render that matters.
+  // Keep the callback in a ref so claiming focus does not depend on the
+  // parent passing a stable function identity.
+  const onFocusRestoredRef = useRef(onFocusRestored);
+  useEffect(() => {
+    onFocusRestoredRef.current = onFocusRestored;
+  }, [onFocusRestored]);
+
+  // The page has refreshed its list and nominated this connection, so this is
+  // the instance that replaced the one the action started on.
   useLayoutEffect(() => {
-    if (pendingFocusConnectionId !== connection.id) return;
-    pendingFocusConnectionId = null;
+    if (!restoreFocus) return;
     buttonRef.current?.focus();
-  });
+    onFocusRestoredRef.current?.();
+  }, [restoreFocus]);
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -202,7 +205,6 @@ export function ConnectionControlMenu({
   };
 
   const handleMute = async () => {
-    pendingFocusConnectionId = null;
     setIsMuting(true);
     try {
       await onMute(connection.id);
@@ -216,7 +218,6 @@ export function ConnectionControlMenu({
   };
 
   const handleRemove = async () => {
-    pendingFocusConnectionId = null;
     setIsRemoving(true);
     try {
       await onRemove(connection.id);
@@ -231,11 +232,10 @@ export function ConnectionControlMenu({
   const handleUnmute = async () => {
     setIsUnmuting(true);
     try {
+      // The parent refreshes its list before this resolves, so by now the row
+      // has already moved; it nominates the connection to focus.
       await onUnmute(connection.id);
-      // Focusing the trigger here would target a node the parent is about to
-      // discard, so hand the connection id to its replacement instead.
       setIsMenuOpen(false);
-      pendingFocusConnectionId = connection.id;
     } catch {
       // Already reported by the parent; leave the menu open for a retry.
     } finally {

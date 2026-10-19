@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { connectionsApi } from '@/features/connections/connections.api';
 import { invitesApi } from '@/features/invites/invites.api';
@@ -115,12 +115,16 @@ function MobilePartnerRow({
   onMute,
   onUnmute,
   onRemove,
+  restoreFocus,
+  onFocusRestored,
 }: {
   connection: Connection;
   muted?: boolean;
   onMute: (id: string) => Promise<void>;
   onUnmute: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
+  restoreFocus?: boolean;
+  onFocusRestored?: () => void;
 }) {
   const sharedMatchCount = connection.sharedMatchCount ?? 0;
   const role = connection.otherUser.roles?.[0];
@@ -160,6 +164,8 @@ function MobilePartnerRow({
         onMute={onMute}
         onUnmute={onUnmute}
         onRemove={onRemove}
+        restoreFocus={restoreFocus}
+        onFocusRestored={onFocusRestored}
       />
     </div>
   );
@@ -253,12 +259,34 @@ function ConnectionsPageInner() {
     }
   };
 
+  /* Mute and unmute move a row between the active list and the muted group,
+     which unmounts the menu the keyboard was on. The nomination is made here,
+     after the refreshed list has been loaded, and lives in page state so it
+     cannot outlive this route. */
+  const [focusConnectionId, setFocusConnectionId] = useState<string | null>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  const focusTabGroup = () => tabsRef.current?.focus();
+  const clearFocusNomination = useCallback(() => setFocusConnectionId(null), []);
+
+  // A nomination nothing can claim (the connection vanished between the action
+  // and the refresh) would otherwise sit there. Hand focus to the tab group and
+  // drop it, on the same commit — no timer involved.
+  useEffect(() => {
+    if (!focusConnectionId) return;
+    if (connections.some((c) => c.id === focusConnectionId)) return;
+    setFocusConnectionId(null);
+    tabsRef.current?.focus();
+  }, [focusConnectionId, connections]);
+
   const handleMuteConnection = async (id: string) => {
     try {
       await connectionsApi.mute(id);
       toast.success('Connection muted');
       await loadData();
+      setFocusConnectionId(id);
     } catch (error) {
+      setFocusConnectionId(null);
       toast.error('Failed to mute connection');
       throw error;
     }
@@ -269,7 +297,9 @@ function ConnectionsPageInner() {
       await connectionsApi.unmute(id);
       toast.success('Connection unmuted');
       await loadData();
+      setFocusConnectionId(id);
     } catch (error) {
+      setFocusConnectionId(null);
       toast.error('Failed to unmute connection');
       throw error;
     }
@@ -280,7 +310,11 @@ function ConnectionsPageInner() {
       await connectionsApi.delete(id);
       toast.success('Connection removed');
       await loadData();
+      // The row is gone, so there is no trigger to go back to.
+      setFocusConnectionId(null);
+      focusTabGroup();
     } catch (error) {
+      setFocusConnectionId(null);
       toast.error('Failed to remove connection');
       throw error;
     }
@@ -344,6 +378,8 @@ function ConnectionsPageInner() {
               The "requests waiting" notice lives inside the panel below it, so
               changing tab or clearing the queue cannot shift the control. */}
           <div
+            ref={tabsRef}
+            tabIndex={-1}
             role="tablist"
             aria-label="Connection groups"
             className="grid grid-cols-3 gap-1 rounded-md bg-surface-2 p-1 sm:max-w-md"
@@ -444,6 +480,8 @@ function ConnectionsPageInner() {
                         onMute={handleMuteConnection}
                         onUnmute={handleUnmuteConnection}
                         onRemove={handleRemoveConnection}
+                        restoreFocus={focusConnectionId === connection.id}
+                        onFocusRestored={clearFocusNomination}
                       />
                     ))}
                     {activeAccepted.length === 0 && (
@@ -467,6 +505,8 @@ function ConnectionsPageInner() {
                             onMute={handleMuteConnection}
                             onUnmute={handleUnmuteConnection}
                             onRemove={handleRemoveConnection}
+                            restoreFocus={focusConnectionId === connection.id}
+                            onFocusRestored={clearFocusNomination}
                           />
                         ))}
                       </MobileGroup>
