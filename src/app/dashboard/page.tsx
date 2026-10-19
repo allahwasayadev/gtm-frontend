@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,7 +66,14 @@ export default function DashboardPage() {
     }
   }, [user, loading, router]);
 
+  const loadingRef = useRef(false);
+
   const loadData = async () => {
+    // Without this, each extra Try again click queued another pair of
+    // requests whose responses raced each other back into state.
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoadingData(true);
     try {
       const [listsRes, connectionsRes] = await Promise.all([
         accountListsApi.getAll(),
@@ -98,6 +105,7 @@ export default function DashboardPage() {
       // here would tell the user they have no list, which may be untrue.
       setLoadFailed(true);
     } finally {
+      loadingRef.current = false;
       setLoadingData(false);
     }
   };
@@ -270,7 +278,7 @@ export default function DashboardPage() {
                 variant="outline"
                 size="sm"
                 className="mt-3"
-                onClick={() => { setLoadingData(true); void loadData(); }}
+                onClick={() => void loadData()}
               >
                 Try again
               </Button>
@@ -718,7 +726,7 @@ export default function DashboardPage() {
                             Overlaps unavailable
                             <button
                               type="button"
-                              onClick={() => { setLoadingData(true); void loadData(); }}
+                              onClick={() => void loadData()}
                               className="rounded-sm font-semibold underline underline-offset-2 hover:text-warn/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                             >
                               Try again

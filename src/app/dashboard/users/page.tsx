@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Button,
@@ -26,8 +26,15 @@ export default function UsersPage() {
   const [deleteTarget, setDeleteTarget] = useState<ListUserItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const loadingRef = useRef(false);
 
   const loadUsers = useCallback(async () => {
+    // Retry used to call straight through: no pending state, so the error
+    // card just sat there, and every extra click queued another pair of
+    // requests whose responses raced each other.
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
     try {
       const [usersRes, statsRes] = await Promise.all([
         usersApi.getUsers(),
@@ -43,6 +50,7 @@ export default function UsersPage() {
       setUsers([]);
       setLoadFailed(true);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   }, []);

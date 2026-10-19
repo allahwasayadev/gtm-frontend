@@ -178,7 +178,7 @@ export default function ListDetailPage() {
             )}
             <Button
               onClick={() => setShowDeleteModal(true)}
-              disabled={deleting}
+              disabled={deleting || isSaving}
               variant="danger"
               size="sm"
               isLoading={deleting}
@@ -251,7 +251,7 @@ export default function ListDetailPage() {
                   description={editing ? 'Add your first account to this list.' : 'Click "Edit" to add accounts'}
                   action={
                     editing ? (
-                      <Button type="button" variant="primary" size="sm" onClick={handleAddAccount}>
+                      <Button type="button" variant="primary" size="sm" onClick={handleAddAccount} disabled={isSaving}>
                         <Plus className="w-3.5 h-3.5 mr-1.5" />
                         Add Account
                       </Button>
@@ -312,7 +312,8 @@ export default function ListDetailPage() {
                                   )
                                 }
                                 placeholder="Account name"
-                                className="w-full min-h-[44px] px-3 border border-control rounded-sm text-base text-ink bg-surface transition-colors focus:border-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent placeholder:text-ink-3"
+                                disabled={isSaving}
+                                className="w-full min-h-[44px] px-3 border border-control rounded-sm text-base text-ink bg-surface transition-colors focus:border-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent placeholder:text-ink-3 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-3"
                               />
                             ) : (
                               <div className="flex items-center gap-2 sm:gap-3">
@@ -327,7 +328,8 @@ export default function ListDetailPage() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveAccount(index)}
-                                className="inline-flex items-center justify-center w-11 h-11 rounded-lg text-ink-3 hover:text-danger hover:bg-danger-soft transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                                disabled={isSaving}
+                                className="inline-flex items-center justify-center w-11 h-11 rounded-lg text-ink-3 hover:text-danger hover:bg-danger-soft transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40 disabled:pointer-events-none"
                                 aria-label={`Remove ${account.accountName || `row ${index + 1}`}`}
                               >
                                 <X className="w-4 h-4" />
@@ -352,7 +354,8 @@ export default function ListDetailPage() {
                     {editing && (
                       <button
                         onClick={handleAddAccount}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-accent hover:text-accent-ink hover:bg-accent-soft rounded-lg transition-all"
+                        disabled={isSaving}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-accent hover:text-accent-ink hover:bg-accent-soft rounded-lg transition-all disabled:opacity-40 disabled:pointer-events-none"
                       >
                         <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Add Account</span>
