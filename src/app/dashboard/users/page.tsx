@@ -17,6 +17,28 @@ import { getErrorMessage } from '@/lib/error-utils';
 import toast from 'react-hot-toast';
 import { UsersRound, Trash2, Mail, Building2, Shield, User as UserIcon, FileStack, GitBranch, Layers } from 'lucide-react';
 
+function RoleBadges({ roles }: { roles?: string[] }) {
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      {roles?.includes('Admin') && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent-ink">
+          <Shield className="h-3 w-3 shrink-0" /> Admin
+        </span>
+      )}
+      {roles?.includes('OEM') && (
+        <span className="rounded-full bg-warn-soft px-2.5 py-1 text-xs font-medium text-warn">
+          OEM
+        </span>
+      )}
+      {roles?.includes('Reseller') && (
+        <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-2">
+          Reseller
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default function UsersPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -101,7 +123,7 @@ export default function UsersPage() {
               Usage at a glance
             </h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Total users</p>
@@ -109,12 +131,12 @@ export default function UsersPage() {
                       {stats?.totalUsers ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-accent-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-accent-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
                     <UsersRound className="w-6 h-6 text-accent" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-ok rounded-md cursor-default bg-surface shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-ok rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Lists uploaded</p>
@@ -122,12 +144,12 @@ export default function UsersPage() {
                       {stats?.totalLists ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-ok-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-ok-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
                     <FileStack className="w-6 h-6 text-ok" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-warn rounded-md cursor-default bg-surface shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-warn rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Mappings created</p>
@@ -135,12 +157,12 @@ export default function UsersPage() {
                       {stats?.totalMappings ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-warn-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-warn-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
                     <GitBranch className="w-6 h-6 text-warn" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Overlaps stored</p>
@@ -148,7 +170,7 @@ export default function UsersPage() {
                       {stats?.totalOverlaps ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-accent-soft rounded-md flex items-center justify-center shrink-0" aria-hidden>
+                  <div className="w-11 h-11 bg-accent-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
                     <Layers className="w-6 h-6 text-accent-ink" />
                   </div>
                 </div>
@@ -185,7 +207,68 @@ export default function UsersPage() {
               />
             </Card>
           ) : (
-            <div className="rounded-md border border-hairline bg-surface shadow-sm ring-1 ring-hairline overflow-hidden">
+            <>
+            {/* On a phone the 800px table pushed Roles and Delete off-screen
+                behind a horizontal scroll nobody finds. Same data, same
+                delete handler, stacked instead. */}
+            <ul className="sm:hidden space-y-3">
+              {users.map((u) => {
+                const isYou = isCurrentUser(u);
+                return (
+                  <li
+                    key={u.id}
+                    className={`rounded-md border border-hairline bg-surface p-4 shadow-sm ${
+                      isYou ? 'bg-accent-soft/40' : ''
+                    }`}
+                  >
+                    <p className="font-semibold text-ink break-words">
+                      {isYou ? (
+                        <span className="inline-flex items-center gap-1.5 flex-wrap">
+                          You
+                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-ink">
+                            Current account
+                          </span>
+                        </span>
+                      ) : (
+                        u.name
+                      )}
+                    </p>
+                    <p className="mt-2 flex items-start gap-2 text-sm text-ink-2">
+                      <Mail className="h-4 w-4 shrink-0 text-ink-3 mt-0.5" />
+                      <span className="break-all">{u.email}</span>
+                    </p>
+                    <p className="mt-1.5 flex items-start gap-2 text-sm text-ink-2">
+                      <Building2 className="h-4 w-4 shrink-0 text-ink-3 mt-0.5" />
+                      <span className="break-words">{u.company || '—'}</span>
+                    </p>
+                    <div className="mt-3">
+                      <RoleBadges roles={u.roles} />
+                    </div>
+                    <div className="mt-3 border-t border-hairline pt-3">
+                      {isYou ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
+                          <UserIcon className="h-4 w-4 shrink-0" />
+                          This is you
+                        </span>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-center text-danger hover:bg-danger-soft hover:text-danger"
+                          aria-label={`Delete ${u.name}`}
+                          onClick={() => setDeleteTarget(u)}
+                        >
+                          <Trash2 className="h-4 w-4 shrink-0" />
+                          <span className="ml-1.5">Delete</span>
+                        </Button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="hidden sm:block rounded-md border border-hairline bg-surface shadow-sm ring-1 ring-hairline overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[800px] text-left text-sm">
                   <colgroup>
@@ -264,23 +347,7 @@ export default function UsersPage() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <span className="flex flex-wrap items-center gap-1.5">
-                              {u.roles?.includes('Admin') && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent-ink">
-                                  <Shield className="h-3 w-3 shrink-0" /> Admin
-                                </span>
-                              )}
-                              {u.roles?.includes('OEM') && (
-                                <span className="rounded-full bg-warn-soft px-2.5 py-1 text-xs font-medium text-warn">
-                                  OEM
-                                </span>
-                              )}
-                              {u.roles?.includes('Reseller') && (
-                                <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-2">
-                                  Reseller
-                                </span>
-                              )}
-                            </span>
+                            <RoleBadges roles={u.roles} />
                           </td>
                           <td className="px-6 py-4 text-right">
                             {isYou ? (
@@ -308,6 +375,7 @@ export default function UsersPage() {
                 </table>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>
