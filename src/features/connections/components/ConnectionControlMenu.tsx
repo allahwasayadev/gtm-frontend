@@ -248,6 +248,16 @@ export function ConnectionControlMenu({
     }
   };
 
+  // Name the partner in the confirmations so it is clear which connection is
+  // being muted or ended. otherUser is already the counterpart resolved for the
+  // signed-in user, so the orientation is correct; fall back to company then
+  // email, and only to a generic phrase if a row somehow carries no identity.
+  const partnerName =
+    connection.otherUser.name?.trim() ||
+    connection.otherUser.company?.trim() ||
+    connection.otherUser.email ||
+    'this partner';
+
   return (
     <>
       <div className="relative" ref={triggerRef}>
@@ -326,8 +336,8 @@ export function ConnectionControlMenu({
 
       <ConfirmationModal
         isOpen={isMuteModalOpen}
-        title="Mute This Connection?"
-        description="Muting hides this connection from your main account view and suppresses notifications. Re-mapping continues in the background. If new shared accounts are detected, this connection will automatically reappear."
+        title={`Mute ${partnerName}?`}
+        description={`Muting ${partnerName} hides this connection from your main account view and suppresses notifications. Re-mapping continues in the background. If new shared accounts are detected, this connection will automatically reappear.`}
         confirmLabel="Mute"
         cancelLabel="Cancel"
         isLoading={isMuting}
@@ -341,8 +351,8 @@ export function ConnectionControlMenu({
 
       <ConfirmationModal
         isOpen={isRemoveModalOpen}
-        title="End This Connection?"
-        description="Ending this connection will stop shared overlap visibility between you and this user. You can reconnect at any time through a new invite."
+        title={`End your connection with ${partnerName}?`}
+        description={`Ending this connection will stop shared overlap visibility between you and ${partnerName}. You can reconnect at any time through a new invite.`}
         confirmLabel="End Connection"
         cancelLabel="Cancel"
         intent="danger"
