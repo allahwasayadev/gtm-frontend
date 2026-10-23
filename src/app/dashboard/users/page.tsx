@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Button,
@@ -17,6 +17,28 @@ import { getErrorMessage } from '@/lib/error-utils';
 import toast from 'react-hot-toast';
 import { UsersRound, Trash2, Mail, Building2, Shield, User as UserIcon, FileStack, GitBranch, Layers } from 'lucide-react';
 
+function RoleBadges({ roles }: { roles?: string[] }) {
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      {roles?.includes('Admin') && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent-ink">
+          <Shield className="h-3 w-3 shrink-0" /> Admin
+        </span>
+      )}
+      {roles?.includes('OEM') && (
+        <span className="rounded-full bg-warn-soft px-2.5 py-1 text-xs font-medium text-warn">
+          OEM
+        </span>
+      )}
+      {roles?.includes('Reseller') && (
+        <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-2">
+          Reseller
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default function UsersPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -25,8 +47,16 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ListUserItem | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const loadingRef = useRef(false);
 
   const loadUsers = useCallback(async () => {
+    // Retry used to call straight through: no pending state, so the error
+    // card just sat there, and every extra click queued another pair of
+    // requests whose responses raced each other.
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
     try {
       const [usersRes, statsRes] = await Promise.all([
         usersApi.getUsers(),
@@ -34,10 +64,15 @@ export default function UsersPage() {
       ]);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
       setStats(statsRes.data ?? null);
+      setLoadFailed(false);
     } catch (e) {
       toast.error(getErrorMessage(e, 'Failed to load users'));
+      // Clearing the list and saying "No users" claims something a failed
+      // request cannot support.
       setUsers([]);
+      setLoadFailed(true);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   }, []);
@@ -84,59 +119,59 @@ export default function UsersPage() {
 
           {/* Usage at a glance — best cards for quick reading */}
           <section className="mb-8" aria-label="Usage overview">
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+            <h2 className="text-sm font-semibold text-ink-3 uppercase tracking-wider mb-4">
               Usage at a glance
             </h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-5 border-t-4 border-t-indigo-500 rounded-xl cursor-default bg-white shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total users</p>
-                    <p className="text-3xl font-extrabold text-slate-900 mt-1 tabular-nums tracking-tight">
+                    <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Total users</p>
+                    <p className="text-3xl font-extrabold text-ink mt-1 tabular-nums tracking-tight">
                       {stats?.totalUsers ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0" aria-hidden>
-                    <UsersRound className="w-6 h-6 text-indigo-600" />
+                  <div className="w-11 h-11 bg-accent-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
+                    <UsersRound className="w-6 h-6 text-accent" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-emerald-500 rounded-xl cursor-default bg-white shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-ok rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lists uploaded</p>
-                    <p className="text-3xl font-extrabold text-slate-900 mt-1 tabular-nums tracking-tight">
+                    <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Lists uploaded</p>
+                    <p className="text-3xl font-extrabold text-ink mt-1 tabular-nums tracking-tight">
                       {stats?.totalLists ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0" aria-hidden>
-                    <FileStack className="w-6 h-6 text-emerald-600" />
+                  <div className="w-11 h-11 bg-ok-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
+                    <FileStack className="w-6 h-6 text-ok" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-amber-500 rounded-xl cursor-default bg-white shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-warn rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mappings created</p>
-                    <p className="text-3xl font-extrabold text-slate-900 mt-1 tabular-nums tracking-tight">
+                    <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Mappings created</p>
+                    <p className="text-3xl font-extrabold text-ink mt-1 tabular-nums tracking-tight">
                       {stats?.totalMappings ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center shrink-0" aria-hidden>
-                    <GitBranch className="w-6 h-6 text-amber-600" />
+                  <div className="w-11 h-11 bg-warn-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
+                    <GitBranch className="w-6 h-6 text-warn" />
                   </div>
                 </div>
               </Card>
-              <Card className="p-5 border-t-4 border-t-violet-500 rounded-xl cursor-default bg-white shadow-sm">
+              <Card className="p-4 sm:p-5 border-t-4 border-t-accent rounded-md cursor-default bg-surface shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overlaps stored</p>
-                    <p className="text-3xl font-extrabold text-slate-900 mt-1 tabular-nums tracking-tight">
+                    <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">Overlaps stored</p>
+                    <p className="text-3xl font-extrabold text-ink mt-1 tabular-nums tracking-tight">
                       {stats?.totalOverlaps ?? '—'}
                     </p>
                   </div>
-                  <div className="w-11 h-11 bg-violet-100 rounded-xl flex items-center justify-center shrink-0" aria-hidden>
-                    <Layers className="w-6 h-6 text-violet-600" />
+                  <div className="w-11 h-11 bg-accent-soft rounded-md hidden sm:flex items-center justify-center shrink-0" aria-hidden>
+                    <Layers className="w-6 h-6 text-accent-ink" />
                   </div>
                 </div>
               </Card>
@@ -145,10 +180,23 @@ export default function UsersPage() {
 
           {loading ? (
             <Card className="p-12">
-              <div className="flex flex-col items-center justify-center gap-3 text-slate-500">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+              <div className="flex flex-col items-center justify-center gap-3 text-ink-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-soft border-t-accent" />
                 <span className="text-sm font-medium">Loading users...</span>
               </div>
+            </Card>
+          ) : loadFailed ? (
+            <Card className="p-12">
+              <EmptyState
+                icon={UsersRound}
+                title="We couldn&rsquo;t load the users"
+                description="Please try again in a moment."
+                action={
+                  <Button type="button" variant="outline" size="sm" onClick={() => void loadUsers()}>
+                    Try again
+                  </Button>
+                }
+              />
             </Card>
           ) : users.length === 0 ? (
             <Card className="p-12">
@@ -159,7 +207,69 @@ export default function UsersPage() {
               />
             </Card>
           ) : (
-            <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm ring-1 ring-slate-200/50 overflow-hidden">
+            <>
+            {/* The 800px table pushed Roles and Delete into an inner scroller
+                nobody finds — true on a phone and still true on an iPad. Cards
+                carry the same fields and the same delete handler until lg,
+                where the full table genuinely fits. */}
+            <ul className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-3">
+              {users.map((u) => {
+                const isYou = isCurrentUser(u);
+                return (
+                  <li
+                    key={u.id}
+                    className={`rounded-md border border-hairline bg-surface p-4 shadow-sm ${
+                      isYou ? 'bg-accent-soft/40' : ''
+                    }`}
+                  >
+                    <p className="font-semibold text-ink break-words">
+                      {isYou ? (
+                        <span className="inline-flex items-center gap-1.5 flex-wrap">
+                          You
+                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-ink">
+                            Current account
+                          </span>
+                        </span>
+                      ) : (
+                        u.name
+                      )}
+                    </p>
+                    <p className="mt-2 flex items-start gap-2 text-sm text-ink-2">
+                      <Mail className="h-4 w-4 shrink-0 text-ink-3 mt-0.5" />
+                      <span className="break-all">{u.email}</span>
+                    </p>
+                    <p className="mt-1.5 flex items-start gap-2 text-sm text-ink-2">
+                      <Building2 className="h-4 w-4 shrink-0 text-ink-3 mt-0.5" />
+                      <span className="break-words">{u.company || '—'}</span>
+                    </p>
+                    <div className="mt-3">
+                      <RoleBadges roles={u.roles} />
+                    </div>
+                    <div className="mt-3 border-t border-hairline pt-3">
+                      {isYou ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
+                          <UserIcon className="h-4 w-4 shrink-0" />
+                          This is you
+                        </span>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-center text-danger hover:bg-danger-soft hover:text-danger"
+                          aria-label={`Delete ${u.name}`}
+                          onClick={() => setDeleteTarget(u)}
+                        >
+                          <Trash2 className="h-4 w-4 shrink-0" />
+                          <span className="ml-1.5">Delete</span>
+                        </Button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="hidden lg:block rounded-md border border-hairline bg-surface shadow-sm ring-1 ring-hairline overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[800px] text-left text-sm">
                   <colgroup>
@@ -170,25 +280,25 @@ export default function UsersPage() {
                     <col className="w-[120px]" />
                   </colgroup>
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50/90">
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-hairline bg-sunken/90">
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-ink-3">
                         User
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-ink-3">
                         Email
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-ink-3">
                         Company
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-ink-3">
                         Roles
                       </th>
-                      <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-ink-3">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
+                  <tbody className="divide-y divide-hairline bg-surface">
                     {users.map((u) => {
                       const isYou = isCurrentUser(u);
                       return (
@@ -196,18 +306,18 @@ export default function UsersPage() {
                           key={u.id}
                           className={`transition-colors duration-150 ${
                             isYou
-                              ? 'bg-indigo-50/40 hover:bg-indigo-50/60'
-                              : 'hover:bg-slate-50/70'
+                              ? 'bg-accent-soft/40 hover:bg-accent-soft/60'
+                              : 'hover:bg-sunken/70'
                           }`}
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="min-w-0">
-                                <p className="font-semibold text-slate-900 truncate">
+                                <p className="font-semibold text-ink truncate">
                                   {isYou ? (
                                     <span className="inline-flex items-center gap-1.5 flex-wrap">
                                       You
-                                      <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 shrink-0">
+                                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-ink shrink-0">
                                         Current account
                                       </span>
                                     </span>
@@ -216,49 +326,33 @@ export default function UsersPage() {
                                   )}
                                 </p>
                                 {!isYou && (
-                                  <p className="text-xs text-slate-500 truncate md:hidden mt-0.5">{u.email}</p>
+                                  <p className="text-xs text-ink-3 truncate md:hidden mt-0.5">{u.email}</p>
                                 )}
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="flex items-center gap-2 text-slate-600 min-w-0">
-                              <Mail className="h-4 w-4 shrink-0 text-slate-400" />
+                            <span className="flex items-center gap-2 text-ink-2 min-w-0">
+                              <Mail className="h-4 w-4 shrink-0 text-ink-3" />
                               <span className="truncate" title={u.email}>{u.email}</span>
                             </span>
                           </td>
                           <td className="px-6 py-4">
                             {u.company ? (
-                              <span className="flex items-center gap-2 text-slate-600 min-w-0">
-                                <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
+                              <span className="flex items-center gap-2 text-ink-2 min-w-0">
+                                <Building2 className="h-4 w-4 shrink-0 text-ink-3" />
                                 <span className="truncate" title={u.company}>{u.company}</span>
                               </span>
                             ) : (
-                              <span className="text-slate-400">—</span>
+                              <span className="text-ink-3">—</span>
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <span className="flex flex-wrap items-center gap-1.5">
-                              {u.roles?.includes('Admin') && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-medium text-indigo-800">
-                                  <Shield className="h-3 w-3 shrink-0" /> Admin
-                                </span>
-                              )}
-                              {u.roles?.includes('OEM') && (
-                                <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
-                                  OEM
-                                </span>
-                              )}
-                              {u.roles?.includes('Reseller') && (
-                                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
-                                  Reseller
-                                </span>
-                              )}
-                            </span>
+                            <RoleBadges roles={u.roles} />
                           </td>
                           <td className="px-6 py-4 text-right">
                             {isYou ? (
-                              <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+                              <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
                                 <UserIcon className="h-4 w-4 shrink-0" />
                                 This is you
                               </span>
@@ -267,7 +361,7 @@ export default function UsersPage() {
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                className="text-danger hover:bg-danger-soft hover:text-danger"
                                 onClick={() => setDeleteTarget(u)}
                               >
                                 <Trash2 className="h-4 w-4 shrink-0" />
@@ -282,6 +376,7 @@ export default function UsersPage() {
                 </table>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>

@@ -27,6 +27,15 @@ export const usersApi = {
       '/users/profile/phone-verification/send',
       data,
     ),
+  /** Give consent again for the number already on file. Records only; sends nothing. */
+  grantSmsConsent: () =>
+    api.post<{
+      message: string;
+      smsConsent: boolean;
+      smsOptedOut: boolean;
+      phoneNumber: string;
+    }>('/users/profile/sms-consent'),
+
   withdrawSmsConsent: () =>
     api.post<{ message: string; smsConsent: boolean; smsOptedOut: boolean }>(
       '/users/profile/sms-consent/withdraw',

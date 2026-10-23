@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -16,16 +15,25 @@ import {
   Store,
   Trash2,
   User,
-  X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/features/users/users.api';
+import type { User as AuthUser } from '@/features/auth/types';  // `User` is a lucide icon here
 import {
-  Button, ConfirmationModal, FadeIn, Input, LoadingScreen, PageTransition,
-} from '@/components/ui';
+  Button, CodeInput, ConfirmationModal, FadeIn, Input, LoadingScreen,
+  PageTransition, UsPhoneInput, ButtonLink, Modal } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
+import { rearmWebOtp } from '@/lib/web-otp';
+import {
+  isAnyE164,
+  isUsE164,
+  toUsE164,
+  usNationalDigitsFromE164,
+  usPhoneValidationError,
+  US_DIAL_CODE,
+} from '@/lib/phone';
 
 type ProfileFormState = {
   name: string;
@@ -41,8 +49,23 @@ function normalizePhoneForCompare(phoneNumber: string): string {
 }
 
 function isValidPhoneNumber(phoneNumber: string): boolean {
-  const normalized = normalizePhoneForCompare(phoneNumber);
-  return /^\+[1-9]\d{7,14}$/.test(normalized);
+  return isAnyE164(phoneNumber);
+}
+
+/**
+ * Which phone field this account gets.
+ *
+ * A US number, or none yet, gets the +1 field everyone else sees — same
+ * component, same validation, same canonical E.164 on the way out.
+ *
+ * An account already holding a non-US number keeps the plain international
+ * field. Pushing that number through a +1 field would either refuse to show
+ * it or quietly rewrite it, and this screen is where someone would discover
+ * their own number had been changed under them.
+ */
+function usesUsPhoneField(storedPhoneNumber: string): boolean {
+  const stored = normalizePhoneForCompare(storedPhoneNumber);
+  return !stored || isUsE164(stored);
 }
 
 export default function ProfilePage() {
@@ -63,47 +86,118 @@ export default function ProfilePage() {
   // A2P 10DLC: this screen previously sent SMS with no disclosure at all.
   const [smsConsent, setSmsConsent] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  /* The published SMS terms say STOP then START then tick the box here. This
+     is that box: it starts unchecked every time, and only an explicit tick plus
+     the button records consent. Ordinary Save never touches it. */
+  const [regrantChecked, setRegrantChecked] = useState(false);
+  const [isRegranting, setIsRegranting] = useState(false);
+  /* AuthContext holds whatever was true at sign-in. Consent and opt-out are
+     decisions a user can make elsewhere — including by replying STOP — so this
+     screen asks the authoritative profile before it shows any of them. */
+  const [consentLoading, setConsentLoading] = useState(true);
+  const [consentLoadFailed, setConsentLoadFailed] = useState(false);
+  const [consentReloadKey, setConsentReloadKey] = useState(0);
   const [verifyCodeInput, setVerifyCodeInput] = useState('');
-  const [mounted, setMounted] = useState(false);
-  const [modalAnimate, setModalAnimate] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (showVerifyPhoneModal) {
-      const id = requestAnimationFrame(() => setModalAnimate(true));
-      return () => cancelAnimationFrame(id);
-    } else {
-      setModalAnimate(false);
-    }
-  }, [showVerifyPhoneModal]);
+  /**
+   * The ten national digits, for the +1 field. Kept beside formData.phoneNumber
+   * rather than replacing it: an account already holding a non-US number uses
+   * the international field, and that number must pass through untouched.
+   */
+  const [phoneDigits, setPhoneDigits] = useState('');
+  /**
+   * Remounts the code field to clear it. The field owns its own digits — that
+   * is what lets one input serve as six boxes — so a resend or a fresh send
+   * clears it by identity rather than by reaching into it.
+   */
+  const [verifyCodeResetKey, setVerifyCodeResetKey] = useState(0);
+  /**
+   * One verification in flight at a time, held in a ref.
+   *
+   * Two things can start one: the code field, the moment six digits land, and
+   * the Verify button. `isVerifyingPhoneCode` is state, so it is not visible
+   * to a second handler that runs before React re-renders — a ref is, and the
+   * cost of losing that race is two attempts burnt out of five on one code.
+   */
+  const verifyInFlightRef = useRef(false);
+  // The mount flag and the animation state that used to live here belonged to
+  // the hand-rolled portal. The shared Modal owns portalling and entry motion
+  // now, and it also carried the setState-in-effect lint error.
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  /* Fills the form from the account, once per account.
+     This used to depend on the whole `user` object, so anything that replaced
+     it — including the consent refresh below, which must run on this screen —
+     re-ran the effect and overwrote whatever had been typed but not saved. The
+     account identity is what this actually cares about. */
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
-    } else if (user) {
-      const businessRole = user.roles?.includes('OEM') ? 'OEM' : 'Reseller';
-      setFormData({
-        name: user.name,
-        email: user.email,
-        phoneNumber: user.phoneNumber || '',
-        company: user.company || '',
-        role: businessRole,
-      });
-      setIsEmailEditingEnabled(false);
-      setVerifyCodeInput('');
+      return;
     }
-  }, [user, loading, router]);
+    if (!user) return;
+    const businessRole = user.roles?.includes('OEM') ? 'OEM' : 'Reseller';
+    setFormData({
+      name: user.name,
+      email: user.email,
+      phoneNumber: user.phoneNumber || '',
+      company: user.company || '',
+      role: businessRole,
+    });
+    setPhoneDigits(usNationalDigitsFromE164(user.phoneNumber || ''));
+    setIsEmailEditingEnabled(false);
+    setVerifyCodeInput('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, loading, router]);
+
+  const useUsPhoneField = usesUsPhoneField(user?.phoneNumber || '');
+
+  /**
+   * What this screen will submit and verify — canonical E.164 once the entry
+   * is complete, and '' until then, so a half-typed number can never be sent
+   * anywhere.
+   */
+  const enteredPhoneNumber = useUsPhoneField
+    ? (toUsE164(phoneDigits) ?? '')
+    : normalizePhoneForCompare(formData.phoneNumber);
+
+  /** Why the entry is not usable yet, or null. '' entry is not an error here. */
+  const phoneEntryError = useUsPhoneField
+    ? phoneDigits
+      ? usPhoneValidationError(phoneDigits)
+      : null
+    : formData.phoneNumber.trim() && !isValidPhoneNumber(formData.phoneNumber)
+      ? `Use E.164 format (example: ${US_DIAL_CODE}5551234567)`
+      : null;
 
   const normalizedUserPhone = normalizePhoneForCompare(user?.phoneNumber || '');
-  const normalizedFormPhone = normalizePhoneForCompare(formData.phoneNumber);
-  const hasPhoneNumber = Boolean(formData.phoneNumber.trim());
-  const alreadyConsented = Boolean(user?.smsConsent);
+  const normalizedFormPhone = enteredPhoneNumber;
+  const hasPhoneNumber = useUsPhoneField
+    ? phoneDigits.length > 0
+    : Boolean(formData.phoneNumber.trim());
+
+  /**
+   * Is the consent on record good for the number in the field?
+   *
+   * Consent belongs to a NUMBER, not to an account — the API records it per
+   * number and refuses to text one it has no consent for. So a user who is
+   * changing their number has no consent for the new one, however long they
+   * have had consent for the old one, and must be asked again before
+   * anything is sent there. Without this the screen hid the checkbox, the
+   * send was refused, and the error named a gate the user could not see.
+   */
+  const alreadyConsented =
+    Boolean(user?.smsConsent) &&
+    normalizedUserPhone !== '' &&
+    enteredPhoneNumber === normalizedUserPhone;
+  const initials = (user?.name ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('') || '\u2014';
+
   const isPhoneVerifiedForCurrentPhone = Boolean(
     user?.isPhoneVerified
       && normalizedUserPhone
@@ -124,8 +218,8 @@ export default function ProfilePage() {
       newErrors.email = 'Email is invalid';
     }
 
-    if (formData.phoneNumber.trim() && !isValidPhoneNumber(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Use E.164 format (example: +15551234567)';
+    if (phoneEntryError) {
+      newErrors.phoneNumber = phoneEntryError;
     }
 
     if (user && formData.email !== user.email && !isPhoneVerifiedForCurrentPhone) {
@@ -139,13 +233,20 @@ export default function ProfilePage() {
   const handleSendPhoneVerificationCode = async (triggeredByEmailUpdate = false) => {
     if (!user) return;
 
-    if (!formData.phoneNumber.trim()) {
+    if (!hasPhoneNumber) {
       setErrors((prev) => ({ ...prev, phoneNumber: 'Phone number is required' }));
       return;
     }
 
-    if (!isValidPhoneNumber(formData.phoneNumber)) {
-      setErrors((prev) => ({ ...prev, phoneNumber: 'Use E.164 format (example: +15551234567)' }));
+    // Only ever a complete, canonical number goes to the API — and so only
+    // ever a number a code can actually reach.
+    if (phoneEntryError || !enteredPhoneNumber) {
+      setErrors((prev) => ({
+        ...prev,
+        phoneNumber:
+          phoneEntryError ??
+          `Use E.164 format (example: ${US_DIAL_CODE}5551234567)`,
+      }));
       return;
     }
 
@@ -166,9 +267,12 @@ export default function ProfilePage() {
     }
 
     setIsSendingPhoneCode(true);
+    // Before the request: the message can arrive before the modal opens, and
+    // re-arming abandons any request bound to a superseded message.
+    rearmWebOtp();
     try {
       const response = await usersApi.sendPhoneVerificationCode({
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: enteredPhoneNumber,
         ...(smsConsent && { smsConsent: true }),
       });
       const result = response.data;
@@ -177,6 +281,7 @@ export default function ProfilePage() {
         ...prev,
         phoneNumber: result.phoneNumber,
       }));
+      setPhoneDigits(usNationalDigitsFromE164(result.phoneNumber));
 
       updateUser(
         {
@@ -193,8 +298,11 @@ export default function ProfilePage() {
         return;
       }
 
+
       setShowVerifyPhoneModal(true);
       setIsEmailEditingEnabled(false);
+      setVerifyCodeInput('');
+      setVerifyCodeResetKey((k) => k + 1);
       toast.success('Verification code sent to your phone.');
       if (result.code) {
         console.log('[Phone verification] Code sent to', result.phoneNumber, ':', result.code);
@@ -203,6 +311,26 @@ export default function ProfilePage() {
       toast.error(getErrorMessage(error, 'Failed to send verification code'));
     } finally {
       setIsSendingPhoneCode(false);
+    }
+  };
+
+  const handleGrantSmsConsent = async () => {
+    if (!regrantChecked || !user) return;
+    setIsRegranting(true);
+    try {
+      const res = await usersApi.grantSmsConsent();
+      updateUser({
+        ...user,
+        smsConsent: res.data.smsConsent,
+        smsOptedOut: res.data.smsOptedOut,
+        smsConsentAt: new Date().toISOString(),
+      });
+      setRegrantChecked(false);
+      toast.success(res.data.message);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to record your SMS consent'));
+    } finally {
+      setIsRegranting(false);
     }
   };
 
@@ -224,10 +352,17 @@ export default function ProfilePage() {
     }
   };
 
-  const handleVerifyPhoneCode = async () => {
-    if (!user) return;
+  /**
+   * Verify the code. Called by the field itself once six digits land, and by
+   * the button for anyone who prefers it — `isVerifyingPhoneCode` is what
+   * stops those two paths submitting the same code twice.
+   */
+  const handleVerifyPhoneCode = async (submittedCode?: string) => {
+    if (!user || verifyInFlightRef.current) return;
 
-    if (!/^\d{6}$/.test(verifyCodeInput.trim())) {
+    const code = (submittedCode ?? verifyCodeInput).trim();
+
+    if (!/^\d{6}$/.test(code)) {
       setErrors((prev) => ({
         ...prev,
         verifyCode: 'Enter the 6-digit code from the SMS',
@@ -235,11 +370,12 @@ export default function ProfilePage() {
       return;
     }
 
+    verifyInFlightRef.current = true;
     setIsVerifyingPhoneCode(true);
     setErrors((prev) => ({ ...prev, verifyCode: '' }));
     try {
       const response = await usersApi.verifyPhoneVerificationCode({
-        code: verifyCodeInput.trim(),
+        code,
       });
       const result = response.data;
 
@@ -252,6 +388,7 @@ export default function ProfilePage() {
         undefined,
       );
       setFormData((prev) => ({ ...prev, phoneNumber: result.phoneNumber }));
+      setPhoneDigits(usNationalDigitsFromE164(result.phoneNumber));
       setIsEmailEditingEnabled(true);
       setShowVerifyPhoneModal(false);
       setVerifyCodeInput('');
@@ -259,6 +396,7 @@ export default function ProfilePage() {
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to verify code'));
     } finally {
+      verifyInFlightRef.current = false;
       setIsVerifyingPhoneCode(false);
     }
   };
@@ -276,6 +414,42 @@ export default function ProfilePage() {
     setIsEmailEditingEnabled(true);
   };
 
+  /* Only the consent metadata is taken from the response. The form fields are
+     deliberately left alone: a refresh landing mid-edit must not overwrite what
+     someone has typed but not saved. */
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) return;
+    setConsentLoading(true);
+    usersApi
+      .getProfile()
+      .then((res) => {
+        if (cancelled) return;
+        const fresh = res.data;
+        setConsentLoadFailed(false);
+        updateUser({
+          ...user,
+          smsConsent: fresh.smsConsent,
+          smsConsentAt: fresh.smsConsentAt,
+          smsOptedOut: fresh.smsOptedOut,
+          isPhoneVerified: fresh.isPhoneVerified,
+          phoneNumber: fresh.phoneNumber ?? null,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setConsentLoadFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setConsentLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Deliberately keyed on the reload button and the account only: re-running
+    // this on every `user` change would loop, because it calls updateUser.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, consentReloadKey]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -285,11 +459,42 @@ export default function ProfilePage() {
       const response = await usersApi.updateProfile({
         name: formData.name,
         email: formData.email,
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: enteredPhoneNumber,
         company: formData.company,
         roles: [formData.role],
       });
       const { token, ...updatedUser } = response.data;
+
+      /* updateUser replaces the stored user rather than merging, and the update
+         response does not carry the SMS consent fields, so they have to be
+         carried across here or saving an unrelated field clears them locally.
+         Consent belongs to the number that was consented to: it is only carried
+         when the number is unchanged, and anything the server did return wins. */
+      const samePhone = (updatedUser.phoneNumber ?? null) === (user?.phoneNumber ?? null);
+      /* The PATCH reply may omit the consent record, so fall back to what is
+         already known for this same number rather than dropping it. */
+      let carried: Pick<AuthUser, 'smsConsent' | 'smsConsentAt' | 'smsOptedOut'> = {
+        smsConsent: updatedUser.smsConsent ?? user?.smsConsent,
+        smsConsentAt: updatedUser.smsConsentAt ?? user?.smsConsentAt,
+        smsOptedOut: updatedUser.smsOptedOut ?? user?.smsOptedOut,
+      };
+      if (!samePhone) {
+        /* The number changed, so the old consent no longer describes it. Ask the
+           authoritative profile rather than guessing; if that call fails, leave
+           the fields unset, which reads as "no consent on record". */
+        try {
+          /* users/profile is the authoritative consent record and sits in the
+             same domain as the update that just ran. */
+          const fresh = (await usersApi.getProfile()).data;
+          carried = {
+            smsConsent: fresh.smsConsent,
+            smsConsentAt: fresh.smsConsentAt,
+            smsOptedOut: fresh.smsOptedOut,
+          };
+        } catch {
+          carried = { smsConsent: undefined, smsConsentAt: undefined, smsOptedOut: undefined };
+        }
+      }
 
       updateUser(
         {
@@ -302,14 +507,13 @@ export default function ProfilePage() {
           emailVerified: user?.emailVerified ?? false,
           phoneNumber: updatedUser.phoneNumber ?? null,
           isPhoneVerified: updatedUser.isPhoneVerified,
+          ...carried,
           createdAt: updatedUser.createdAt,
         },
         token,
       );
 
       setIsEmailEditingEnabled(false);
-      if (!updatedUser.isPhoneVerified) {
-      } 
       toast.success('Profile updated successfully!');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to update profile'));
@@ -329,36 +533,45 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-slate-50/50">
+    <main className="min-h-[calc(100vh-4rem)] bg-sunken/50">
       <PageTransition>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <FadeIn>
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900">Profile Settings</h1>
-              <p className="text-slate-500 mt-1">Manage your account information</p>
+              <h1 className="text-2xl font-bold text-ink">Profile Settings</h1>
+              <p className="text-ink-3 mt-1">Manage your account information</p>
             </div>
           </FadeIn>
 
           <div className="space-y-6">
-            <FadeIn delay={0.1}>
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div className="bg-linear-to-r from-indigo-500 via-indigo-600 to-violet-600 px-6 py-8">
+            <FadeIn delay={0.04}>
+              <div className="bg-surface rounded-lg border border-hairline overflow-hidden">
+                {/* The identity band. Its background had been stripped, leaving
+                    white type on cream; it also lost the avatar the status badge
+                    was meant to sit on. Both restored, nothing else changed. */}
+                <div className="bg-accent px-6 py-8">
                   <div className="flex flex-col sm:flex-row items-center gap-5">
-                    <div className="relative">
-                      <div className="w-6 h-6 bg-emerald-400 rounded-lg border-2 border-white flex items-center justify-center">
+                    <div className="relative shrink-0">
+                      <div
+                        aria-hidden
+                        className="w-16 h-16 rounded-lg bg-surface/15 border border-surface/25 flex items-center justify-center text-xl font-bold text-white"
+                      >
+                        {initials}
+                      </div>
+                      <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-ok rounded-lg border-2 border-accent flex items-center justify-center">
                         <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                       </div>
                     </div>
                     <div className="text-center sm:text-left">
                       <h2 className="text-xl font-bold text-white">{user.name}</h2>
-                      <p className="text-indigo-100 text-sm">{user.email}</p>
+                      <p className="text-white/90 text-sm">{user.email}</p>
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-lg text-xs font-medium text-white">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface/20 rounded-lg text-xs font-medium text-white">
                           {user.roles?.includes('OEM') ? <Factory className="w-3 h-3" /> : <Store className="w-3 h-3" />}
                           {user.roles?.includes('OEM') ? 'OEM Seller' : 'Reseller'}
                         </span>
                         {user.company && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-lg text-xs font-medium text-white">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface/20 rounded-lg text-xs font-medium text-white">
                             <Building2 className="w-3 h-3" />
                             {user.company}
                           </span>
@@ -368,30 +581,30 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 bg-slate-50/50">
+                <div className="grid grid-cols-2 sm:grid-cols-3 divide-x divide-hairline border-b border-hairline bg-sunken/50">
                   <div className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-1">
+                    <div className="flex items-center justify-center gap-2 text-ink-3 text-sm mb-1">
                       <Calendar className="w-4 h-4" />
                       Member since
                     </div>
-                    <p className="font-semibold text-slate-900">{formatDate(user.createdAt)}</p>
+                    <p className="font-semibold text-ink">{formatDate(user.createdAt)}</p>
                   </div>
                   <div className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-1">
+                    <div className="flex items-center justify-center gap-2 text-ink-3 text-sm mb-1">
                       <Shield className="w-4 h-4" />
                       Status
                     </div>
-                    <p className="font-semibold text-emerald-600 flex items-center justify-center gap-1.5">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <p className="font-semibold text-ok flex items-center justify-center gap-1.5">
+                      <span className="w-2 h-2 bg-ok rounded-full animate-pulse" />
                       Active
                     </p>
                   </div>
                   <div className="px-6 py-4 text-center hidden sm:block">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-1">
+                    <div className="flex items-center justify-center gap-2 text-ink-3 text-sm mb-1">
                       <Mail className="w-4 h-4" />
                       Email
                     </div>
-                    <p className={`font-semibold ${user.emailVerified ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    <p className={`font-semibold ${user.emailVerified ? 'text-ok' : 'text-warn'}`}>
                       {user.emailVerified ? 'Verified' : 'Pending'}
                     </p>
                   </div>
@@ -417,9 +630,9 @@ export default function ProfilePage() {
 
                       <div className="w-full">
                         <div className="flex items-center justify-between gap-3 mb-1.5">
-                          <label className="block text-sm font-medium text-slate-700">
+                          <label htmlFor="profile-email" className="block text-sm font-medium text-ink-2">
                             Email Address
-                            <span className="text-red-500 ml-1">*</span>
+                            <span className="text-danger ml-1">*</span>
                           </label>
                           <Button
                             type="button"
@@ -431,42 +644,34 @@ export default function ProfilePage() {
                             Update Email
                           </Button>
                         </div>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Mail className="w-4 h-4 text-slate-400" />
-                          </div>
-                          <input
-                            className={`
-                              block w-full pl-10 pr-4 py-2.5 text-sm text-slate-900
-                              bg-white border rounded-xl
-                              placeholder:text-slate-400
-                              focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-white focus:shadow-sm
-                              transition-all duration-200
-                              disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
-                              ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20'}
-                            `}
-                            type="email"
-                            required
-                            value={formData.email}
-                            disabled={!isEmailEditingEnabled}
-                            onChange={(e) => {
-                              setFormData({ ...formData, email: e.target.value });
-                              setErrors({ ...errors, email: '' });
-                            }}
-                            placeholder="you@example.com"
-                            autoComplete="email"
-                          />
-                        </div>
-                        {errors.email && (
-                          <p className="mt-1.5 text-sm text-red-600">{errors.email}</p>
-                        )}
+                        {/* The shared field: same 44px height, 16px type,
+                            error wiring and disabled treatment as everywhere
+                            else. The lock behaviour is unchanged. */}
+                        <Input
+                          id="profile-email"
+                          icon={Mail}
+                          type="email"
+                          required
+                          value={formData.email}
+                          disabled={!isEmailEditingEnabled}
+                          error={errors.email || undefined}
+                          onChange={(e) => {
+                            setFormData({ ...formData, email: e.target.value });
+                            setErrors({ ...errors, email: '' });
+                          }}
+                          placeholder="you@example.com"
+                          autoComplete="email"
+                        />
+                        {/* Input renders the error; this is the helper line. */}
                         {!errors.email && (
-                          <p className="mt-1.5 text-sm text-slate-500">
+                          <p className="mt-1.5 text-sm text-ink-3">
                             {isEmailEditingEnabled
                               ? 'Phone verified. You can edit your email now.'
                               : !hasPhoneNumber
                                 ? 'Add a phone number to your account to unlock email updates.'
-                                : 'Email editing is locked until your current phone number is verified.'}
+                                : isPhoneVerifiedForCurrentPhone
+                                  ? 'Your phone number is verified. Choose Update Email to change your address.'
+                                  : 'Email editing is locked until your current phone number is verified.'}
                           </p>
                         )}
                       </div>
@@ -476,112 +681,78 @@ export default function ProfilePage() {
                       <div>
                         {isPhoneVerifiedForCurrentPhone ? (
                           <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                            <label className="block text-sm font-medium text-ink-2 mb-1.5">
                               Phone Number
                             </label>
-                            <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                              <Phone className="w-4 h-4 text-slate-400" />
-                              <span className="text-sm text-slate-700 flex-1">{formData.phoneNumber}</span>
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">
+                            <div className="flex items-center gap-2 px-4 py-2.5 bg-sunken border border-hairline rounded-md">
+                              <Phone className="w-4 h-4 text-ink-3" />
+                              <span className="text-sm text-ink-2 flex-1">{formData.phoneNumber}</span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-ok-soft text-ok text-xs font-medium rounded-full">
                                 <CheckCircle2 className="w-3 h-3" />
                                 Verified
                               </span>
                             </div>
-                            <p className="mt-1.5 text-sm text-slate-500">
+                            <p className="mt-1.5 text-sm text-ink-3">
                               Verified phone number. To change, contact support.
                             </p>
                           </div>
                         ) : (
                           <>
-                            <Input
-                              label="Phone Number"
-                              icon={Phone}
-                              type="tel"
-                              value={formData.phoneNumber}
-                              onChange={(e) => {
-                                const nextPhone = e.target.value;
-                                setFormData((prev) => ({ ...prev, phoneNumber: nextPhone }));
-                                setErrors((prev) => ({ ...prev, phoneNumber: '' }));
-                                setIsEmailEditingEnabled(false);
-                                setShowVerifyPhoneModal(false);
-                                setVerifyCodeInput('');
-                                setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                              }}
-                              placeholder="+15551234567"
-                              helperText={
-                                hasPhoneNumber
-                                  ? 'Required to unlock email updates. Use E.164 format.'
-                                  : 'Add a phone number for account recovery and to unlock email updates. Use E.164 format.'
-                              }
-                              error={errors.phoneNumber}
-                              autoComplete="tel"
-                            />
-                            {hasPhoneNumber && !alreadyConsented && !user?.smsOptedOut && (
-                              <label className="mt-3 flex items-start gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100 cursor-pointer select-none">
-                                <input
-                                  type="checkbox"
-                                  checked={smsConsent}
-                                  onChange={(e) => {
-                                    setSmsConsent(e.target.checked);
-                                    setErrors((prev) => ({ ...prev, smsConsent: '' }));
-                                  }}
-                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 accent-indigo-600"
-                                />
-                                <div>
-                                  <p className="text-xs text-slate-600 leading-relaxed">
-                                    {SMS_CONSENT_TEXT}
-                                  </p>
-                                  <div className="flex gap-3 mt-2">
-                                    <Link href="/terms" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>Terms</Link>
-                                    <Link href="/privacy" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>
-                                    <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-indigo-600 hover:text-indigo-700" onClick={(e) => e.stopPropagation()}>SMS Terms</Link>
-                                  </div>
-                                  {errors.smsConsent && (
-                                    <p className="mt-1.5 text-xs text-red-600">{errors.smsConsent}</p>
-                                  )}
-                                </div>
-                              </label>
+                            {useUsPhoneField ? (
+                              <UsPhoneInput
+                                id="profile-phone"
+                                label="Phone Number"
+                                value={phoneDigits}
+                                onChange={(digits) => {
+                                  setPhoneDigits(digits);
+                                  setErrors((prev) => ({
+                                    ...prev,
+                                    phoneNumber: '',
+                                    verifyCode: '',
+                                  }));
+                                  setIsEmailEditingEnabled(false);
+                                  setShowVerifyPhoneModal(false);
+                                  setVerifyCodeInput('');
+                                }}
+                                error={errors.phoneNumber}
+                                helperText={
+                                  hasPhoneNumber
+                                    ? 'Required to unlock email updates. Changing it means verifying the new number.'
+                                    : 'Add a mobile number for account recovery and to unlock email updates.'
+                                }
+                              />
+                            ) : (
+                              /* This account holds a number outside +1. It keeps
+                                 the international field so the number it already
+                                 has is never rewritten to fit a US-only one. */
+                              <Input
+                                label="Phone Number"
+                                icon={Phone}
+                                type="tel"
+                                value={formData.phoneNumber}
+                                onChange={(e) => {
+                                  const nextPhone = e.target.value;
+                                  setFormData((prev) => ({ ...prev, phoneNumber: nextPhone }));
+                                  setErrors((prev) => ({ ...prev, phoneNumber: '' }));
+                                  setIsEmailEditingEnabled(false);
+                                  setShowVerifyPhoneModal(false);
+                                  setVerifyCodeInput('');
+                                  setErrors((prev) => ({ ...prev, verifyCode: '' }));
+                                }}
+                                placeholder={`${US_DIAL_CODE}5551234567`}
+                                helperText={
+                                  hasPhoneNumber
+                                    ? 'Required to unlock email updates. Use E.164 format, including the country code.'
+                                    : 'Add a phone number for account recovery and to unlock email updates. Use E.164 format.'
+                                }
+                                error={errors.phoneNumber}
+                                autoComplete="tel"
+                              />
                             )}
-
-                            {/* SMS consent status — always visible when a number is
-                                on file, so a user can see and revoke consent without
-                                needing to have received a text first. */}
-                            {hasPhoneNumber && (alreadyConsented || user?.smsOptedOut) && (
-                              <div className={`mt-3 rounded-xl p-3.5 border ${user?.smsOptedOut ? 'bg-amber-50 border-amber-100' : 'bg-emerald-50 border-emerald-100'}`}>
-                                <div className="flex items-start justify-between gap-3 flex-wrap">
-                                  <div className="min-w-0">
-                                    <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-amber-800' : 'text-emerald-800'}`}>
-                                      {user?.smsOptedOut
-                                        ? 'SMS messages are turned off'
-                                        : 'You agreed to receive Ovrlap SMS'}
-                                    </p>
-                                    <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-amber-700/90' : 'text-emerald-700/90'}`}>
-                                      {user?.smsOptedOut
-                                        ? 'Ovrlap will not send text messages to this number. Tick the box above to opt in again.'
-                                        : user?.smsConsentAt
-                                          ? `Consent recorded ${new Date(user.smsConsentAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}. Account verification messages only — never marketing.`
-                                          : 'Account verification messages only — never marketing.'}
-                                    </p>
-                                  </div>
-                                  {!user?.smsOptedOut && (
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={handleWithdrawSmsConsent}
-                                      isLoading={isWithdrawing}
-                                    >
-                                      Withdraw consent
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
                             {hasPhoneNumber && !isPhoneVerifiedForCurrentPhone && (
                               <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                <span className="text-sm text-amber-600">Not verified yet</span>
-                                <span className="text-slate-300">·</span>
+                                <span className="text-sm text-warn">Not verified yet</span>
+                                <span className="text-ink-3">·</span>
                                 <Button
                                   type="button"
                                   variant="primary"
@@ -594,6 +765,151 @@ export default function ProfilePage() {
                               </div>
                             )}
                           </>
+                        )}
+
+                        {/* Consent belongs to the number on file, not to whether it
+                            has been verified yet: a verified user must still be able
+                            to see that they consented and withdraw it. */}
+                        {hasPhoneNumber && consentLoading && (
+                          <p className="mt-3 text-sm text-ink-3">Checking your SMS settings…</p>
+                        )}
+
+                        {hasPhoneNumber && consentLoadFailed && (
+                          <div className="mt-3 rounded-md border border-danger-soft bg-danger-soft p-3.5" role="alert">
+                            <p className="text-sm font-medium text-danger">
+                              We couldn&rsquo;t check your SMS settings
+                            </p>
+                            <p className="mt-0.5 text-xs text-danger/90">
+                              Your consent and opt-out status are held back rather than shown out of date.
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="mt-2.5"
+                              onClick={() => setConsentReloadKey((k) => k + 1)}
+                            >
+                              Try again
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Shown only where an action will actually carry it: the
+                            send-a-code path posts smsConsent, Save does not. On a
+                            verified read-only number this used to render a control
+                            that Save silently ignored. */}
+                        {hasPhoneNumber &&
+                          !consentLoading &&
+                          !consentLoadFailed &&
+                          !alreadyConsented &&
+                          !user?.smsOptedOut &&
+                          !isPhoneVerifiedForCurrentPhone && (
+                          <label className="mt-3 flex items-start gap-3 bg-sunken rounded-md p-3.5 border border-hairline cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={smsConsent}
+                              onChange={(e) => {
+                                setSmsConsent(e.target.checked);
+                                setErrors((prev) => ({ ...prev, smsConsent: '' }));
+                              }}
+                              className="mt-0.5 h-4 w-4 shrink-0 rounded border-control text-accent focus:ring-accent accent-[#0E5955]"
+                            />
+                            <div>
+                              <p className="text-xs text-ink-2 leading-relaxed">
+                                {SMS_CONSENT_TEXT}
+                              </p>
+                              <div className="flex gap-3 mt-2">
+                                <Link href="/terms" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Terms</Link>
+                                <Link href="/privacy" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>
+                                <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink" onClick={(e) => e.stopPropagation()}>SMS Terms</Link>
+                              </div>
+                              {errors.smsConsent && (
+                                <p className="mt-1.5 text-xs text-danger">{errors.smsConsent}</p>
+                              )}
+                            </div>
+                          </label>
+                        )}
+
+                        {/* SMS consent status — always visible when a number is
+                            on file, so a user can see and revoke consent without
+                            needing to have received a text first. */}
+                        {/* A verified number with no consent record showed nothing
+                            at all, so there was no way to tell consent from an
+                            unread screen. */}
+                        {hasPhoneNumber &&
+                          !consentLoading &&
+                          !consentLoadFailed &&
+                          !alreadyConsented &&
+                          !user?.smsOptedOut &&
+                          isPhoneVerifiedForCurrentPhone && (
+                            <div className="mt-3 rounded-md border border-hairline bg-sunken p-3.5">
+                              <p className="text-sm font-medium text-ink">
+                                SMS is off for this number
+                              </p>
+                              <p className="mt-0.5 text-xs text-ink-2">
+                                Ovrlap will not send account security codes, including password
+                                resets. Agree below to turn them back on. Nothing is sent now.
+                              </p>
+                              <label className="mt-3 flex items-start gap-3 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={regrantChecked}
+                                  onChange={(e) => setRegrantChecked(e.target.checked)}
+                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-control accent-[#0E5955]"
+                                />
+                                <span className="text-xs text-ink-2 leading-relaxed">
+                                  {SMS_CONSENT_TEXT}
+                                </span>
+                              </label>
+                              <div className="mt-3 flex gap-3">
+                                <Link href="/terms" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink">Terms</Link>
+                                <Link href="/privacy" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink">Privacy Policy</Link>
+                                <Link href="/sms-opt-in" target="_blank" className="text-xs font-medium text-accent hover:text-accent-ink">SMS Terms</Link>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="primary"
+                                size="sm"
+                                className="mt-3"
+                                disabled={!regrantChecked}
+                                isLoading={isRegranting}
+                                onClick={handleGrantSmsConsent}
+                              >
+                                Turn SMS back on
+                              </Button>
+                            </div>
+                          )}
+
+                        {hasPhoneNumber && !consentLoading && !consentLoadFailed && (alreadyConsented || user?.smsOptedOut) && (
+                          <div className={`mt-3 rounded-md p-3.5 border ${user?.smsOptedOut ? 'bg-warn-soft border-warn-soft' : 'bg-ok-soft border-ok-soft'}`}>
+                            <div className="flex items-start justify-between gap-3 flex-wrap">
+                              <div className="min-w-0">
+                                <p className={`text-sm font-medium ${user?.smsOptedOut ? 'text-warn' : 'text-ok'}`}>
+                                  {user?.smsOptedOut
+                                    ? 'SMS messages are turned off'
+                                    : 'You agreed to receive Ovrlap SMS'}
+                                </p>
+                                <p className={`text-xs mt-0.5 ${user?.smsOptedOut ? 'text-warn/90' : 'text-ok/90'}`}>
+                                  {user?.smsOptedOut
+                                    ? 'Ovrlap will not send text messages to this number. Reply START to the last Ovrlap message to resume.'
+                                    : user?.smsConsentAt
+                                      ? `Consent recorded ${new Date(user.smsConsentAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}. Account verification messages only — never marketing.`
+                                      : 'Account verification messages only — never marketing.'}
+                                </p>
+                              </div>
+                              {!user?.smsOptedOut && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleWithdrawSmsConsent}
+                                  isLoading={isWithdrawing}
+                                >
+                                  Withdraw consent
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
 
@@ -611,15 +927,15 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-3">
+                      <label className="block text-sm font-medium text-ink-2 mb-3">
                         Your Role
                       </label>
                       <div className="grid sm:grid-cols-2 gap-3">
                         <label
-                          className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          className={`relative flex items-center gap-4 p-4 rounded-md border-2 cursor-pointer transition-all ${
                             formData.role === 'OEM'
-                              ? 'border-indigo-500 bg-indigo-50/50'
-                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                              ? 'border-accent bg-accent-soft/50'
+                              : 'border-hairline hover:border-control hover:bg-sunken'
                           }`}
                         >
                           <input
@@ -629,28 +945,28 @@ export default function ProfilePage() {
                             checked={formData.role === 'OEM'}
                             onChange={() => setFormData({ ...formData, role: 'OEM' })}
                           />
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            formData.role === 'OEM' ? 'bg-indigo-500' : 'bg-slate-100'
+                          <div className={`w-12 h-12 rounded-md flex items-center justify-center shrink-0 transition-colors ${
+                            formData.role === 'OEM' ? 'bg-accent' : 'bg-surface-2'
                           }`}
                           >
-                            <Factory className={`w-6 h-6 ${formData.role === 'OEM' ? 'text-white' : 'text-slate-500'}`} />
+                            <Factory className={`w-6 h-6 ${formData.role === 'OEM' ? 'text-white' : 'text-ink-3'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-medium ${formData.role === 'OEM' ? 'text-indigo-900' : 'text-slate-900'}`}>
+                            <p className={`font-medium ${formData.role === 'OEM' ? 'text-accent-ink' : 'text-ink'}`}>
                               OEM Seller
                             </p>
-                            <p className="text-sm text-slate-500 truncate">Original equipment manufacturer</p>
+                            <p className="text-sm text-ink-3 truncate">Original equipment manufacturer</p>
                           </div>
                           {formData.role === 'OEM' && (
-                            <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
+                            <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
                           )}
                         </label>
 
                         <label
-                          className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          className={`relative flex items-center gap-4 p-4 rounded-md border-2 cursor-pointer transition-all ${
                             formData.role === 'Reseller'
-                              ? 'border-indigo-500 bg-indigo-50/50'
-                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                              ? 'border-accent bg-accent-soft/50'
+                              : 'border-hairline hover:border-control hover:bg-sunken'
                           }`}
                         >
                           <input
@@ -660,32 +976,30 @@ export default function ProfilePage() {
                             checked={formData.role === 'Reseller'}
                             onChange={() => setFormData({ ...formData, role: 'Reseller' })}
                           />
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            formData.role === 'Reseller' ? 'bg-indigo-500' : 'bg-slate-100'
+                          <div className={`w-12 h-12 rounded-md flex items-center justify-center shrink-0 transition-colors ${
+                            formData.role === 'Reseller' ? 'bg-accent' : 'bg-surface-2'
                           }`}
                           >
-                            <Store className={`w-6 h-6 ${formData.role === 'Reseller' ? 'text-white' : 'text-slate-500'}`} />
+                            <Store className={`w-6 h-6 ${formData.role === 'Reseller' ? 'text-white' : 'text-ink-3'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-medium ${formData.role === 'Reseller' ? 'text-indigo-900' : 'text-slate-900'}`}>
+                            <p className={`font-medium ${formData.role === 'Reseller' ? 'text-accent-ink' : 'text-ink'}`}>
                               Reseller
                             </p>
-                            <p className="text-sm text-slate-500 truncate">Channel partner or distributor</p>
+                            <p className="text-sm text-ink-3 truncate">Channel partner or distributor</p>
                           </div>
                           {formData.role === 'Reseller' && (
-                            <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
+                            <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
                           )}
                         </label>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
-                    <Link href="/dashboard">
-                      <Button type="button" variant="outline" size="lg">
+                  <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-hairline">
+                    <ButtonLink href="/dashboard" variant="outline" size="lg">
                         Cancel
-                      </Button>
-                    </Link>
+                      </ButtonLink>
                     <Button
                       type="submit"
                       variant="primary"
@@ -698,16 +1012,16 @@ export default function ProfilePage() {
                     </Button>
                   </div>
 
-                  <div className="mt-10 pt-8 border-t border-slate-200">
-                    <h3 className="text-sm font-semibold text-slate-900">Danger zone</h3>
-                    <p className="mt-1 text-sm text-slate-500">
+                  <div className="mt-10 pt-8 border-t border-hairline">
+                    <h3 className="text-sm font-semibold text-ink">Danger zone</h3>
+                    <p className="mt-1 text-sm text-ink-3">
                       Permanently delete your account and all associated data (lists, connections, invites). You will not be able to sign in again.
                     </p>
                     <Button
                       type="button"
                       variant="outline"
                       size="lg"
-                      className="mt-4 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                      className="mt-4 text-danger border-danger hover:bg-danger-soft hover:border-danger"
                       onClick={() => setShowDeleteAccountModal(true)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -743,136 +1057,82 @@ export default function ProfilePage() {
         onClose={() => !isDeletingAccount && setShowDeleteAccountModal(false)}
       />
 
-      {mounted &&
-        showVerifyPhoneModal &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
-            <div
-              className={`absolute inset-0 bg-slate-900/50 transition-opacity duration-300 ${
-                modalAnimate ? 'opacity-100' : 'opacity-0'
-              }`}
-              onClick={() => setShowVerifyPhoneModal(false)}
-              aria-hidden="true"
-            />
-
-            <div
-              className={`relative w-full max-w-md transition-all duration-300 ease-out ${
-                modalAnimate
-                  ? 'opacity-100 scale-100 translate-y-0'
-                  : 'opacity-0 scale-95 translate-y-4'
-              }`}
-              style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="verify-modal-title"
+      <Modal
+        isOpen={showVerifyPhoneModal}
+        onClose={() => {
+          setShowVerifyPhoneModal(false);
+          setVerifyCodeInput('');
+          setErrors((prev) => ({ ...prev, verifyCode: '' }));
+        }}
+        title="Verify your phone"
+        description={`Code sent to ${formData.phoneNumber || 'your phone'}`}
+        size="sm"
+        showClose
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => {
+                setShowVerifyPhoneModal(false);
+                setVerifyCodeInput('');
+                setErrors((prev) => ({ ...prev, verifyCode: '' }));
+              }}
             >
-              <div className="bg-white rounded-2xl shadow-2xl shadow-black/25 ring-1 ring-slate-200/80 overflow-hidden">
-                {/* Header */}
-                <div className="relative bg-linear-to-br from-indigo-600 via-indigo-500 to-violet-500 px-6 py-6 overflow-hidden">
-                  <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
-                  <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-white/5 rounded-full" />
-                  <div className="relative flex items-start justify-between">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
-                        <Phone className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h2 id="verify-modal-title" className="text-lg font-bold text-white">
-                          Verify your phone
-                        </h2>
-                        <p className="text-indigo-200 text-sm mt-0.5">
-                          Code sent to {formData.phoneNumber || 'your phone'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setShowVerifyPhoneModal(false);
-                        setVerifyCodeInput('');
-                        setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                      }}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-indigo-200 hover:text-white hover:bg-white/15 transition-all"
-                      aria-label="Close"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Body */}
-                <div className="px-6 py-6">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Enter 6-digit code
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={verifyCodeInput}
-                    onChange={(e) => {
-                      const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 6);
-                      setVerifyCodeInput(digitsOnly);
-                      setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                    }}
-                    placeholder="000000"
-                    className={`block w-full px-4 py-3.5 text-center text-2xl font-semibold tracking-[0.4em] rounded-xl border transition-all placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
-                      errors.verifyCode
-                        ? 'border-red-300 focus:ring-red-500/30 focus:border-red-500'
-                        : 'border-slate-200 focus:ring-indigo-500/30 focus:border-indigo-400'
-                    }`}
-                    autoComplete="one-time-code"
-                    autoFocus
-                  />
-                  {errors.verifyCode && (
-                    <p className="mt-2 text-sm text-red-600">{errors.verifyCode}</p>
-                  )}
-                  <p className="mt-3 text-sm text-slate-500 flex items-center justify-between">
-                    <span>Code expires in 10 minutes</span>
-                    <button
-                      type="button"
-                      className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
-                      onClick={async () => {
-                        await handleSendPhoneVerificationCode(false);
-                        setShowVerifyPhoneModal(true);
-                      }}
-                      disabled={isSendingPhoneCode}
-                    >
-                      {isSendingPhoneCode ? 'Sending…' : 'Resend code'}
-                    </button>
-                  </p>
-
-                  <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      className="flex-1"
-                      onClick={() => {
-                        setShowVerifyPhoneModal(false);
-                        setVerifyCodeInput('');
-                        setErrors((prev) => ({ ...prev, verifyCode: '' }));
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="lg"
-                      className="flex-1"
-                      onClick={handleVerifyPhoneCode}
-                      isLoading={isVerifyingPhoneCode}
-                    >
-                      Verify
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              className="flex-1"
+              onClick={() => void handleVerifyPhoneCode()}
+              isLoading={isVerifyingPhoneCode}
+            >
+              Verify
+            </Button>
+          </>
+        }
+      >
+        <p className="mb-2 text-[12.5px] text-ink-3">Enter 6-digit code</p>
+        {/* Same field as activation, so the phone offers the code here too. It
+            submits on its own once six digits land; the button below stays for
+            anyone who would rather press it. */}
+        <CodeInput
+          key={verifyCodeResetKey}
+          onChange={(code) => {
+            setVerifyCodeInput(code);
+            setErrors((prev) => ({ ...prev, verifyCode: '' }));
+          }}
+          onComplete={(code) => {
+            void handleVerifyPhoneCode(code);
+          }}
+          disabled={isVerifyingPhoneCode}
+          label="Enter 6-digit code"
+          describedBy={errors.verifyCode ? 'profile-verify-code-error' : undefined}
+        />
+        {errors.verifyCode && (
+          <p id="profile-verify-code-error" role="alert" className="mt-2 text-sm text-danger">
+            {errors.verifyCode}
+          </p>
         )}
+        <p className="mt-3 flex items-center justify-between gap-3 text-sm text-ink-3">
+          <span>Code expires in 10 minutes</span>
+          <button
+            type="button"
+            className="min-h-[44px] rounded-sm px-2 font-bold text-accent transition-colors hover:text-accent-ink disabled:text-disabled-outline"
+            onClick={async () => {
+              await handleSendPhoneVerificationCode(false);
+              setShowVerifyPhoneModal(true);
+            }}
+            disabled={isSendingPhoneCode}
+          >
+            {isSendingPhoneCode ? 'Sending…' : 'Resend code'}
+          </button>
+        </p>
+      </Modal>
     </main>
   );
 }

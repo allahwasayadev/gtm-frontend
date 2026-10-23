@@ -20,8 +20,8 @@ import { Header } from '@/components/ui';
 import Link from 'next/link';
 
 const sectionVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 };
 
 interface TermsSectionProps {
@@ -35,53 +35,52 @@ interface TermsSectionProps {
 function TermsSection({ icon: Icon, iconBg, iconColor, title, children }: TermsSectionProps) {
   return (
     <motion.section
-      className="bg-white rounded-2xl p-8 sm:p-10 shadow-card border border-slate-200/60"
+      className="bg-surface rounded-lg p-8 sm:p-10 shadow-card border border-hairline"
       variants={sectionVariants}
     >
       <div className="flex items-center gap-3 mb-6">
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+        <div className={`w-10 h-10 rounded-md ${iconBg} flex items-center justify-center shrink-0`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">{title}</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-ink">{title}</h2>
       </div>
-      <div className="text-slate-600 leading-relaxed space-y-4">{children}</div>
+      <div className="text-ink-2 leading-relaxed space-y-4">{children}</div>
     </motion.section>
   );
 }
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-slate-50/50 flex flex-col">
+    <div className="min-h-screen bg-sunken/50 flex flex-col">
       <Header />
       <div className="bg-grid flex-1 flex flex-col">
         <main className="w-full flex-1">
           {/* Hero Section */}
           <section className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-linear-to-br from-indigo-50 via-white to-slate-50" />
             <div className="relative px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-16 sm:py-24">
               <motion.div
                 className="max-w-4xl mx-auto text-center"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.2 }}
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-100 mb-6">
-                  <Scale className="w-8 h-8 text-indigo-600" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-accent-soft mb-6">
+                  <Scale className="w-8 h-8 text-accent" />
                 </div>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-ink mb-6 leading-tight">
                   Terms &amp; Conditions
                 </h1>
-                <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-lg sm:text-xl text-ink-2 max-w-3xl mx-auto leading-relaxed">
                   These Terms and Conditions govern your use of Ovrlap. By accessing or using Ovrlap, you agree to be bound by these terms.
                 </p>
                 <motion.div
-                  className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm"
+                  className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-hairline shadow-sm"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
+                  transition={{ delay: 0.06, duration: 0.2 }}
                 >
-                  <Clock className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm text-slate-500">Last Updated: September 27, 2026</span>
+                  <Clock className="w-4 h-4 text-ink-3" />
+                  <span className="text-sm text-ink-3">Last Updated: September 27, 2026</span>
                 </motion.div>
               </motion.div>
             </div>
@@ -95,15 +94,15 @@ export default function TermsPage() {
               animate="visible"
               variants={{
                 hidden: { opacity: 0 },
-                visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.2 } },
+                visible: { opacity: 1, transition: { staggerChildren: 0.03, delayChildren: 0 } },
               }}
             >
               {/* Agreement Notice */}
               <motion.div
-                className="bg-linear-to-br from-amber-50 to-white rounded-2xl p-8 sm:p-10 shadow-card border border-amber-200/60"
+                className="bg-warn-bg rounded-lg p-8 sm:p-10 shadow-e1 border border-warn-soft"
                 variants={sectionVariants}
               >
-                <p className="text-lg text-slate-700 leading-relaxed">
+                <p className="text-lg text-ink-2 leading-relaxed">
                   If you do not agree to these terms, you should not use the service. Continued use of Ovrlap constitutes acceptance of these Terms and Conditions.
                 </p>
               </motion.div>
@@ -111,8 +110,8 @@ export default function TermsPage() {
               {/* Description of the Service */}
               <TermsSection
                 icon={FileText}
-                iconBg="bg-indigo-100"
-                iconColor="text-indigo-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Description of the Service"
               >
                 <p>
@@ -126,8 +125,8 @@ export default function TermsPage() {
               {/* Eligibility */}
               <TermsSection
                 icon={UserCheck}
-                iconBg="bg-emerald-100"
-                iconColor="text-emerald-600"
+                iconBg="bg-ok-soft"
+                iconColor="text-ok"
                 title="Eligibility"
               >
                 <p>
@@ -138,15 +137,15 @@ export default function TermsPage() {
               {/* Account Responsibilities */}
               <TermsSection
                 icon={KeyRound}
-                iconBg="bg-violet-100"
-                iconColor="text-violet-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Account Responsibilities"
               >
                 <p>
                   Users are responsible for maintaining the confidentiality of their account credentials and for all activity associated with their account.
                 </p>
-                <div className="bg-violet-50/50 rounded-xl p-5 border border-violet-100">
-                  <p className="font-medium text-slate-800 text-sm">
+                <div className="bg-accent-soft rounded-md p-5 border border-accent-soft">
+                  <p className="font-medium text-accent-ink text-sm">
                     You agree to provide accurate and complete information when creating an account.
                   </p>
                 </div>
@@ -155,8 +154,8 @@ export default function TermsPage() {
               {/* Uploading Account Lists */}
               <TermsSection
                 icon={Upload}
-                iconBg="bg-blue-100"
-                iconColor="text-blue-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Uploading Account Lists"
               >
                 <ul className="space-y-3 ml-1">
@@ -166,7 +165,7 @@ export default function TermsPage() {
                     'Ovrlap processes uploaded account lists only to identify overlapping companies between connected users.',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 mt-2" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -176,8 +175,8 @@ export default function TermsPage() {
               {/* User Connections */}
               <TermsSection
                 icon={Link2}
-                iconBg="bg-sky-100"
-                iconColor="text-sky-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="User Connections"
               >
                 <ul className="space-y-3 ml-1">
@@ -188,7 +187,7 @@ export default function TermsPage() {
                     'Users may revoke connections at any time, which will remove shared visibility between the users.',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0 mt-2" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -198,8 +197,8 @@ export default function TermsPage() {
               {/* SMS Verification */}
               <TermsSection
                 icon={Smartphone}
-                iconBg="bg-teal-100"
-                iconColor="text-teal-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="SMS Verification"
               >
                 <p>
@@ -211,7 +210,7 @@ export default function TermsPage() {
                 <p>
                   Consenting to SMS is optional and is not a condition of creating or using an Ovrlap account. Providing a phone number is also optional. Declining does not restrict access to any part of the service, and consent may be withdrawn at any time from profile settings, or delivery stopped by replying STOP.
                 </p>
-                <div className="bg-slate-50 rounded-xl p-5 space-y-3 border border-slate-100">
+                <div className="bg-sunken rounded-md p-5 space-y-3 border border-hairline">
                   {[
                     'Ovrlap sends no marketing or promotional text messages.',
                     'Message frequency varies — a message is sent only when the user requests a verification code.',
@@ -219,20 +218,20 @@ export default function TermsPage() {
                     'Users may withdraw consent at any time from profile settings, which is the record Ovrlap acts on, or reply STOP to stop delivery at their carrier. STOP and HELP replies are handled by our messaging provider. Customer care is available at support@ovrlap.app.',
                     'Carriers are not liable for delayed or undelivered messages.',
                   ].map((item, i) => (
-                    <p key={i} className="flex items-start gap-3 text-sm text-slate-600">
-                      <div className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 mt-2" />
+                    <p key={i} className="flex items-start gap-3 text-sm text-ink-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-2" />
                       <span>{item}</span>
                     </p>
                   ))}
                 </div>
-                <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
-                  <p className="font-semibold text-indigo-900 leading-relaxed">
+                <div className="bg-accent-soft rounded-md p-5 border border-accent-soft">
+                  <p className="font-semibold text-accent-ink leading-relaxed">
                     No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
                   </p>
                 </div>
                 <p className="text-sm">
                   Full details are on the{' '}
-                  <Link href="/sms-opt-in" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                  <Link href="/sms-opt-in" className="text-accent hover:text-accent-ink font-medium">
                     SMS Terms &amp; Opt-In
                   </Link>{' '}
                   page.
@@ -242,8 +241,8 @@ export default function TermsPage() {
               {/* Account Deletion */}
               <TermsSection
                 icon={Trash2}
-                iconBg="bg-red-100"
-                iconColor="text-red-600"
+                iconBg="bg-danger-soft"
+                iconColor="text-danger"
                 title="Account Deletion"
               >
                 <p>Users may delete their account at any time within the platform.</p>
@@ -255,8 +254,8 @@ export default function TermsPage() {
               {/* Service Availability */}
               <TermsSection
                 icon={Cloud}
-                iconBg="bg-orange-100"
-                iconColor="text-orange-600"
+                iconBg="bg-warn-soft"
+                iconColor="text-warn"
                 title="Service Availability"
               >
                 <p>
@@ -269,21 +268,21 @@ export default function TermsPage() {
 
               {/* Limitation of Liability */}
               <motion.section
-                className="bg-linear-to-br from-slate-900 to-slate-800 rounded-2xl p-8 sm:p-10 shadow-xl"
+                className="bg-ink rounded-lg p-8 sm:p-10 shadow-xl"
                 variants={sectionVariants}
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                    <ShieldAlert className="w-5 h-5 text-amber-300" />
+                  <div className="w-10 h-10 rounded-md bg-surface/10 flex items-center justify-center shrink-0">
+                    <ShieldAlert className="w-5 h-5 text-warn-soft" />
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-white">Limitation of Liability</h2>
                 </div>
                 <div className="space-y-4">
-                  <p className="text-slate-300">
+                  <p className="text-ink-3">
                     Ovrlap is provided on an &quot;as is&quot; basis without warranties of any kind.
                   </p>
-                  <div className="pt-5 border-t border-slate-700">
-                    <p className="text-slate-200 text-sm leading-relaxed">
+                  <div className="pt-5 border-t border-ink">
+                    <p className="text-white/90 text-sm leading-relaxed">
                       To the fullest extent permitted by law, Ovrlap shall not be liable for any direct, indirect, incidental, or consequential damages arising from the use of the service.
                     </p>
                   </div>
@@ -293,8 +292,8 @@ export default function TermsPage() {
               {/* Changes to Terms */}
               <TermsSection
                 icon={RefreshCw}
-                iconBg="bg-purple-100"
-                iconColor="text-purple-600"
+                iconBg="bg-accent-soft"
+                iconColor="text-accent-ink"
                 title="Changes to Terms"
               >
                 <p>
@@ -307,14 +306,14 @@ export default function TermsPage() {
 
               {/* Contact */}
               <motion.div className="text-center" variants={sectionVariants}>
-                <div className="bg-white rounded-2xl p-10 shadow-card border border-slate-200/60">
-                  <h2 className="text-2xl font-bold text-slate-900 mb-3">Contact</h2>
-                  <p className="text-slate-600 mb-6 text-lg">
+                <div className="bg-surface rounded-lg p-10 shadow-card border border-hairline">
+                  <h2 className="text-2xl font-bold text-ink mb-3">Contact</h2>
+                  <p className="text-ink-2 mb-6 text-lg">
                     Questions regarding these Terms and Conditions can be directed to:
                   </p>
                   <a
                     href="mailto:support@ovrlap.app"
-                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    className="inline-flex items-center gap-2 bg-accent hover:bg-accent-pressed text-white px-6 py-3 rounded-lg font-medium transition-colors"
                   >
                     <Mail className="w-5 h-5" />
                     support@ovrlap.app
@@ -325,16 +324,16 @@ export default function TermsPage() {
           </div>
 
           {/* Footer */}
-          <footer className="border-t border-slate-200 bg-white mt-auto">
+          <footer className="border-t border-hairline bg-surface mt-auto">
             <div className="px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
               <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
-                <p className="text-slate-500 text-sm">
+                <p className="text-ink-3 text-sm">
                   &copy; {new Date().getFullYear()} Ovrlap. All rights reserved.
                 </p>
-                <div className="flex items-center gap-6">
-                  <Link href="/about" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">About</Link>
-                  <Link href="/privacy" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Privacy</Link>
-                  <Link href="/sms-opt-in" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">SMS Terms</Link>
+                <div className="-mx-3 flex flex-wrap items-center gap-x-1">
+                  <Link href="/about" className="flex min-h-[44px] items-center rounded-xs px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">About</Link>
+                  <Link href="/privacy" className="flex min-h-[44px] items-center rounded-xs px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">Privacy</Link>
+                  <Link href="/sms-opt-in" className="flex min-h-[44px] items-center rounded-xs px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">SMS Terms</Link>
                 </div>
               </div>
             </div>

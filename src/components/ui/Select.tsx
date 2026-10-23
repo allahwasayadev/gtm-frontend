@@ -1,4 +1,4 @@
-import { SelectHTMLAttributes, forwardRef } from 'react';
+import { SelectHTMLAttributes, forwardRef, useId } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 interface SelectOption {
@@ -13,35 +13,38 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'chi
   placeholder?: string;
 }
 
+/** Harbour select. Same 44px height and 16px type as the text field. */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, placeholder, className = '', ...props }, ref) => {
+  ({ label, error, options, placeholder, className = '', id, ...props }, ref) => {
+    const generatedId = useId();
+    const selectId = id ?? `select-${generatedId}`;
+    const errorId = `${selectId}-error`;
+
     return (
       <div>
         {label && (
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor={selectId} className="block text-[12.5px] text-ink-3 mb-1.5">
             {label}
           </label>
         )}
         <div className="relative">
           <select
             ref={ref}
+            id={selectId}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId : undefined}
             className={`
-              block w-full px-4 py-2.5 pr-10 text-base rounded-xl border appearance-none cursor-pointer
-              bg-white text-slate-900
-              transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-offset-0 focus:shadow-sm
-              disabled:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-500
-              ${error
-                ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500'
-                : 'border-slate-200 focus:ring-indigo-500/20 focus:border-indigo-500'
-              }
+              block w-full min-h-[44px] px-4 py-2.5 pr-10 text-base rounded-sm border appearance-none cursor-pointer
+              bg-surface text-ink
+              transition-colors duration-150
+              focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
+              disabled:bg-sunken disabled:text-disabled-outline disabled:border-disabled-border disabled:cursor-not-allowed
+              ${error ? 'border-danger focus:border-danger' : 'border-control focus:border-accent'}
               ${className}
             `}
             {...props}
           >
-            {placeholder && (
-              <option value="">{placeholder}</option>
-            )}
+            {placeholder && <option value="">{placeholder}</option>}
             {options.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -49,11 +52,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-ink-3" aria-hidden="true" />
           </div>
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-red-600">{error}</p>
+          <p id={errorId} role="alert" className="mt-1.5 text-[12.5px] text-danger">{error}</p>
         )}
       </div>
     );

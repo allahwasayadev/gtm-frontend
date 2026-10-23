@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { Header, LoadingScreen } from '@/components/ui';
+import { Header, LoadingScreen, SiteFooter } from '@/components/ui';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -15,9 +15,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen flex flex-col bg-canvas">
       <Header />
-      <div className="bg-grid">{children}</div>
+      <div className="flex-1">{children}</div>
+      <SiteFooter />
     </div>
   );
 }

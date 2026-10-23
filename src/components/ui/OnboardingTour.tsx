@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useLayoutEffect, useId } from 'react';
+import { useState, useEffect, useCallback, useLayoutEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import { CloudUpload, BarChart3, Mail, ChevronRight } from 'lucide-react';
 import { Button } from './Button';
+import { useOverlayBehaviour } from '@/lib/useOverlayBehaviour';
 
 interface TourStep {
   id: string;
@@ -23,7 +24,7 @@ const tourSteps: TourStep[] = [
     id: 'upload',
     targetSelector: '[data-tour="upload-list"]',
     icon: CloudUpload,
-    iconBg: 'bg-indigo-500',
+    iconBg: 'bg-accent',
     title: 'Upload Your List',
     body: 'Upload your account list once to start mapping. Overlap automatically re-maps as connections update, so your overlaps stay current.',
     buttonText: 'Upload List',
@@ -32,7 +33,7 @@ const tourSteps: TourStep[] = [
     id: 'overlaps',
     targetSelector: '[data-tour="view-matches"]',
     icon: BarChart3,
-    iconBg: 'bg-emerald-500',
+    iconBg: 'bg-ok',
     title: 'See Your Shared Overlaps',
     body: "Once your list is uploaded, you'll see shared accounts between you and each connection. Overlaps update automatically as your network grows.",
     buttonText: 'View Overlaps',
@@ -41,7 +42,7 @@ const tourSteps: TourStep[] = [
     id: 'invite',
     targetSelector: '[data-tour="invite-partner"]',
     icon: Mail,
-    iconBg: 'bg-violet-500',
+    iconBg: 'bg-accent',
     title: 'Invite a Partner',
     body: 'Send an invite by email to connect with colleagues or partners. Once they accept, you can compare lists and see overlapping accounts.',
     buttonText: 'Invite Partner',
@@ -62,38 +63,54 @@ interface OnboardingTourProps {
   onAction: (stepId: string) => void;
 }
 
-const TOOLTIP_WIDTH = 360;
+const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_EST_HEIGHT = 300;
+const GUTTER = 16;
 
+/**
+ * The panel used to be a fixed 360px. On a 320px phone the clamp then computed
+ * `left = 320 - 360 - 16`, i.e. -56, and pushed a third of the panel off the
+ * side of the screen. The width is a budget now, not a constant: it is whatever
+ * fits between the gutters, and the height is capped so a short or landscape
+ * viewport scrolls inside the panel instead of overflowing the screen.
+ */
 function getTooltipPosition(rect: DOMRect | null): React.CSSProperties {
+  const vw = typeof window === 'undefined' ? TOOLTIP_MAX_WIDTH + GUTTER * 2 : window.innerWidth;
+  const vh = typeof window === 'undefined' ? 800 : window.innerHeight;
+  const width = Math.min(TOOLTIP_MAX_WIDTH, vw - GUTTER * 2);
+
   if (!rect) {
     return {
       position: 'fixed' as const,
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: `${TOOLTIP_WIDTH}px`,
+      width: `${width}px`,
+      maxHeight: `${vh - GUTTER * 2}px`,
     };
   }
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  let left = rect.left + rect.width / 2 - TOOLTIP_WIDTH / 2;
+
+  let left = rect.left + rect.width / 2 - width / 2;
   let top = rect.bottom + 20;
 
-  if (left < 16) left = 16;
-  if (left + TOOLTIP_WIDTH > vw - 16) left = vw - TOOLTIP_WIDTH - 16;
+  if (left + width > vw - GUTTER) left = vw - width - GUTTER;
+  if (left < GUTTER) left = GUTTER;
   if (top + TOOLTIP_EST_HEIGHT > vh) top = rect.top - 20 - TOOLTIP_EST_HEIGHT;
+  // Never above the top gutter either, which short landscape viewports hit.
+  if (top < GUTTER) top = GUTTER;
 
   return {
     position: 'fixed' as const,
     top: `${top}px`,
     left: `${left}px`,
-    width: `${TOOLTIP_WIDTH}px`,
+    width: `${width}px`,
+    maxHeight: `${vh - top - GUTTER}px`,
   };
 }
 
 export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>(() =>
     getTooltipPosition(null)
@@ -103,6 +120,44 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
   const handleClose = useCallback(() => {
     void onClose();
   }, [onClose]);
+
+  /* The tour is a dialog over a spotlit page, so it takes the same guarantees
+     as every other overlay: Escape through the shared stack, a focus trap,
+     focus returned on close, and the page behind it locked. */
+  useOverlayBehaviour(isOpen, handleClose, panelRef);
+
+  /* Advancing a step replaces the content under the dialog, including whatever
+     was focused — the Next button that was just pressed. Without this, focus
+     lands on <body> until the next Tab pulls it back. Put it on the new step's
+     first control instead, so the keyboard carries on where it was. */
+  useEffect(() => {
+    if (!isOpen) return;
+    const node = panelRef.current;
+    if (!node) return;
+    /* The outgoing step animates away before the new one mounts, so this polls
+       briefly rather than guessing a delay: focusing during the exit would
+       land on content that is about to be removed, and focus would fall out
+       again. */
+    let tries = 0;
+    const id = window.setInterval(() => {
+      tries += 1;
+      /* Wait for THIS step's panel. While the previous one animates out it is
+         still in the tree, and focusing its buttons just loses focus again a
+         moment later when it unmounts. */
+      const incoming = node.querySelector<HTMLElement>(`[data-step="${currentStep}"]`);
+      if (incoming) {
+        if (incoming.contains(document.activeElement)) { window.clearInterval(id); return; }
+        const first = incoming.querySelector<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        );
+        (first ?? node).focus();
+        window.clearInterval(id);
+        return;
+      }
+      if (tries > 25) { node.focus(); window.clearInterval(id); }
+    }, 40);
+    return () => window.clearInterval(id);
+  }, [isOpen, currentStep]);
 
   useLayoutEffect(() => {
     if (!isOpen || typeof document === 'undefined') return;
@@ -139,8 +194,9 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
-      else if (e.key === 'ArrowRight' && currentStep < tourSteps.length - 1) {
+      /* Escape belongs to the shared overlay behaviour, which only reacts while
+         this is the frontmost layer. */
+      if (e.key === 'ArrowRight' && currentStep < tourSteps.length - 1) {
         setCurrentStep((s) => s + 1);
       } else if (e.key === 'ArrowLeft' && currentStep > 0) {
         setCurrentStep((s) => s - 1);
@@ -177,7 +233,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-9999"
       >
-        <div className="absolute inset-0 bg-slate-950/70" onClick={handleClose} aria-hidden />
+        <div className="absolute inset-0 bg-[rgba(25,28,27,1)]/70" onClick={handleClose} aria-hidden />
 
         {spotlightRect && (
           <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
@@ -207,34 +263,44 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="absolute pointer-events-none rounded-2xl"
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="absolute pointer-events-none rounded-lg"
             style={{
               top: spotlightRect.top,
               left: spotlightRect.left,
               width: spotlightRect.width,
               height: spotlightRect.height,
-              boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.4), 0 0 24px 8px rgba(99, 102, 241, 0.2)',
+              boxShadow: '0 0 0 4px rgba(14, 89, 85, 0.45), 0 0 24px 8px rgba(14, 89, 85, 0.22)',
             }}
             aria-hidden
           />
         )}
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, y: 16, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.96 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            style={tooltipStyle}
-            className="z-10"
-            role="dialog"
-            aria-labelledby="onboarding-title"
-            aria-describedby="onboarding-body"
-          >
-            <div className="bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
-              <div className="px-6 pt-5 pb-4 border-b border-slate-100">
+        {/* The dialog node is stable across steps. It used to be keyed by
+            currentStep, so Next and Back remounted the very element the focus
+            trap had captured, leaving the trap pointing at a detached node.
+            Only the step's contents animate now. */}
+        <div
+          ref={panelRef}
+          style={tooltipStyle}
+          className="z-10 flex flex-col focus:outline-none"
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          aria-labelledby="onboarding-title"
+          aria-describedby="onboarding-body"
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+              data-step={currentStep}
+              className="flex min-h-0 flex-col bg-surface rounded-lg shadow-e3 overflow-hidden"
+            >
+              <div className="px-6 pt-5 pb-4 border-b border-hairline">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     {tourSteps.map((_, index) => (
@@ -242,37 +308,45 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                         key={index}
                         type="button"
                         onClick={() => setCurrentStep(index)}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          index === currentStep
-                            ? 'w-6 bg-indigo-500'
-                            : index < currentStep
-                              ? 'bg-indigo-300'
-                              : 'bg-slate-200'
-                        }`}
+                        className="flex h-6 w-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                         aria-label={`Go to step ${index + 1}`}
-                      />
+                        aria-current={index === currentStep ? 'step' : undefined}
+                      >
+                        {/* The dot is the picture; the button around it is the
+                            target. A 2px control is not something anyone can hit. */}
+                        <span
+                          aria-hidden
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            index === currentStep
+                              ? 'w-5 bg-accent'
+                              : index < currentStep
+                                ? 'w-2 bg-accent-soft'
+                                : 'w-2 bg-surface-2'
+                          }`}
+                        />
+                      </button>
                     ))}
                   </div>
-                  <span className="text-xs font-medium text-slate-400">
+                  <span className="text-xs font-medium text-ink-3">
                     {currentStep + 1} / {tourSteps.length}
                   </span>
                 </div>
                 <div className="flex items-start gap-4">
                   <div
-                    className={`w-12 h-12 ${step.iconBg} rounded-xl flex items-center justify-center shrink-0 shadow-lg`}
+                    className={`w-12 h-12 ${step.iconBg} rounded-md flex items-center justify-center shrink-0 shadow-lg`}
                   >
                     <StepIcon className="w-6 h-6 text-white" aria-hidden />
                   </div>
-                  <h3 id="onboarding-title" className="text-lg font-semibold text-slate-900">
+                  <h3 id="onboarding-title" className="text-lg font-semibold text-ink">
                     {step.title}
                   </h3>
                 </div>
               </div>
-              <div id="onboarding-body" className="px-6 py-5">
-                <p className="text-sm text-slate-600 leading-relaxed">{step.body}</p>
+              <div id="onboarding-body" className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                <p className="text-sm text-ink-2 leading-relaxed">{step.body}</p>
                 {step.hint && (
-                  <p className="mt-3 text-xs text-slate-400 italic flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                  <p className="mt-3 text-xs text-ink-3 italic flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-surface-2" />
                     {step.hint}
                   </p>
                 )}
@@ -289,7 +363,7 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                       variant="ghost"
                       size="sm"
                       onClick={handleClose}
-                      className="text-slate-400"
+                      className="text-ink-3"
                     >
                       Skip tour
                     </Button>
@@ -319,16 +393,16 @@ export function OnboardingTour({ isOpen, onClose, onAction }: OnboardingTourProp
                   )}
                 </div>
               </div>
-            </div>
-            {spotlightRect && (
-              <div
-                className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-lg"
-                style={{ boxShadow: '-2px -2px 4px rgba(0,0,0,0.05)' }}
-                aria-hidden
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+          {spotlightRect && (
+            <div
+              className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-surface rotate-45 shadow-lg"
+              style={{ boxShadow: '-2px -2px 4px rgba(0,0,0,0.05)' }}
+              aria-hidden
+            />
+          )}
+        </div>
       </motion.div>
     </AnimatePresence>
   );

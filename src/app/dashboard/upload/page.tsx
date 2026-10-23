@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { accountListsApi } from '@/features/accountLists/accountLists.api';
-import { Button, PageHeader, PageTransition } from '@/components/ui';
+import { Button, PageHeader, PageTransition, Input, buttonClasses } from '@/components/ui';
 import { CloudUpload, Check, Info, FileSpreadsheet, ArrowRight, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -101,19 +101,18 @@ export default function UploadPage() {
       />
         <PageTransition>
           <form onSubmit={handleSubmit}>
-            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-card overflow-hidden">
-              {/* Gradient Header */}
-              <div className="bg-linear-to-br from-indigo-600 via-indigo-500 to-violet-500 px-5 sm:px-8 py-5 sm:py-6 relative overflow-hidden">
-                <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full" />
-                <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-white/5 rounded-full" />
-                <div className="relative flex items-center gap-4">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/30">
-                    <CloudUpload className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-base sm:text-lg font-bold text-white">Import Accounts</h2>
-                    <p className="text-indigo-200 text-xs sm:text-sm">Upload a spreadsheet with your account names</p>
-                  </div>
+            <div className="bg-surface rounded-lg border border-hairline shadow-card overflow-hidden">
+              {/* Quiet section header on the card's own surface, matching the
+                  rest of the app; the accent is carried by the icon. */}
+              <div className="flex items-center gap-3 border-b border-hairline bg-sunken px-5 py-3.5 sm:px-8">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-accent-soft">
+                  <CloudUpload className="h-[18px] w-[18px] text-accent-ink" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-[15px] font-bold text-ink sm:text-[17px]">Import Accounts</h2>
+                  <p className="text-xs text-ink-3 sm:text-[12.5px]">
+                    Upload a spreadsheet with your account names
+                  </p>
                 </div>
               </div>
 
@@ -124,23 +123,28 @@ export default function UploadPage() {
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 shadow-md transition-all duration-300 ${
                       listName.trim()
-                        ? 'bg-linear-to-br from-emerald-400 to-emerald-500 text-white shadow-emerald-500/20'
-                        : 'bg-linear-to-br from-indigo-500 to-violet-500 text-white shadow-indigo-500/20'
+                        ? 'bg-ok text-white'
+                        : 'bg-accent text-white'
                     }`}>
                       {listName.trim() ? <Check className="w-4 h-4" /> : '1'}
                     </div>
-                    <div className={`w-px flex-1 mt-3 transition-colors duration-300 ${listName.trim() ? 'bg-emerald-200' : 'bg-slate-200'}`} />
+                    <div className={`w-px flex-1 mt-3 transition-colors duration-300 ${listName.trim() ? 'bg-ok-soft' : 'bg-surface-2'}`} />
                   </div>
                   <div className="flex-1 pb-8">
-                    <h3 className="font-semibold text-slate-900 mb-0.5">Name your list</h3>
-                    <p className="text-sm text-slate-500 mb-4">Choose a descriptive name for easy identification</p>
-                    <input
+                    <h3 id="upload-name-step" className="font-semibold text-ink mb-0.5">Name your list</h3>
+                    <p id="upload-name-hint" className="text-sm text-ink-3 mb-4">Choose a descriptive name for easy identification</p>
+                    {/* The shared field, so this one gets the same 44px height,
+                        16px type and focus treatment as every other input. The
+                        step heading is the field's name: a placeholder is not
+                        one, and it disappears as soon as anything is typed. */}
+                    <Input
                       type="text"
                       required
+                      aria-labelledby="upload-name-step"
+                      aria-describedby="upload-name-hint"
                       value={listName}
                       onChange={(e) => setListName(e.target.value)}
                       placeholder="e.g., Q1 2025 Target Accounts"
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-sm transition-all text-slate-900 placeholder-slate-400 bg-white"
                     />
                   </div>
                 </div>
@@ -150,15 +154,15 @@ export default function UploadPage() {
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 shadow-md transition-all duration-300 ${
                       file
-                        ? 'bg-linear-to-br from-emerald-400 to-emerald-500 text-white shadow-emerald-500/20'
-                        : 'bg-linear-to-br from-indigo-500 to-violet-500 text-white shadow-indigo-500/20'
+                        ? 'bg-ok text-white'
+                        : 'bg-accent text-white'
                     }`}>
                       {file ? <Check className="w-4 h-4" /> : '2'}
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-slate-900 mb-0.5">Choose your file</h3>
-                    <p className="text-sm text-slate-500 mb-4">Drag and drop or browse for a spreadsheet</p>
+                    <h3 className="font-semibold text-ink mb-0.5">Choose your file</h3>
+                    <p className="text-sm text-ink-3 mb-4">Drag and drop or browse for a spreadsheet</p>
 
                     {/* Drop Zone */}
                     <div
@@ -166,60 +170,74 @@ export default function UploadPage() {
                       onDragLeave={handleDrag}
                       onDragOver={handleDrag}
                       onDrop={handleDrop}
-                      className={`border-2 border-dashed rounded-xl text-center transition-all duration-200 ${
+                      className={`border-2 border-dashed rounded-md text-center transition-all duration-200 ${
                         dragActive
-                          ? 'border-indigo-500 bg-indigo-50/80 shadow-lg shadow-indigo-500/10 p-6 sm:p-10'
+                          ? 'border-accent bg-accent-soft/80 shadow-e2 p-6 sm:p-10'
                           : file
-                            ? 'border-emerald-200 bg-emerald-50/30 p-4'
-                            : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50/50 p-6 sm:p-10'
+                            ? 'border-ok bg-ok-soft/30 p-4'
+                            : 'border-hairline hover:border-accent hover:bg-sunken/50 p-6 sm:p-10'
                       }`}
                     >
                       {file ? (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, ease: 'easeOut' }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
                           className="flex items-center gap-3 sm:gap-4"
                         >
                           <motion.div
-                            className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-emerald-400 to-emerald-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20"
+                            className="w-10 h-10 sm:w-12 sm:h-12 bg-ok rounded-md flex items-center justify-center shrink-0 shadow-e2"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.06 }}
                           >
                             <Check className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                           </motion.div>
                           <div className="text-left flex-1 min-w-0">
-                            <p className="font-semibold text-slate-900 truncate text-sm sm:text-base">{file.name}</p>
-                            <p className="text-xs sm:text-sm text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
+                            <p className="font-semibold text-ink truncate text-sm sm:text-base">{file.name}</p>
+                            <p className="text-xs sm:text-sm text-ink-3">{(file.size / 1024).toFixed(1)} KB</p>
                           </div>
                           <button
                             type="button"
                             onClick={() => setFile(null)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-3 hover:text-danger hover:bg-danger-soft transition-colors shrink-0"
                           >
                             <X className="w-4 h-4" />
                           </button>
                         </motion.div>
                       ) : (
                         <div>
-                          <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/20">
+                          <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4 shadow-e2">
                             <CloudUpload className="w-7 h-7 text-white" />
                           </div>
-                          <p className="text-base font-semibold text-slate-900 mb-1">
+                          <p className="text-base font-semibold text-ink mb-1">
                             Drag and drop your file here
                           </p>
-                          <p className="text-sm text-slate-400 mb-4">or</p>
-                          <label className="cursor-pointer inline-flex items-center justify-center px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-500 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-indigo-600 transition-all duration-200 shadow-lg shadow-indigo-500/25">
+                          <p className="text-sm text-ink-3 mb-4">or</p>
+                          {/* A label, not a button, because it wraps the file input — so it borrows
+                              the shared button classes rather than keeping its own. The palette
+                              pass had stripped its background and left white text on cream. */}
+                          {/* The input is visually hidden but still focusable:
+                              display:none would take it out of the tab order
+                              entirely, and then no keyboard could ever open the
+                              file chooser. The label carries the button styling
+                              and shows the focus ring on the input's behalf. */}
+                          <label
+                            className={buttonClasses(
+                              'primary',
+                              'md',
+                              'file-trigger relative cursor-pointer',
+                            )}
+                          >
                             Browse Files
                             <input
                               type="file"
                               onChange={handleFileInput}
                               accept=".csv,.xlsx,.xls"
-                              className="hidden"
+                              className="sr-only"
                             />
                           </label>
-                          <p className="text-xs text-slate-400 mt-4">
+                          <p className="text-xs text-ink-3 mt-4">
                             Supported formats: CSV, XLSX, XLS
                           </p>
                         </div>
@@ -229,14 +247,14 @@ export default function UploadPage() {
                 </div>
 
                 {/* Info Banner */}
-                <div className="mt-6 p-3.5 sm:p-4 bg-linear-to-r from-sky-50 to-blue-50 border border-sky-200/60 rounded-xl">
+                <div className="mt-6 p-3.5 sm:p-4 border border-accent rounded-md">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-linear-to-br from-sky-400 to-blue-500 rounded-lg flex items-center justify-center shrink-0 shadow-md shadow-sky-500/15">
+                    <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center shrink-0 shadow-e2">
                       <Info className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-sky-900 text-sm mb-0.5">File Format</p>
-                      <p className="text-sky-700/80 text-xs leading-relaxed">
+                      <p className="font-medium text-accent text-sm mb-0.5">File Format</p>
+                      <p className="text-accent text-xs leading-relaxed">
                         Your file should have account names in the first column. Headers are optional — only the first column is imported.
                       </p>
                     </div>
@@ -251,7 +269,7 @@ export default function UploadPage() {
                     variant="primary"
                     size="lg"
                     isLoading={uploading}
-                    className={`w-full transition-all duration-300 ${isReady ? 'shadow-lg shadow-indigo-500/25' : ''}`}
+                    className={`w-full transition-all duration-300 ${isReady ? ' shadow-e2' : ''}`}
                   >
                     <FileSpreadsheet className="w-4 h-4" />
                     Upload Account List

@@ -1,5 +1,14 @@
 'use client';
 
+/**
+ * International dial-code picker.
+ *
+ * No longer used by signup, activation or profile: those are US-only and show
+ * a fixed +1 instead (see UsPhoneInput). Kept, with its export, because the
+ * list and the picker are the whole of what adding a second country would
+ * need — deleting them would make that a rewrite rather than a reconnection.
+ */
+
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 
@@ -115,26 +124,26 @@ export function CountryCodeSelect({ value, onChange }: CountryCodeSelectProps) {
           setIsOpen(!isOpen);
           setSearch('');
         }}
-        className="flex items-center gap-1.5 w-[110px] px-3 py-2.5 text-sm text-slate-900 bg-white border border-slate-200 rounded-xl hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+        className="flex items-center gap-1.5 w-[110px] px-3 py-2.5 text-sm text-ink bg-surface border border-hairline rounded-md hover:border-control focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
       >
         <span className="text-base leading-none">{selected.flag}</span>
         <span className="font-medium">{selected.code}</span>
-        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-ink-3 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-surface border border-hairline rounded-md shadow-e2 overflow-hidden">
           {/* Search */}
-          <div className="p-2 border-b border-slate-100">
+          <div className="p-2 border-b border-hairline">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-3" />
               <input
                 ref={searchRef}
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search country or code..."
-                className="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 border border-slate-100 rounded-lg placeholder:text-slate-400 focus:outline-none focus:border-indigo-300 focus:bg-white transition-all"
+                className="w-full pl-8 pr-3 py-2 text-sm bg-sunken border border-hairline rounded-lg placeholder:text-ink-3 focus:outline-none focus:border-accent focus:bg-surface transition-all"
               />
             </div>
           </div>
@@ -142,7 +151,7 @@ export function CountryCodeSelect({ value, onChange }: CountryCodeSelectProps) {
           {/* Options */}
           <div className="max-h-48 overflow-y-auto">
             {filtered.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-slate-400 text-center">No results</p>
+              <p className="px-4 py-3 text-sm text-ink-3 text-center">No results</p>
             ) : (
               filtered.map((c, i) => (
                 <button
@@ -153,13 +162,13 @@ export function CountryCodeSelect({ value, onChange }: CountryCodeSelectProps) {
                     setIsOpen(false);
                     setSearch('');
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left hover:bg-indigo-50 transition-colors ${
-                    c.code === value ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700'
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left hover:bg-accent-soft transition-colors ${
+                    c.code === value ? 'bg-accent-soft text-accent-ink' : 'text-ink-2'
                   }`}
                 >
                   <span className="text-base leading-none">{c.flag}</span>
                   <span className="flex-1 truncate">{c.name}</span>
-                  <span className="text-slate-400 font-mono text-xs">{c.code}</span>
+                  <span className="text-ink-3 font-mono text-xs">{c.code}</span>
                 </button>
               ))
             )}

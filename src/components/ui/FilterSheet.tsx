@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { useEffect } from 'react';
 import { Button } from './Button';
 import { Dropdown } from './Dropdown';
+import { Modal } from './Modal';
 
 interface FilterSheetOption {
   value: string;
@@ -40,61 +40,74 @@ export function FilterSheet({
   onClear,
   activeCount,
 }: FilterSheetProps) {
-  const [animate, setAnimate] = useState(false);
+  // Escape, scroll lock, focus trap, focus return and the entry animation all
+  // come from Modal's sheet variant now.
 
+  /*
+   * Close when the inline tablet layout takes over.
+   *
+   * The sheet renders through a portal on document.body, and a portal is not a
+   * DOM descendant of this wrapper — so the `md:hidden` class could never hide
+   * it. Resizing from 700 to 820 with the sheet open left the dialog mounted
+   * above the page, the body still scroll-locked, and the same two filters
+   * present twice: once in the stranded sheet and once in the toolbar that had
+   * just appeared.
+   *
+   * Closing here unmounts the sheet and any listbox inside it, which releases
+   * the scroll lock and returns focus through Modal's own cleanup. The filter
+   * values live in the parent, so nothing is lost: the toolbar controls come up
+   * showing exactly what the sheet was showing.
+   */
   useEffect(() => {
-    if (!isOpen) return;
-    const frame = requestAnimationFrame(() => setAnimate(true));
-    // Reset on close so the next open animates in again.
+    if (!isOpen || typeof window === 'undefined' || !window.matchMedia) return;
+    const inline = window.matchMedia('(min-width: 768px)');
+    if (inline.matches) {
+      onClose();
+      return;
+    }
+    const settle = () => {
+      if (window.matchMedia('(min-width: 768px)').matches) onClose();
+    };
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) onClose();
+    };
+    // Both signals: the media query is the precise one, and a plain resize
+    // listener covers environments where an emulated viewport change does not
+    // deliver a matchMedia event.
+    inline.addEventListener('change', onChange);
+    window.addEventListener('resize', settle);
     return () => {
-      cancelAnimationFrame(frame);
-      setAnimate(false);
+      inline.removeEventListener('change', onChange);
+      window.removeEventListener('resize', settle);
     };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:hidden">
-      <div
-        className={`absolute inset-0 bg-slate-900/50 transition-opacity duration-200 ${
-          animate ? 'opacity-100' : 'opacity-0'
-        }`}
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Filter accounts"
-        className={`relative w-full bg-white rounded-t-2xl shadow-2xl transition-transform duration-200 ${
-          animate ? 'translate-y-0' : 'translate-y-full'
-        }`}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    // Matches the Filters trigger exactly (md:hidden). It used to be sm:hidden,
+    // so between 640 and 767 the trigger was visible but opened nothing. The
+    // effect above is what actually dismisses it, because CSS cannot reach the
+    // portal this renders through.
+    <div className="md:hidden">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Filters"
+        variant="sheet"
+        showClose
+        footer={
+          <>
+            <Button variant="outline" className="flex-1" onClick={onClear} disabled={activeCount === 0}>
+              Clear
+            </Button>
+            <Button variant="primary" className="flex-1" onClick={onClose}>
+              Done
+            </Button>
+          </>
+        }
       >
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100">
-          <h2 className="text-base font-semibold text-slate-900">Filters</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close filters"
-            className="w-9 h-9 -mr-2 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="px-5 py-4 space-y-4">
+        <div className="space-y-4 pb-[env(safe-area-inset-bottom)]">
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-slate-500 mb-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.07em] text-ink-3">
               Company
             </label>
             <Dropdown
@@ -106,7 +119,7 @@ export function FilterSheet({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-slate-500 mb-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.07em] text-ink-3">
               Matches
             </label>
             <Dropdown
@@ -117,21 +130,7 @@ export function FilterSheet({
             />
           </div>
         </div>
-
-        <div className="flex gap-3 px-5 pb-5 pt-1">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={onClear}
-            disabled={activeCount === 0}
-          >
-            Clear
-          </Button>
-          <Button variant="primary" className="flex-1" onClick={onClose}>
-            Done
-          </Button>
-        </div>
-      </div>
+      </Modal>
     </div>
   );
 }

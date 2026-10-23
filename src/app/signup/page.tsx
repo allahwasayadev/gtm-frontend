@@ -4,11 +4,13 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import type { UserRole } from '@/features/auth/types';
-import { Button, Input, Dropdown, LoadingScreen, CountryCodeSelect } from '@/components/ui';
+import { Button, Input, Dropdown, LoadingScreen, UsPhoneInput } from '@/components/ui';
 import { motion } from 'framer-motion';
-import { User, Building2, Mail, Lock, ArrowRight, Check, Phone } from 'lucide-react';
+import { User, Building2, Mail, Lock, ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
+import { toUsE164, usPhoneValidationError, US_DIAL_CODE } from '@/lib/phone';
+import { cancelWebOtp, rearmWebOtp } from '@/lib/web-otp';
 
 
 const features = [
@@ -38,8 +40,8 @@ function SignupContent() {
     password: string;
     confirmPassword: string;
     role: UserRole | null;
-    countryCode: string;
-    phoneLocal: string;
+    /** The ten national digits. +1 is fixed by the field and added on submit. */
+    phoneDigits: string;
     smsConsent: boolean;
   }>({
     name: '',
@@ -48,8 +50,7 @@ function SignupContent() {
     password: '',
     confirmPassword: '',
     role: null,
-    countryCode: '+1',
-    phoneLocal: '',
+    phoneDigits: '',
     smsConsent: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,14 +89,10 @@ function SignupContent() {
 
     // Phone is REQUIRED: the activation code is sent by SMS and there is no
     // email or voice alternative, so an account cannot be created without one.
-    const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
-    if (!phoneDigits) {
-      newErrors.phone = 'A mobile number is required to verify your account';
-    } else {
-      const fullPhone = `${formData.countryCode}${phoneDigits}`;
-      if (!/^\+[1-9]\d{7,14}$/.test(fullPhone)) {
-        newErrors.phone = 'Enter a valid mobile number';
-      }
+    // US only, so the field owns the +1 and we validate the ten digits.
+    const phoneError = usPhoneValidationError(formData.phoneDigits);
+    if (phoneError) {
+      newErrors.phone = phoneError;
     }
 
     // Consent is likewise required, because SMS is the only way to activate.
@@ -116,10 +113,18 @@ function SignupContent() {
     }
 
     setIsSubmitting(true);
+    // Armed BEFORE signup is called, because signup is what sends the code
+    // and the message can beat the response — and the code screen — onto the
+    // device. A code collected now is held until that screen subscribes.
+    //
+    // Re-armed rather than armed: a previous failed attempt may have left a
+    // request, or a code, bound to a message that is no longer the one the
+    // user is waiting for.
+    rearmWebOtp();
     try {
       const selectedRole = formData.role as UserRole;
-      const phoneDigits = formData.phoneLocal.replace(/\D/g, '');
-      const phoneNumber = `${formData.countryCode}${phoneDigits}`;
+      // Canonical E.164. validateForm() has already established it is there.
+      const phoneNumber = toUsE164(formData.phoneDigits) as string;
 
       // Consent travels with the signup so the backend records when, where and
       // to what wording the user agreed — before anything is sent.
@@ -137,7 +142,8 @@ function SignupContent() {
       // sessionStorage. Nothing goes in the URL: the token is a credential.
       router.push('/verify-phone');
     } catch {
-      // Error is handled by AuthContext with toast
+      // No account, so no message. Error is handled by AuthContext with toast.
+      cancelWebOtp();
     } finally {
       setIsSubmitting(false);
     }
@@ -150,12 +156,12 @@ function SignupContent() {
   return (
     <div className="min-h-screen flex lg:h-screen lg:overflow-hidden">
       {/* Brand Panel — lg+ */}
-      <div className="hidden lg:flex lg:h-screen lg:w-120 xl:w-130 shrink-0 bg-linear-to-br from-indigo-600 via-indigo-700 to-violet-800 relative overflow-hidden flex-col justify-center px-12 xl:px-16">
+      <div className="hidden lg:flex lg:h-screen lg:w-120 xl:w-130 shrink-0 bg-accent relative overflow-hidden flex-col justify-center px-12 xl:px-16">
         {/* Decorative elements */}
-        <div className="absolute top-20 -left-16 w-64 h-64 bg-white/5 rounded-full" />
-        <div className="absolute bottom-20 right-10 w-48 h-48 bg-white/5 rounded-full" />
-        <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl" />
-        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 bg-violet-400/20 rounded-full blur-2xl" />
+        <div className="absolute top-20 -left-16 w-64 h-64 bg-surface/5 rounded-full" />
+        <div className="absolute bottom-20 right-10 w-48 h-48 bg-surface/5 rounded-full" />
+        <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-white/30/20 rounded-full blur-2xl" />
+        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 bg-accent rounded-full blur-2xl" />
 
         <div className="relative">
           <Link href="/" className="inline-block mb-8">
@@ -165,17 +171,17 @@ function SignupContent() {
           <h1 className="text-3xl xl:text-4xl font-bold text-white mb-3">
             Join Ovrlap
           </h1>
-          <p className="text-indigo-200 text-lg mb-12 max-w-sm leading-relaxed">
+          <p className="text-accent-soft text-lg mb-12 max-w-sm leading-relaxed">
             Start finding account overlaps with your go-to-market partners today.
           </p>
 
           <div className="space-y-4">
             {features.map((feature, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
-                  <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <div className="w-7 h-7 bg-surface/10 rounded-lg flex items-center justify-center shrink-0">
+                  <Check className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="text-indigo-100 text-sm">{feature}</span>
+                <span className="text-white/90 text-sm">{feature}</span>
               </div>
             ))}
           </div>
@@ -183,36 +189,26 @@ function SignupContent() {
       </div>
 
       {/* Form Panel */}
-      <div className="flex-1 min-h-screen lg:h-screen bg-linear-to-br from-sky-50 via-white to-indigo-50 lg:bg-slate-50/80 flex items-center lg:items-start justify-center p-4 sm:p-8 lg:overflow-y-auto">
+      <div className="flex-1 min-h-screen lg:h-screen bg-canvas lg:bg-sunken/80 flex items-center lg:items-start justify-center p-4 sm:p-8 lg:overflow-y-auto">
         <motion.div
           className="w-full max-w-md lg:py-8"
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          {/* Mobile/Tablet Logo + Title */}
-          <div className="text-center mb-8 lg:hidden">
-            <Link href="/" className="inline-block group">
-              <motion.div
-                className="flex justify-center mb-4"
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
-              >
-                <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-14 w-auto" />
-              </motion.div>
+          {/* One heading, same as the sign-in page: the logo only appears
+              below lg, where the brand panel is not on screen to carry it. */}
+          <div className="mb-8 text-center lg:text-left">
+            <Link href="/" className="mb-4 inline-block lg:hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ovrlap-logo.svg" alt="Ovrlap" className="h-14 w-auto" />
             </Link>
-            <p className="text-slate-500">Create your account to get started</p>
-          </div>
-
-          {/* Desktop Heading */}
-          <div className="hidden lg:block mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Get started</h2>
-            <p className="text-slate-500">Create your account in seconds</p>
+            <h2 className="mb-2 text-2xl font-bold text-ink">Get started</h2>
+            <p className="text-ink-3">Create your account in seconds</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
+          <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
                 label="Full Name"
@@ -243,8 +239,8 @@ function SignupContent() {
               />
 
               <div className="w-full">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Role<span className="text-red-500 ml-1">*</span>
+                <label className="block text-sm font-medium text-ink-2 mb-1.5">
+                  Role<span className="text-danger ml-1">*</span>
                 </label>
                 <Dropdown
                   aria-label="Role"
@@ -263,10 +259,10 @@ function SignupContent() {
                   }}
                 />
                 {errors.role && (
-                  <p className="mt-1.5 text-sm text-red-600">{errors.role}</p>
+                  <p className="mt-1.5 text-sm text-danger">{errors.role}</p>
                 )}
                 {!errors.role && (
-                  <p className="mt-1.5 text-sm text-slate-500">This helps us show the right labels and connection context.</p>
+                  <p className="mt-1.5 text-sm text-ink-3">This helps us show the right labels and connection context.</p>
                 )}
               </div>
 
@@ -316,68 +312,40 @@ function SignupContent() {
                 autoComplete="new-password"
               />
 
-              {/* Phone Number */}
+              {/* Phone Number — US only, so no country picker: a fixed +1
+                  and the ten remaining digits. */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Mobile Number <span className="text-red-500">*</span>
-                  <span className="block font-normal text-xs text-slate-500 mt-0.5">
-                    We text a code here to activate your account.
-                  </span>
-                </label>
-                <div className="flex gap-2">
-                  <CountryCodeSelect
-                    value={formData.countryCode}
-                    onChange={(code) => {
-                      setFormData({ ...formData, countryCode: code });
-                      setErrors({ ...errors, phone: '' });
-                    }}
-                  />
-                  <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <Phone className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      maxLength={15}
-                      value={formData.phoneLocal}
-                      onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, '').slice(0, 15);
-                        setFormData({ ...formData, phoneLocal: digits });
-                        setErrors({ ...errors, phone: '' });
-                      }}
-                      placeholder="5551234567"
-                      className={`block w-full pl-10 pr-4 py-2.5 text-sm text-slate-900 bg-white border rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-white focus:shadow-sm transition-all ${
-                        errors.phone
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                          : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20'
-                      }`}
-                      autoComplete="tel-national"
-                    />
-                  </div>
-                </div>
-                {errors.phone && (
-                  <p className="mt-1.5 text-sm text-red-600">{errors.phone}</p>
-                )}
+                <UsPhoneInput
+                  id="signup-phone"
+                  label="Mobile Number"
+                  required
+                  value={formData.phoneDigits}
+                  onChange={(digits) => {
+                    setFormData({ ...formData, phoneDigits: digits });
+                    setErrors({ ...errors, phone: '' });
+                  }}
+                  error={errors.phone}
+                  helperText={`We text a code to this ${US_DIAL_CODE} number to activate your account.`}
+                />
               </div>
 
               {/* SMS consent (A2P 10DLC). REQUIRED: SMS is the only activation channel. */}
-              <label className="flex items-start gap-3 bg-slate-50 rounded-xl p-4 border border-slate-100 cursor-pointer select-none">
+              <label className="flex items-start gap-3 bg-sunken rounded-md p-4 border border-hairline cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={formData.smsConsent}
                   onChange={(e) => setFormData({ ...formData, smsConsent: e.target.checked })}
-                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 accent-indigo-600"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-control text-accent focus:ring-accent accent-[#0E5955]"
                 />
                 <div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-ink-2 leading-relaxed">
                     {SMS_CONSENT_TEXT}
                   </p>
                   <div className="flex gap-3 mt-2">
                     <Link
                       href="/terms"
                       target="_blank"
-                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                      className="text-xs font-medium text-accent hover:text-accent-ink transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Terms
@@ -385,7 +353,7 @@ function SignupContent() {
                     <Link
                       href="/privacy"
                       target="_blank"
-                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                      className="text-xs font-medium text-accent hover:text-accent-ink transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Privacy Policy
@@ -393,7 +361,7 @@ function SignupContent() {
                     <Link
                       href="/sms-opt-in"
                       target="_blank"
-                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                      className="text-xs font-medium text-accent hover:text-accent-ink transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
                       SMS Terms
@@ -403,7 +371,7 @@ function SignupContent() {
               </label>
 
               {errors.smsConsent && (
-                <p className="-mt-2 text-sm text-red-600">{errors.smsConsent}</p>
+                <p className="-mt-2 text-sm text-danger">{errors.smsConsent}</p>
               )}
 
               <Button
@@ -411,19 +379,19 @@ function SignupContent() {
                 variant="primary"
                 size="lg"
                 isLoading={isSubmitting}
-                className="w-full shadow-lg shadow-indigo-500/25"
+                className="w-full shadow-e2"
               >
                 Create Account
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-slate-100">
-              <p className="text-center text-sm text-slate-500">
+            <div className="mt-6 pt-6 border-t border-hairline">
+              <p className="text-center text-sm text-ink-3">
                 Already have an account?{' '}
                 <Link
                   href="/login"
-                  className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="font-semibold text-accent hover:text-accent-ink transition-colors"
                 >
                   Sign in
                 </Link>
@@ -431,7 +399,7 @@ function SignupContent() {
             </div>
           </div>
 
-          <p className="text-center text-xs text-slate-400 mt-8">
+          <p className="text-center text-xs text-ink-3 mt-8">
             By creating an account, you agree to our Terms of Service and Privacy Policy
           </p>
         </motion.div>

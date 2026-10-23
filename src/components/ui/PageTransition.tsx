@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
-import { ReactNode } from 'react';
+import { Children, ReactNode } from 'react';
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -9,11 +9,11 @@ interface PageTransitionProps {
 }
 
 const pageVariants: Variants = {
-  hidden: { opacity: 0, y: 18 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] },
   },
 };
 
@@ -42,32 +42,45 @@ interface StaggerListProps {
   staggerDelay?: number;
 }
 
+/* The interval alone is not enough: at 0.03s a hundred rows still take three
+   seconds to finish arriving. The whole reveal is budgeted instead, so the last
+   row is on screen within TOTAL_REVEAL however long the list is. */
+const TOTAL_REVEAL = 0.24;
+
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
-  visible: (staggerDelay: number) => ({
+  visible: ({ staggerDelay, count }: { staggerDelay: number; count: number }) => ({
     opacity: 1,
     transition: {
-      staggerChildren: staggerDelay,
-      delayChildren: 0.05,
+      staggerChildren: Math.min(staggerDelay, TOTAL_REVEAL / Math.max(count, 1)),
+      delayChildren: 0,
     },
   }),
 };
 
 const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 14 },
+  hidden: { opacity: 0, y: 6 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.18, ease: [0.25, 0.1, 0.25, 1] },
   },
 };
 
-export function StaggerList({ children, className = '', staggerDelay = 0.06 }: StaggerListProps) {
+export function StaggerList({ children, className = '', staggerDelay = 0.03 }: StaggerListProps) {
+  const reduce = useReducedMotion();
+
+  // Framer Motion animates through inline transforms, which CSS cannot switch
+  // off, so the reduced-motion branch has to be taken here in JS.
+  if (reduce) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       initial="hidden"
       animate="visible"
-      custom={staggerDelay}
+      custom={{ staggerDelay, count: Children.count(children) }}
       variants={staggerContainer}
       className={className}
     >
@@ -77,6 +90,12 @@ export function StaggerList({ children, className = '', staggerDelay = 0.06 }: S
 }
 
 export function StaggerItem({ children, className = '' }: { children: ReactNode; className?: string }) {
+  const reduce = useReducedMotion();
+
+  if (reduce) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div variants={staggerItem} className={className}>
       {children}
@@ -99,10 +118,10 @@ export function FadeIn({ children, className = '', delay = 0, direction = 'up' }
   }
 
   const offsets = {
-    up: { y: 20 },
-    down: { y: -20 },
-    left: { x: 20 },
-    right: { x: -20 },
+    up: { y: 8 },
+    down: { y: -8 },
+    left: { x: 8 },
+    right: { x: -8 },
     none: {},
   };
 
@@ -110,7 +129,7 @@ export function FadeIn({ children, className = '', delay = 0, direction = 'up' }
     <motion.div
       initial={{ opacity: 0, ...offsets[direction] }}
       animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration: 0.45, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{ duration: 0.2, delay: Math.min(delay, 0.06), ease: [0.25, 0.1, 0.25, 1] }}
       className={className}
     >
       {children}
@@ -119,34 +138,37 @@ export function FadeIn({ children, className = '', delay = 0, direction = 'up' }
 }
 
 export function LoadingScreen({ message = 'Loading...' }: { message?: string }) {
+  const reduce = useReducedMotion();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-        className="flex flex-col items-center gap-5"
-      > 
-        <div className="flex items-center gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-3 h-3 rounded-full bg-indigo-600"
-              animate={{
-                y: [0, -10, 0],
-                opacity: [0.4, 1, 0.4],
-              }}
-              transition={{
-                duration: 0.8,
-                repeat: Infinity,
-                delay: i * 0.15,
-                ease: 'easeInOut',
-              }}
-            />
-          ))}
+    <div className="min-h-screen flex items-center justify-center bg-canvas" role="status" aria-live="polite">
+      <div className="flex flex-col items-center gap-5">
+        <div className="flex items-center gap-1.5" aria-hidden="true">
+          {[0, 1, 2].map((i) =>
+            reduce ? (
+              // Still three dots, so the shape of the indicator is the same;
+              // they simply hold their position instead of bouncing.
+              <div key={i} className="w-3 h-3 rounded-full bg-accent" style={{ opacity: 0.4 + i * 0.3 }} />
+            ) : (
+              <motion.div
+                key={i}
+                className="w-3 h-3 rounded-full bg-accent"
+                animate={{
+                  y: [0, -10, 0],
+                  opacity: [0.4, 1, 0.4],
+                }}
+                transition={{
+                  duration: 0.8,
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                  ease: 'easeInOut',
+                }}
+              />
+            )
+          )}
         </div>
-        <p className="text-sm text-slate-500 font-medium">{message}</p>
-      </motion.div>
+        <p className="text-[15px] text-ink-2">{message}</p>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -8,6 +8,10 @@ import { Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, LoadingScreen } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
+import { normalizeResetIdentifier } from '@/lib/phone';
+import { isOtpComplete, toOtpDigits } from '@/lib/otp';
+import { cancelWebOtp, releaseWebOtp } from '@/lib/web-otp';
+import { useWebOtpCode } from '@/lib/use-web-otp';
 
 export default function ResetPasswordPage() {
   return (
@@ -39,6 +43,24 @@ function ResetPasswordContent() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /**
+   * Android Chrome may offer the texted code here too — but it only FILLS it.
+   *
+   * This form also sets a new password, so submitting it the moment a code
+   * arrives would send an empty or half-typed password and fail. web.dev's
+   * example submits because its form holds nothing else; this one does not.
+   * The request stops once a full code is present, or the page goes away.
+   */
+  useWebOtpCode({
+    enabled: !isSubmitting && !/^\d{6}$/.test(code),
+    onCode: (filled: string) => setCode(toOtpDigits(filled)),
+  });
+
+  // Leaving this screen drops the request. pagehide does not fire on a
+  // client-side route change. Released, not cancelled, so a code that
+  // arrived on the screen before cannot be thrown away by a remount.
+  useEffect(() => () => releaseWebOtp(), []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -58,7 +80,13 @@ function ResetPasswordContent() {
 
     setIsSubmitting(true);
     try {
-      await resetPassword(identifier.trim(), code.trim(), newPassword);
+      // Same canonicalisation as the screen before it, so a user who typed
+      // ten digits there and ten digits here reaches the same account.
+      await resetPassword(
+        normalizeResetIdentifier(identifier),
+        code.trim(),
+        newPassword,
+      );
       router.push('/login');
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Invalid or expired code.'));
@@ -68,60 +96,66 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-indigo-50 flex items-center justify-center p-4 sm:p-8">
+    <div className="min-h-screen bg-canvas flex items-center justify-center p-4 sm:p-8">
       <motion.div
         className="w-full max-w-md"
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.2 }}
       >
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-bold text-ink mb-2">
             Choose a new password
           </h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-ink-3 text-sm">
             Enter the 6-digit code we texted you.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-card border border-slate-200/60 px-5 py-6 sm:p-8">
+        <div className="bg-surface rounded-lg shadow-card border border-hairline px-5 py-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Email address or mobile number
-              </label>
               <Input
+                label="Email address or mobile number"
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="you@example.com or +1 555 123 4567"
+                placeholder="you@example.com or (201) 555-0123"
                 autoComplete="username"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                6-digit code
-              </label>
+              {/* No maxLength: it counts characters, so a pasted "123 456"
+                  would arrive as "123 45". toOtpDigits caps the digits
+                  instead, which also lets the OS fill it in one go. This form
+                  still needs a new password, so it never self-submits. */}
               <Input
+                label="6-digit code"
                 type="text"
                 inputMode="numeric"
-                maxLength={6}
+                pattern="\d*"
+                enterKeyHint="next"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  const next = toOtpDigits(e.target.value);
+                  // Synchronously, before any render: once the user has a
+                  // full code of their own, a later arrival must not land on
+                  // top of it.
+                  if (isOtpComplete(next)) cancelWebOtp();
+                  setCode(next);
+                }}
                 placeholder="123456"
                 autoComplete="one-time-code"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                New password
-              </label>
               <Input
+                label="New password"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -131,10 +165,8 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Confirm new password
-              </label>
               <Input
+                label="Confirm new password"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -143,7 +175,7 @@ function ResetPasswordContent() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <Button
               type="submit"
@@ -156,14 +188,14 @@ function ResetPasswordContent() {
             </Button>
           </form>
 
-          <p className="text-xs text-slate-400 text-center mt-6">
+          <p className="text-xs text-ink-3 text-center mt-6">
             The code expires in 10 minutes.
           </p>
 
-          <div className="text-center mt-4 pt-4 border-t border-slate-100">
+          <div className="text-center mt-4 pt-4 border-t border-hairline">
             <Link
               href="/forgot-password"
-              className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-1"
+              className="text-sm font-semibold text-accent hover:text-accent-ink inline-flex items-center gap-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Request a new code
             </Link>
