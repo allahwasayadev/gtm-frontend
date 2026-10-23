@@ -85,7 +85,31 @@ function MatchesContent() {
   );
   const [partnerTypeFilter, setPartnerTypeFilter] =
     useState<PartnerTypeFilter>('ALL');
-  const [loadFailed, setLoadFailed] = useState(false);
+  // Connections and all-partners matches are independently owned resources: a
+  // success in one must never clear a failure in the other, or a real error
+  // hides behind a falsely-empty page.
+  const [connectionsFailed, setConnectionsFailed] = useState(false);
+  const [allMatchesFailed, setAllMatchesFailed] = useState(false);
+  const [partnerMatchesFailed, setPartnerMatchesFailed] = useState(false);
+  const loadFailed = connectionsFailed || allMatchesFailed;
+  // A partner response is applied only while it is still the latest request for
+  // the connection that is still selected on a still-mounted page. Three guards
+  // combined: selection identity (switch to another partner / to All / unmount
+  // invalidates — including a match-decision reload that resolves after the user
+  // moved on), generation (a newer request for the SAME partner supersedes an
+  // older one), and mount. selectedIdRef is synced inside the select effect
+  // below so it is authoritative at invocation time, not a render behind.
+  const selectedIdRef = useRef(selectedConnectionId);
+  const partnerGenRef = useRef(0);
+  const mountedRef = useRef(true);
+  // Setup must reset true, or React StrictMode's setup→cleanup→setup leaves it
+  // permanently false and every partner response is dropped.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const loadConnections = useCallback(async () => {
     try {
@@ -94,7 +118,7 @@ function MatchesContent() {
         (connection) => connection.status === 'accepted',
       );
       setConnections(acceptedConnections);
-      setLoadFailed(false);
+      setConnectionsFailed(false);
 
       setSelectedConnectionId((current) => {
         const preferred = current || preselectedConnectionId;
@@ -109,7 +133,7 @@ function MatchesContent() {
     } catch {
       // An empty list here would render "No Active Connections", which looks
       // like real data rather than a failure.
-      setLoadFailed(true);
+      setConnectionsFailed(true);
       toast.error('We couldn\u2019t load your partners. Try again.');
       setConnections([]);
     } finally {
@@ -122,8 +146,9 @@ function MatchesContent() {
     try {
       const response = await matchingApi.getAllMatches();
       setAllMatches(response.data ?? EMPTY_ALL_MATCHES);
+      setAllMatchesFailed(false);
     } catch (error: unknown) {
-      setLoadFailed(true);
+      setAllMatchesFailed(true);
       toast.error(getErrorMessage(error, 'We couldn\u2019t load your matches. Try again.'));
       setAllMatches(EMPTY_ALL_MATCHES);
     } finally {
@@ -135,20 +160,42 @@ function MatchesContent() {
     if (!connectionId) {
       setResolvedMatches([]);
       setSuggestedMatches([]);
+      setPartnerMatchesFailed(false);
       return;
     }
 
+    // Reject a stale INVOCATION before touching loading/error state. A match
+    // decision whose reload fires after the user switched partners would
+    // otherwise start a skeleton on the now-current view and — its completion
+    // being discarded — never clear it, leaving loading stuck.
+    if (selectedIdRef.current !== connectionId) return;
+
+    const generation = ++partnerGenRef.current;
+    // Valid to apply only if latest request for this still-selected partner.
+    const isCurrent = () =>
+      mountedRef.current &&
+      generation === partnerGenRef.current &&
+      selectedIdRef.current === connectionId;
+
+    setPartnerMatchesFailed(false);
     setLoadingPartnerMatches(true);
     try {
       const response = await matchingApi.getMatches(connectionId);
+      if (!isCurrent()) return;
       setResolvedMatches(response.data.resolved || []);
       setSuggestedMatches(response.data.suggested || []);
     } catch (error: unknown) {
+      if (!isCurrent()) return;
       toast.error(getErrorMessage(error, 'We couldn\u2019t load this partner\u2019s matches. Try again.'));
+      // A failed fetch is NOT "no overlaps": clear the stale list but flag the
+      // failure so the panel shows an error with Retry, not a false empty.
       setResolvedMatches([]);
       setSuggestedMatches([]);
+      setPartnerMatchesFailed(true);
     } finally {
-      setLoadingPartnerMatches(false);
+      if (isCurrent()) {
+        setLoadingPartnerMatches(false);
+      }
     }
   }, []);
 
@@ -157,9 +204,16 @@ function MatchesContent() {
   }, [loadConnections, loadAllPartnersMatches]);
 
   useEffect(() => {
+    // Authoritative selection, set before the load so the invocation guard in
+    // loadPartnerMatches sees the current partner rather than lagging a render.
+    selectedIdRef.current = selectedConnectionId;
     if (!selectedConnectionId) {
+      // Switching to All Partners invalidates any in-flight partner request via
+      // selectedIdRef; clear its view and error so nothing stale lingers.
       setResolvedMatches([]);
       setSuggestedMatches([]);
+      setPartnerMatchesFailed(false);
+      setLoadingPartnerMatches(false);
       return;
     }
     void loadPartnerMatches(selectedConnectionId);
@@ -490,6 +544,8 @@ function MatchesContent() {
                 <PartnerPanel
                   connection={selectedConnection}
                   loading={loadingPartnerMatches}
+                  failed={partnerMatchesFailed}
+                  onRetry={() => void loadPartnerMatches(selectedConnectionId)}
                   resolvedMatches={resolvedMatches}
                   suggestedMatches={suggestedMatches}
                   processingDecision={processingDecision}
@@ -769,6 +825,8 @@ function AllPartnersPanel({
 function PartnerPanel({
   connection,
   loading,
+  failed,
+  onRetry,
   resolvedMatches,
   suggestedMatches,
   processingDecision,
@@ -776,6 +834,8 @@ function PartnerPanel({
 }: {
   connection: Connection | null;
   loading: boolean;
+  failed: boolean;
+  onRetry: () => void;
   resolvedMatches: Match[];
   suggestedMatches: Match[];
   processingDecision: string | null;
@@ -822,6 +882,28 @@ function PartnerPanel({
               <Skeleton className="h-3 w-64 mt-2" />
             </div>
           ))}
+        </div>
+      </Card>
+    );
+  }
+
+  if (failed) {
+    return (
+      <Card>
+        <div role="alert" className="px-5 py-8 text-center">
+          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-danger-soft text-danger">
+            <AlertTriangle className="h-6 w-6" />
+          </span>
+          <h3 className="text-base font-semibold text-ink">
+            We couldn&apos;t load this partner&apos;s matches
+          </h3>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-ink-2">
+            Something went wrong loading this partner&apos;s matches. Try again in a moment.
+          </p>
+          <Button variant="primary" className="mt-4" onClick={onRetry}>
+            <RefreshCw className="mr-1.5 h-4 w-4" />
+            Try again
+          </Button>
         </div>
       </Card>
     );
