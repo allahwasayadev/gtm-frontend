@@ -13,7 +13,6 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { getErrorMessage } from '@/lib/error-utils';
-import { cancelWebOtp } from '@/lib/web-otp';
 import {
   storeActivation,
   readActivation,
@@ -181,8 +180,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
       clearActivation();
-      // The code has been spent; nothing should still be waiting for one.
-      cancelWebOtp();
 
       toast.success('Mobile number verified. Your account is active.');
     } catch (error: unknown) {
@@ -307,9 +304,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user');
     setUser(null);
     clearActivation();
-    // Whoever signs in next must not inherit a request, or a code, armed for
-    // the account that just left.
-    cancelWebOtp();
     toast.success('Logged out successfully');
     router.push('/login');
   };

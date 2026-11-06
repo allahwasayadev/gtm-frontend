@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -9,9 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, LoadingScreen } from '@/components/ui';
 import { getErrorMessage } from '@/lib/error-utils';
 import { normalizeResetIdentifier } from '@/lib/phone';
-import { isOtpComplete, toOtpDigits } from '@/lib/otp';
-import { cancelWebOtp, releaseWebOtp } from '@/lib/web-otp';
-import { useWebOtpCode } from '@/lib/use-web-otp';
+import { toOtpDigits } from '@/lib/otp';
 
 export default function ResetPasswordPage() {
   return (
@@ -42,24 +40,6 @@ function ResetPasswordContent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  /**
-   * Android Chrome may offer the texted code here too — but it only FILLS it.
-   *
-   * This form also sets a new password, so submitting it the moment a code
-   * arrives would send an empty or half-typed password and fail. web.dev's
-   * example submits because its form holds nothing else; this one does not.
-   * The request stops once a full code is present, or the page goes away.
-   */
-  useWebOtpCode({
-    enabled: !isSubmitting && !/^\d{6}$/.test(code),
-    onCode: (filled: string) => setCode(toOtpDigits(filled)),
-  });
-
-  // Leaving this screen drops the request. pagehide does not fire on a
-  // client-side route change. Released, not cancelled, so a code that
-  // arrived on the screen before cannot be thrown away by a remount.
-  useEffect(() => () => releaseWebOtp(), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,10 +122,6 @@ function ResetPasswordContent() {
                 value={code}
                 onChange={(e) => {
                   const next = toOtpDigits(e.target.value);
-                  // Synchronously, before any render: once the user has a
-                  // full code of their own, a later arrival must not land on
-                  // top of it.
-                  if (isOtpComplete(next)) cancelWebOtp();
                   setCode(next);
                 }}
                 placeholder="123456"
