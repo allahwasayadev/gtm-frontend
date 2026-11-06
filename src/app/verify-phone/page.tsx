@@ -11,12 +11,6 @@ import { getErrorMessage } from '@/lib/error-utils';
 import { readActivation, type ActivationState } from '@/lib/activation';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 import { toUsE164, usPhoneValidationError, US_DIAL_CODE } from '@/lib/phone';
-import {
-  armWebOtp,
-  cancelWebOtp,
-  rearmWebOtp,
-  releaseWebOtp,
-} from '@/lib/web-otp';
 
 /**
  * Account activation.
@@ -66,17 +60,6 @@ export default function VerifyPhonePage() {
     setState(activation);
     setReady(true);
 
-    // A code may already be on its way — sent at signup, or by a number
-    // change on the profile screen that handed off to here. Arming is a
-    // no-op if a request from that screen is still live.
-    if (activation?.codeSent) armWebOtp();
-
-    // pagehide covers a real page leaving; it does NOT fire on a client-side
-    // route change, which is how this screen is usually left. Release rather
-    // than cancel: a code that arrived before this screen mounted must
-    // survive, and forgetting one is signalled explicitly elsewhere — a
-    // resend, a failed send, a code typed by hand, a logout.
-    return () => releaseWebOtp();
   }, []);
 
   // Only leave once activation is genuinely finished.
@@ -113,18 +96,12 @@ export default function VerifyPhonePage() {
     if (resendCooldown > 0) return;
     setIsResending(true);
     setError('');
-    // Before the request, not after it: the new message can arrive while the
-    // response is still in flight. Re-arming also drops the request bound to
-    // the message being replaced, so an old code cannot be filled in.
-    rearmWebOtp();
     try {
       await requestActivationCode();
       setState(readActivation());
       setResendKey((k) => k + 1);
       setResendCooldown(60);
     } catch (err: unknown) {
-      // Nothing was sent, so nothing is coming. Stop listening.
-      cancelWebOtp();
       setError(getErrorMessage(err, 'Failed to resend code'));
     } finally {
       setIsResending(false);
@@ -145,12 +122,10 @@ export default function VerifyPhonePage() {
 
     setIsSubmitting(true);
     setError('');
-    rearmWebOtp();
     try {
       await setActivationPhone(toUsE164(phoneDigits) as string);
       setState(readActivation());
     } catch (err: unknown) {
-      cancelWebOtp();
       setError(getErrorMessage(err, 'Could not send the code'));
     } finally {
       setIsSubmitting(false);

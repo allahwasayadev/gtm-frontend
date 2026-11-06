@@ -10,7 +10,6 @@ import { User, Building2, Mail, Lock, ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import { SMS_CONSENT_TEXT } from '@/lib/sms-consent';
 import { toUsE164, usPhoneValidationError, US_DIAL_CODE } from '@/lib/phone';
-import { cancelWebOtp, rearmWebOtp } from '@/lib/web-otp';
 
 
 const features = [
@@ -113,14 +112,6 @@ function SignupContent() {
     }
 
     setIsSubmitting(true);
-    // Armed BEFORE signup is called, because signup is what sends the code
-    // and the message can beat the response — and the code screen — onto the
-    // device. A code collected now is held until that screen subscribes.
-    //
-    // Re-armed rather than armed: a previous failed attempt may have left a
-    // request, or a code, bound to a message that is no longer the one the
-    // user is waiting for.
-    rearmWebOtp();
     try {
       const selectedRole = formData.role as UserRole;
       // Canonical E.164. validateForm() has already established it is there.
@@ -143,7 +134,6 @@ function SignupContent() {
       router.push('/verify-phone');
     } catch {
       // No account, so no message. Error is handled by AuthContext with toast.
-      cancelWebOtp();
     } finally {
       setIsSubmitting(false);
     }
